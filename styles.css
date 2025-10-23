@@ -2,6 +2,16 @@
 /* Optimized for 1920x1080 transparent output */
 
 :root {
+    /* Vernum Media Brand Colors */
+    --vernum-blue: #2E7CFF;
+    --vernum-blue-dark: #1E5ACC;
+    --vernum-blue-light: #4A90FF;
+    --vernum-white: #ffffff;
+    --vernum-black: #000000;
+    --vernum-gray: #1a1a1a;
+    --vernum-gray-light: #2a2a2a;
+    
+    /* Lower Third Colors */
     --l3-primary-bg: #ffffff;
     --l3-primary-text: #000000;
     --l3-secondary-bg: #dc3545;
@@ -11,10 +21,14 @@
     --l3-font-size-primary: 42px;
     --l3-font-size-secondary: 36px;
     --l3-box-spacing: 10px;
-    --ticker-bg: rgba(0, 0, 0, 0.85);
+    
+    /* Ticker */
+    --ticker-bg: rgba(46, 124, 255, 0.9);
     --ticker-text: #ffffff;
     --ticker-height: 50px;
     --ticker-font-size: 28px;
+    
+    /* Animation */
     --animation-duration: 0.5s;
     --animation-easing: cubic-bezier(0.4, 0.0, 0.2, 1);
 }
@@ -31,6 +45,56 @@ body.output-page {
     width: 1920px;
     height: 1080px;
     background: transparent;
+    position: relative;
+}
+
+/* Status Indicator */
+.status-indicator {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(0, 0, 0, 0.05);
+    z-index: 1;
+}
+
+.status-indicator.hidden {
+    display: none;
+}
+
+.status-content {
+    text-align: center;
+    color: rgba(100, 100, 100, 0.8);
+    pointer-events: auto;
+}
+
+.status-content h1 {
+    font-size: 48px;
+    margin: 0 0 20px 0;
+    font-weight: 300;
+    letter-spacing: 2px;
+}
+
+.status-content p {
+    font-size: 24px;
+    margin: 10px 0;
+    opacity: 0.8;
+}
+
+.status-note {
+    font-size: 20px;
+    font-style: italic;
+    margin-top: 30px !important;
+}
+
+.status-content button:hover {
+    background: #c82333;
+    transform: scale(1.05);
+    transition: all 0.2s;
 }
 
 /* Lower Third Container */
@@ -38,9 +102,11 @@ body.output-page {
     position: fixed;
     display: none;
     flex-direction: column;
-    gap: var(--l3-box-spacing);
+    gap: 10px;
     z-index: 100;
-    animation: slideIn var(--animation-duration) var(--animation-easing);
+    animation: slideIn 0.5s cubic-bezier(0.4, 0.0, 0.2, 1);
+    left: 80px;
+    bottom: 150px;
 }
 
 .lower-third.visible {
@@ -48,28 +114,29 @@ body.output-page {
 }
 
 .lower-third.animating-out {
-    animation: slideOut var(--animation-duration) var(--animation-easing) forwards;
+    animation: slideOut 0.5s cubic-bezier(0.4, 0.0, 0.2, 1) forwards;
 }
 
 /* Lower Third Boxes */
 .l3-box {
-    padding: var(--l3-padding);
-    border-radius: var(--l3-border-radius);
+    padding: 20px 40px;
+    border-radius: 25px;
     font-weight: 600;
     white-space: nowrap;
     box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+    display: inline-block;
 }
 
 .l3-primary {
-    background-color: var(--l3-primary-bg);
-    color: var(--l3-primary-text);
-    font-size: var(--l3-font-size-primary);
+    background-color: #ffffff;
+    color: #000000;
+    font-size: 42px;
 }
 
 .l3-secondary {
-    background-color: var(--l3-secondary-bg);
-    color: var(--l3-secondary-text);
-    font-size: var(--l3-font-size-secondary);
+    background-color: #dc3545;
+    color: #ffffff;
+    font-size: 36px;
 }
 
 .l3-box.hidden {
@@ -124,6 +191,76 @@ body.output-page {
     display: block;
 }
 
+/* Corner Bugs */
+.bug {
+    position: fixed;
+    display: none;
+    background: #dc3545;
+    color: var(--vernum-white);
+    padding: 15px 25px;
+    border-radius: 15px;
+    font-size: 24px;
+    font-weight: 600;
+    box-shadow: 0 4px 20px rgba(220, 53, 69, 0.4);
+    z-index: 110;
+    animation: bugIn 0.4s var(--animation-easing);
+    max-width: 400px;
+    word-wrap: break-word;
+    white-space: normal;
+}
+
+.bug.visible {
+    display: block;
+}
+
+.bug.animating-out {
+    animation: bugOut 0.4s var(--animation-easing) forwards;
+}
+
+.bug-top-left {
+    top: 40px;
+    left: 40px;
+}
+
+.bug-top-right {
+    top: 40px;
+    right: 40px;
+}
+
+/* Dual Lower Thirds */
+.lower-third-dual {
+    position: fixed;
+    display: none;
+    flex-direction: column;
+    gap: 10px;
+    z-index: 100;
+    animation: slideIn 0.5s cubic-bezier(0.4, 0.0, 0.2, 1);
+}
+
+.lower-third-dual.visible {
+    display: flex;
+}
+
+.lower-third-dual.animating-out {
+    animation: slideOut 0.5s cubic-bezier(0.4, 0.0, 0.2, 1) forwards;
+}
+
+.lower-third-left {
+    left: 80px !important;
+    bottom: 150px !important;
+}
+
+.lower-third-right {
+    right: 80px !important;
+    bottom: 150px !important;
+    left: auto !important;
+    animation: slideInRight 0.5s cubic-bezier(0.4, 0.0, 0.2, 1);
+}
+
+.lower-third-right.animating-out {
+    animation: slideOutRight 0.5s cubic-bezier(0.4, 0.0, 0.2, 1) forwards;
+}
+
 /* Animations */
 @keyframes slideIn {
     from {
@@ -175,37 +312,274 @@ body.output-page {
     }
 }
 
+/* Right-side animations for dual L3s */
+@keyframes slideInRight {
+    from {
+        transform: translateX(100%);
+        opacity: 0;
+    }
+    to {
+        transform: translateX(0);
+        opacity: 1;
+    }
+}
+
+@keyframes slideOutRight {
+    from {
+        transform: translateX(0);
+        opacity: 1;
+    }
+    to {
+        transform: translateX(100%);
+        opacity: 0;
+    }
+}
+
+/* Bug animations */
+@keyframes bugIn {
+    from {
+        transform: scale(0.8);
+        opacity: 0;
+    }
+    to {
+        transform: scale(1);
+        opacity: 1;
+    }
+}
+
+@keyframes bugOut {
+    from {
+        transform: scale(1);
+        opacity: 1;
+    }
+    to {
+        transform: scale(0.8);
+        opacity: 0;
+    }
+}
+
 /* =========================== */
 /* CONTROL PANEL STYLES */
 /* =========================== */
 
 body.control-page {
-    background: #1a1a1a;
-    color: #ffffff;
+    background: var(--vernum-gray);
+    color: var(--vernum-white);
     font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
     padding: 20px;
+    overflow-y: auto;
+    min-height: 100vh;
 }
 
 .control-container {
     display: grid;
     grid-template-columns: 1fr 1fr;
-    grid-template-rows: auto auto 1fr;
+    grid-template-rows: auto auto auto auto auto;
     gap: 20px;
-    min-height: calc(100vh - 40px);
 }
 
 .header {
     grid-column: 1 / -1;
     text-align: center;
-    padding: 20px;
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    padding: 30px 20px;
+    background: linear-gradient(135deg, var(--vernum-blue-dark) 0%, var(--vernum-blue) 100%);
     border-radius: 10px;
+    position: relative;
+    box-shadow: 0 4px 20px rgba(46, 124, 255, 0.3);
 }
 
 .header h1 {
     margin: 0;
-    font-size: 32px;
+    font-size: 36px;
     font-weight: 700;
+    color: var(--vernum-white);
+    letter-spacing: 2px;
+}
+
+.header .subtitle {
+    margin: 5px 0 0 0;
+    font-size: 14px;
+    opacity: 0.9;
+    font-weight: 400;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+}
+
+/* Quick Action Bar */
+.quick-actions {
+    grid-column: 1 / -1;
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 15px;
+    padding: 20px;
+    background: var(--vernum-gray);
+    border-radius: 10px;
+    border: 2px solid var(--vernum-blue);
+    box-shadow: 0 2px 10px rgba(46, 124, 255, 0.2);
+}
+
+.quick-action-group {
+    text-align: center;
+    padding: 15px;
+    background: var(--vernum-gray-light);
+    border-radius: 8px;
+    border: 1px solid #333;
+}
+
+.quick-action-group h3 {
+    margin: 0 0 10px 0;
+    font-size: 16px;
+    color: #ccc;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+.quick-action-group .button-group {
+    display: flex;
+    gap: 8px;
+    justify-content: center;
+}
+
+.btn-live,
+.btn-off {
+    flex: 1;
+    padding: 15px 20px;
+    font-size: 16px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    border-radius: 8px;
+    transition: all 0.2s ease;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+}
+
+.btn-live .icon,
+.btn-off .icon,
+.btn-preview .icon,
+.btn-special .icon {
+    font-size: 14px;
+    margin-right: 5px;
+}
+
+.btn-live:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 16px rgba(40, 167, 69, 0.4);
+}
+
+.btn-off:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 16px rgba(220, 53, 69, 0.4);
+}
+
+.btn-preview {
+    background: #17a2b8;
+    padding: 15px 20px;
+    font-size: 16px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    border-radius: 8px;
+    transition: all 0.2s ease;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+}
+
+.btn-preview:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 16px rgba(23, 162, 184, 0.4);
+}
+
+.btn-special {
+    padding: 15px 20px;
+    font-size: 16px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    border-radius: 8px;
+    transition: all 0.2s ease;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+}
+
+.btn-special:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 16px rgba(102, 126, 234, 0.4);
+}
+
+.btn-live:active,
+.btn-off:active,
+.btn-preview:active,
+.btn-special:active {
+    transform: translateY(0);
+}
+
+/* L3 Slot Selector in Quick Actions */
+.l3-selector {
+    display: flex;
+    gap: 5px;
+    justify-content: center;
+    margin-bottom: 10px;
+}
+
+.l3-slot-btn {
+    padding: 8px 16px;
+    background: #333;
+    color: #ccc;
+    border: 2px solid #555;
+    border-radius: 5px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.l3-slot-btn:hover {
+    background: #444;
+    border-color: var(--vernum-blue);
+}
+
+.l3-slot-btn.active {
+    background: var(--vernum-blue);
+    color: white;
+    border-color: var(--vernum-blue);
+}
+
+/* L3 Tabs in Control Panel */
+.l3-tabs {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 10px;
+}
+
+.l3-tab-btn {
+    flex: 1;
+    padding: 12px 20px;
+    background: #333;
+    color: #ccc;
+    border: 2px solid #555;
+    border-radius: 5px;
+    font-size: 16px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.l3-tab-btn:hover {
+    background: #444;
+    border-color: var(--vernum-blue);
+}
+
+.l3-tab-btn.active {
+    background: var(--vernum-blue);
+    color: white;
+    border-color: var(--vernum-blue);
+}
+
+.quick-l3-group {
+    display: flex;
+    flex-direction: column;
+}
+
+.quick-l3-group h3 {
+    margin-bottom: 10px;
 }
 
 .preview-section {
@@ -257,7 +631,6 @@ body.control-page {
     border-radius: 10px;
     padding: 20px;
     overflow-y: auto;
-    max-height: 600px;
 }
 
 .control-tabs {
@@ -284,8 +657,8 @@ body.control-page {
 }
 
 .tab-button.active {
-    color: #667eea;
-    border-bottom-color: #667eea;
+    color: var(--vernum-blue);
+    border-bottom-color: var(--vernum-blue);
 }
 
 .tab-content {
@@ -299,16 +672,16 @@ body.control-page {
 .control-group {
     margin-bottom: 25px;
     padding: 20px;
-    background: #1a1a1a;
+    background: var(--vernum-gray);
     border-radius: 8px;
-    border-left: 4px solid #667eea;
+    border-left: 4px solid var(--vernum-blue);
 }
 
 .control-group h3 {
     margin-top: 0;
     margin-bottom: 15px;
     font-size: 18px;
-    color: #667eea;
+    color: var(--vernum-blue);
 }
 
 .form-row {
@@ -377,12 +750,12 @@ button {
 }
 
 .btn-primary {
-    background: #667eea;
+    background: var(--vernum-blue);
     color: white;
 }
 
 .btn-primary:hover {
-    background: #5568d3;
+    background: var(--vernum-blue-dark);
 }
 
 .btn-success {
@@ -438,11 +811,43 @@ button {
     flex: 1;
 }
 
+/* Dual L3 Preview Boxes */
+.dual-l3-preview {
+    margin-top: 15px;
+    padding: 15px;
+    background: #111;
+    border: 1px solid #444;
+    border-radius: 5px;
+}
+
+.preview-label-mini {
+    font-size: 12px;
+    color: #888;
+    margin-bottom: 10px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+.preview-text {
+    color: #fff;
+    line-height: 1.6;
+}
+
+.preview-text strong {
+    font-size: 18px;
+    color: var(--vernum-blue);
+}
+
+.preview-text span {
+    font-size: 14px;
+    color: #ccc;
+}
+
 /* Responsive adjustments */
 @media (max-width: 1400px) {
     .control-container {
         grid-template-columns: 1fr;
-        grid-template-rows: auto auto auto 1fr;
+        grid-template-rows: auto auto auto auto auto 1fr;
     }
 }
 
@@ -457,6 +862,17 @@ button {
     
     .form-row {
         grid-template-columns: 1fr;
+    }
+    
+    .quick-actions {
+        grid-template-columns: 1fr;
+        padding: 15px;
+    }
+    
+    .btn-live,
+    .btn-off {
+        padding: 12px 16px;
+        font-size: 14px;
     }
 }
 

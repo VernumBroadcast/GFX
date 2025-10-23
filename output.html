@@ -6,13 +6,73 @@
     <title>VMix Graphics Output</title>
     <link rel="stylesheet" href="styles.css">
     <style id="custom-font-style"></style>
+    <style>
+        /* Fallback inline styles to ensure page loads */
+        body {
+            margin: 0;
+            padding: 0;
+            background: #f0f0f0;
+            font-family: Arial, sans-serif;
+        }
+        .status-indicator {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 9999;
+        }
+        .status-content {
+            text-align: center;
+            color: #333;
+        }
+    </style>
+    <script>
+        console.log('Output.html loaded successfully');
+        window.addEventListener('error', function(e) {
+            console.error('Page error:', e.message);
+        });
+    </script>
 </head>
 <body class="output-page">
-    <!-- Lower Third Component -->
+    <div style="position: fixed; top: 20px; left: 20px; background: red; color: white; padding: 10px; z-index: 10000;">
+        PAGE LOADED - If you see this, HTML is working
+    </div>
+    <!-- Status Indicator (hidden when graphics are shown) -->
+    <div id="statusIndicator" class="status-indicator">
+        <div class="status-content">
+            <h1>VMix Graphics Ready</h1>
+            <p>1920 × 1080 • Transparent Output</p>
+            <p class="status-note">Use control panel to display graphics</p>
+            <button id="testButton" style="margin-top: 20px; padding: 15px 30px; font-size: 18px; background: #dc3545; color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: 600;">
+                TEST: Show Sample L3
+            </button>
+        </div>
+    </div>
+
+    <!-- Single Lower Third Component -->
     <div id="lowerThird" class="lower-third">
         <div id="l3Primary" class="l3-box l3-primary"></div>
         <div id="l3Secondary" class="l3-box l3-secondary"></div>
     </div>
+
+    <!-- Dual Lower Thirds -->
+    <div id="lowerThirdLeft" class="lower-third lower-third-dual lower-third-left">
+        <div id="l3LeftPrimary" class="l3-box l3-primary"></div>
+        <div id="l3LeftSecondary" class="l3-box l3-secondary"></div>
+    </div>
+    
+    <div id="lowerThirdRight" class="lower-third lower-third-dual lower-third-right">
+        <div id="l3RightPrimary" class="l3-box l3-primary"></div>
+        <div id="l3RightSecondary" class="l3-box l3-secondary"></div>
+    </div>
+
+    <!-- Corner Bugs -->
+    <div id="bugTopLeft" class="bug bug-top-left"></div>
+    <div id="bugTopRight" class="bug bug-top-right"></div>
 
     <!-- Ticker Component -->
     <div id="ticker" class="ticker-container">

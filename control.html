@@ -10,7 +10,81 @@
     <div class="control-container">
         <!-- Header -->
         <div class="header">
-            <h1>VMix HTML5 Graphics Control Panel</h1>
+            <h1>VERNUM MEDIA GFX PACKAGE</h1>
+            <p class="subtitle">Professional Broadcast Graphics System</p>
+        </div>
+
+        <!-- Quick Action Bar -->
+        <div class="quick-actions" style="grid-template-columns: repeat(5, 1fr);">
+            <div class="quick-action-group quick-l3-group">
+                <h3>Lower Thirds (L3)</h3>
+                <div class="l3-selector">
+                    <button class="l3-slot-btn active" data-slot="1">L3-1</button>
+                    <button class="l3-slot-btn" data-slot="2">L3-2</button>
+                    <button class="l3-slot-btn" data-slot="3">L3-3</button>
+                </div>
+                <div class="button-group">
+                    <button class="btn-preview btn-info" id="quickPreviewL3">
+                        <span class="icon">👁</span> PVW
+                    </button>
+                    <button class="btn-live btn-success" id="quickShowL3">
+                        <span class="icon">▶</span> LIVE
+                    </button>
+                    <button class="btn-off btn-danger" id="quickHideL3">
+                        <span class="icon">■</span> OFF
+                    </button>
+                </div>
+            </div>
+            <div class="quick-action-group">
+                <h3>Dual L3s</h3>
+                <div class="button-group">
+                    <button class="btn-preview btn-info" id="quickPreviewDualL3">
+                        <span class="icon">👁</span> PVW
+                    </button>
+                    <button class="btn-live btn-success" id="quickShowDualL3">
+                        <span class="icon">▶</span> LIVE
+                    </button>
+                    <button class="btn-off btn-danger" id="quickHideDualL3">
+                        <span class="icon">■</span> OFF
+                    </button>
+                </div>
+            </div>
+            <div class="quick-action-group">
+                <h3>Corner Bugs</h3>
+                <div class="button-group">
+                    <button class="btn-live btn-success" id="quickShowBugs">
+                        <span class="icon">▶</span> SHOW
+                    </button>
+                    <button class="btn-off btn-danger" id="quickHideBugs">
+                        <span class="icon">■</span> OFF
+                    </button>
+                </div>
+            </div>
+            <div class="quick-action-group">
+                <h3>Ticker</h3>
+                <div class="button-group">
+                    <button class="btn-preview btn-info" id="quickPreviewTicker">
+                        <span class="icon">👁</span> PVW
+                    </button>
+                    <button class="btn-live btn-success" id="quickShowTicker">
+                        <span class="icon">▶</span> LIVE
+                    </button>
+                    <button class="btn-off btn-danger" id="quickHideTicker">
+                        <span class="icon">■</span> OFF
+                    </button>
+                </div>
+            </div>
+            <div class="quick-action-group">
+                <h3>Master Control</h3>
+                <div class="button-group">
+                    <button class="btn-special btn-primary" id="quickPreviewToLive">
+                        <span class="icon">➤</span> PVW → LIVE
+                    </button>
+                    <button class="btn-off btn-danger" id="quickHideAll">
+                        <span class="icon">■</span> ALL OFF
+                    </button>
+                </div>
+            </div>
         </div>
 
         <!-- Preview Window -->
@@ -34,6 +108,8 @@
             <!-- Tabs -->
             <div class="control-tabs">
                 <button class="tab-button active" data-tab="lower-third">Lower Third</button>
+                <button class="tab-button" data-tab="dual-l3">Dual L3s</button>
+                <button class="tab-button" data-tab="bugs">Corner Bugs</button>
                 <button class="tab-button" data-tab="ticker">Ticker</button>
                 <button class="tab-button" data-tab="data-sources">Data Sources</button>
                 <button class="tab-button" data-tab="styling">Styling</button>
@@ -42,8 +118,23 @@
 
             <!-- Lower Third Tab -->
             <div id="lower-third" class="tab-content active">
+                <!-- L3 Slot Selector -->
                 <div class="control-group">
-                    <h3>Lower Third Content</h3>
+                    <h3>Select Lower Third Slot</h3>
+                    <div class="l3-tabs">
+                        <button class="l3-tab-btn active" data-slot="1">L3-1</button>
+                        <button class="l3-tab-btn" data-slot="2">L3-2</button>
+                        <button class="l3-tab-btn" data-slot="3">L3-3</button>
+                    </div>
+                    <p class="info-text">Prepare up to 3 lower thirds. Click a tab to edit that slot.</p>
+                </div>
+
+                <!-- L3 Content (changes based on selected slot) -->
+                <div class="control-group">
+                    <h3>
+                        Lower Third Content - <span id="currentSlotLabel">Slot 1</span>
+                        <span id="currentSlotContent" style="display: block; font-size: 14px; font-weight: 400; color: var(--vernum-blue); margin-top: 5px;"></span>
+                    </h3>
                     <div class="form-row">
                         <label for="l3Primary">Primary Text:</label>
                         <input type="text" id="l3Primary" placeholder="e.g., Rich McDonald" value="">
@@ -121,6 +212,112 @@
                         <button class="btn-danger" id="btnHideL3Preview">Hide Preview</button>
                         <button class="btn-danger" id="btnHideL3Transmit">Hide Transmit</button>
                         <button class="btn-danger" id="btnHideL3Both">Hide Both</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Dual L3s Tab -->
+            <div id="dual-l3" class="tab-content">
+                <div class="control-group">
+                    <h3>Dual Lower Thirds Setup</h3>
+                    <p class="info-text">Display two lower thirds simultaneously - one on the left, one on the right of the screen. Select which of your 3 prepared L3 slots to show on each side. Great for debates, interviews, or split-screen scenarios.</p>
+                </div>
+
+                <div class="control-group">
+                    <h3>Left Side - Select L3 Slot</h3>
+                    <div class="form-row">
+                        <label for="dualL3LeftSlot">Show this slot on left:</label>
+                        <select id="dualL3LeftSlot">
+                            <option value="1">L3-1</option>
+                            <option value="2">L3-2</option>
+                            <option value="3">L3-3</option>
+                        </select>
+                    </div>
+                    <div class="dual-l3-preview" id="dualL3LeftPreview">
+                        <div class="preview-label-mini">Preview of selected slot:</div>
+                        <div class="preview-text">
+                            <strong id="dualL3LeftPreviewPrimary">-</strong><br>
+                            <span id="dualL3LeftPreviewSecondary">-</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="control-group">
+                    <h3>Right Side - Select L3 Slot</h3>
+                    <div class="form-row">
+                        <label for="dualL3RightSlot">Show this slot on right:</label>
+                        <select id="dualL3RightSlot">
+                            <option value="1">L3-1</option>
+                            <option value="2" selected>L3-2</option>
+                            <option value="3">L3-3</option>
+                        </select>
+                    </div>
+                    <div class="dual-l3-preview" id="dualL3RightPreview">
+                        <div class="preview-label-mini">Preview of selected slot:</div>
+                        <div class="preview-text">
+                            <strong id="dualL3RightPreviewPrimary">-</strong><br>
+                            <span id="dualL3RightPreviewSecondary">-</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="control-group">
+                    <h3>Dual L3 Controls</h3>
+                    <div class="button-group">
+                        <button class="btn-info" id="btnShowDualL3Preview">👁 Show on Preview</button>
+                        <button class="btn-success" id="btnShowDualL3Transmit">▶ Show on Transmit</button>
+                        <button class="btn-success" id="btnShowDualL3Both">▶ Show on Both</button>
+                    </div>
+                    <div class="button-group">
+                        <button class="btn-danger" id="btnHideDualL3Both">■ Hide Both</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Corner Bugs Tab -->
+            <div id="bugs" class="tab-content">
+                <div class="control-group">
+                    <h3>Corner Bugs</h3>
+                    <p class="info-text">Small text badges that appear in the top corners. Automatically scales based on text length. Perfect for channel branding, live indicators, or event names.</p>
+                </div>
+
+                <div class="control-group">
+                    <h3>Top Left Bug</h3>
+                    <div class="form-row">
+                        <label for="bugLeftText">Text:</label>
+                        <input type="text" id="bugLeftText" placeholder="e.g., LIVE or Channel Name">
+                    </div>
+                    <div class="form-row">
+                        <label for="bugLeftBg">Background Color:</label>
+                        <input type="color" id="bugLeftBg" value="#dc3545">
+                    </div>
+                    <div class="button-group">
+                        <button class="btn-success" id="btnShowBugLeft">Show Bug</button>
+                        <button class="btn-danger" id="btnHideBugLeft">Hide Bug</button>
+                    </div>
+                </div>
+
+                <div class="control-group">
+                    <h3>Top Right Bug</h3>
+                    <div class="form-row">
+                        <label for="bugRightText">Text:</label>
+                        <input type="text" id="bugRightText" placeholder="e.g., Breaking News">
+                    </div>
+                    <div class="form-row">
+                        <label for="bugRightBg">Background Color:</label>
+                        <input type="color" id="bugRightBg" value="#dc3545">
+                    </div>
+                    <div class="button-group">
+                        <button class="btn-success" id="btnShowBugRight">Show Bug</button>
+                        <button class="btn-danger" id="btnHideBugRight">Hide Bug</button>
+                    </div>
+                </div>
+
+                <div class="control-group">
+                    <h3>Both Bugs Control</h3>
+                    <div class="button-group">
+                        <button class="btn-success" id="btnShowBothBugs">Show Both</button>
+                        <button class="btn-danger" id="btnHideBothBugs">Hide Both</button>
                     </div>
                 </div>
             </div>

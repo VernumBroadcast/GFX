@@ -7,12 +7,48 @@ class ControlPanel {
         this.transmitFrame = document.getElementById('transmitFrame');
         this.customFontUrl = null;
         
+        // L3 Slot Management
+        this.currentL3Slot = 1;
+        this.l3Slots = {
+            1: this.getDefaultL3Config(),
+            2: this.getDefaultL3Config(),
+            3: this.getDefaultL3Config()
+        };
+        
+        // Track what's on preview vs transmit
+        this.previewState = {
+            l3: null,
+            ticker: false
+        };
+        
         this.init();
+    }
+    
+    getDefaultL3Config() {
+        return {
+            primaryText: '',
+            secondaryText: '',
+            primaryBg: '#ffffff',
+            primaryColor: '#000000',
+            secondaryBg: '#dc3545',  // Red color for all L3s
+            secondaryColor: '#ffffff',
+            x: 80,
+            y: 850,
+            fontSize1: 42,
+            fontSize2: 36,
+            borderRadius: 25,
+            boxSpacing: 10,
+            showPrimary: true,
+            showSecondary: true
+        };
     }
     
     init() {
         this.setupTabs();
+        this.setupQuickActions();
         this.setupLowerThirdControls();
+        this.setupDualL3Controls();
+        this.setupBugControls();
         this.setupTickerControls();
         this.setupDataSourceControls();
         this.setupStylingControls();
@@ -21,7 +57,180 @@ class ControlPanel {
         this.loadSavedState();
         this.setupPreviewScaling();
         
-        console.log('Control Panel initialized');
+        console.log('Vernum Media GFX Package initialized');
+    }
+    
+    // Quick Action Buttons
+    setupQuickActions() {
+        // L3 Slot Selector (Quick Actions Bar)
+        document.querySelectorAll('.l3-slot-btn').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                const slot = parseInt(e.target.dataset.slot);
+                this.switchL3Slot(slot);
+                
+                // Update active state
+                document.querySelectorAll('.l3-slot-btn').forEach(b => b.classList.remove('active'));
+                e.target.classList.add('active');
+            });
+        });
+        
+        // L3 Tab Selector (Lower Third Tab)
+        document.querySelectorAll('.l3-tab-btn').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                const slot = parseInt(e.target.dataset.slot);
+                this.switchL3Slot(slot);
+                
+                // Update active state
+                document.querySelectorAll('.l3-tab-btn').forEach(b => b.classList.remove('active'));
+                e.target.classList.add('active');
+                
+                // Update slot label
+                document.getElementById('currentSlotLabel').textContent = `Slot ${slot}`;
+            });
+        });
+        
+        // Lower Third Quick Actions
+        document.getElementById('quickPreviewL3').addEventListener('click', () => {
+            const config = this.l3Slots[this.currentL3Slot];
+            this.sendToFrame('preview', 'showL3', { config });
+            this.previewState.l3 = this.currentL3Slot;
+        });
+        
+        document.getElementById('quickShowL3').addEventListener('click', () => {
+            const config = this.l3Slots[this.currentL3Slot];
+            this.sendToFrame('transmit', 'showL3', { config });
+        });
+        
+        document.getElementById('quickHideL3').addEventListener('click', () => {
+            this.sendToFrame('both', 'hideL3', {});
+            this.previewState.l3 = null;
+        });
+        
+        // Ticker Quick Actions
+        document.getElementById('quickPreviewTicker').addEventListener('click', () => {
+            this.sendToFrame('preview', 'showTicker', { config: this.getTickerConfig() });
+            this.previewState.ticker = true;
+        });
+        
+        document.getElementById('quickShowTicker').addEventListener('click', () => {
+            this.sendToFrame('transmit', 'showTicker', { config: this.getTickerConfig() });
+        });
+        
+        document.getElementById('quickHideTicker').addEventListener('click', () => {
+            this.sendToFrame('both', 'hideTicker', {});
+            this.previewState.ticker = false;
+        });
+        
+        // Master Control Actions
+        document.getElementById('quickPreviewToLive').addEventListener('click', () => {
+            // Send whatever is on preview to transmit
+            if (this.previewState.l3 !== null) {
+                const config = this.l3Slots[this.previewState.l3];
+                this.sendToFrame('transmit', 'showL3', { config });
+            }
+            if (this.previewState.ticker) {
+                this.sendToFrame('transmit', 'showTicker', { config: this.getTickerConfig() });
+            }
+        });
+        
+        document.getElementById('quickHideAll').addEventListener('click', () => {
+            this.sendToFrame('both', 'hideL3');
+            this.sendToFrame('both', 'hideL3Dual');
+            this.sendToFrame('both', 'hideTicker');
+            this.sendToFrame('both', 'hideBugLeft');
+            this.sendToFrame('both', 'hideBugRight');
+            this.previewState.l3 = null;
+            this.previewState.ticker = false;
+        });
+        
+        // Dual L3 Quick Actions
+        document.getElementById('quickPreviewDualL3').addEventListener('click', () => {
+            const configLeft = this.getDualL3Config('left');
+            const configRight = this.getDualL3Config('right');
+            this.sendToFrame('preview', 'showL3Dual', { configLeft, configRight });
+        });
+        
+        document.getElementById('quickShowDualL3').addEventListener('click', () => {
+            const configLeft = this.getDualL3Config('left');
+            const configRight = this.getDualL3Config('right');
+            this.sendToFrame('transmit', 'showL3Dual', { configLeft, configRight });
+        });
+        
+        document.getElementById('quickHideDualL3').addEventListener('click', () => {
+            this.sendToFrame('both', 'hideL3Dual');
+        });
+        
+        // Bug Quick Actions
+        document.getElementById('quickShowBugs').addEventListener('click', () => {
+            const leftConfig = this.getBugConfig('left');
+            const rightConfig = this.getBugConfig('right');
+            this.sendToFrame('transmit', 'showBugLeft', { config: leftConfig });
+            this.sendToFrame('transmit', 'showBugRight', { config: rightConfig });
+        });
+        
+        document.getElementById('quickHideBugs').addEventListener('click', () => {
+            this.sendToFrame('both', 'hideBugLeft', {});
+            this.sendToFrame('both', 'hideBugRight', {});
+        });
+    }
+    
+    switchL3Slot(slot) {
+        // Save current slot data before switching
+        this.saveCurrentL3ToSlot();
+        
+        // Switch to new slot
+        this.currentL3Slot = slot;
+        
+        // Load new slot data into form
+        this.loadL3SlotToForm(slot);
+        
+        // Sync both slot selectors
+        document.querySelectorAll('.l3-slot-btn').forEach(btn => {
+            btn.classList.toggle('active', parseInt(btn.dataset.slot) === slot);
+        });
+        document.querySelectorAll('.l3-tab-btn').forEach(btn => {
+            btn.classList.toggle('active', parseInt(btn.dataset.slot) === slot);
+        });
+    }
+    
+    saveCurrentL3ToSlot() {
+        this.l3Slots[this.currentL3Slot] = this.getLowerThirdConfig();
+    }
+    
+    loadL3SlotToForm(slot) {
+        const config = this.l3Slots[slot];
+        
+        document.getElementById('l3Primary').value = config.primaryText || '';
+        document.getElementById('l3Secondary').value = config.secondaryText || '';
+        document.getElementById('l3X').value = config.x || 80;
+        document.getElementById('l3Y').value = config.y || 850;
+        document.getElementById('l3FontSize1').value = config.fontSize1 || 42;
+        document.getElementById('l3FontSize2').value = config.fontSize2 || 36;
+        document.getElementById('l3BorderRadius').value = config.borderRadius || 25;
+        document.getElementById('l3BoxSpacing').value = config.boxSpacing || 10;
+        document.getElementById('l3PrimaryBg').value = config.primaryBg || '#ffffff';
+        document.getElementById('l3PrimaryColor').value = config.primaryColor || '#000000';
+        document.getElementById('l3SecondaryBg').value = config.secondaryBg || '#dc3545';
+        document.getElementById('l3SecondaryColor').value = config.secondaryColor || '#ffffff';
+        document.getElementById('l3ShowPrimary').checked = config.showPrimary !== false;
+        document.getElementById('l3ShowSecondary').checked = config.showSecondary !== false;
+        
+        // Update the content display
+        this.updateCurrentSlotContent();
+    }
+    
+    updateCurrentSlotContent() {
+        const contentEl = document.getElementById('currentSlotContent');
+        if (contentEl) {
+            const primary = document.getElementById('l3Primary').value;
+            const secondary = document.getElementById('l3Secondary').value;
+            
+            if (primary || secondary) {
+                contentEl.textContent = `"${primary || '(no primary)'}" - "${secondary || '(no secondary)'}"`;
+            } else {
+                contentEl.textContent = '(Empty - add text above)';
+            }
+        }
     }
     
     // Setup preview window scaling
@@ -37,6 +246,17 @@ class ControlPanel {
             });
         };
         
+        // Wait for iframes to load
+        this.previewFrame.addEventListener('load', () => {
+            console.log('Preview iframe loaded');
+            setTimeout(scalePreview, 100);
+        });
+        
+        this.transmitFrame.addEventListener('load', () => {
+            console.log('Transmit iframe loaded');
+            setTimeout(scalePreview, 100);
+        });
+        
         // Scale on load
         window.addEventListener('load', () => {
             setTimeout(scalePreview, 100);
@@ -46,7 +266,7 @@ class ControlPanel {
         window.addEventListener('resize', scalePreview);
         
         // Initial scale
-        setTimeout(scalePreview, 100);
+        setTimeout(scalePreview, 500);
     }
     
     // Tab System
@@ -114,11 +334,36 @@ class ControlPanel {
             const element = document.getElementById(id);
             if (element) {
                 element.addEventListener('input', () => {
-                    // Auto-update preview in real-time
-                    this.sendToFrame('preview', 'updateL3', this.getLowerThirdConfig());
+                    // Save to current slot
+                    this.saveCurrentL3ToSlot();
+                    
+                    // Update the current slot content display
+                    if (id === 'l3Primary' || id === 'l3Secondary') {
+                        this.updateCurrentSlotContent();
+                        // Also update dual L3 previews if this slot is selected
+                        this.updateDualL3PreviewIfSelected(this.currentL3Slot);
+                    }
+                    
+                    // Auto-update preview in real-time if this slot is on preview
+                    if (this.previewState.l3 === this.currentL3Slot) {
+                        this.sendToFrame('preview', 'updateL3', { config: this.getLowerThirdConfig() });
+                    }
                 });
             }
         });
+    }
+    
+    updateDualL3PreviewIfSelected(slotNum) {
+        // Check if this slot is selected for left or right dual L3
+        const leftSlot = document.getElementById('dualL3LeftSlot');
+        const rightSlot = document.getElementById('dualL3RightSlot');
+        
+        if (leftSlot && parseInt(leftSlot.value) === slotNum) {
+            this.updateDualL3Preview('left');
+        }
+        if (rightSlot && parseInt(rightSlot.value) === slotNum) {
+            this.updateDualL3Preview('right');
+        }
     }
     
     getLowerThirdConfig() {
@@ -220,6 +465,102 @@ class ControlPanel {
         const g = parseInt(hex.slice(3, 5), 16);
         const b = parseInt(hex.slice(5, 7), 16);
         return `rgba(${r}, ${g}, ${b}, ${alpha})`;
+    }
+    
+    // Dual L3 Controls
+    setupDualL3Controls() {
+        // Update previews when slot selection changes
+        document.getElementById('dualL3LeftSlot')?.addEventListener('change', () => {
+            this.updateDualL3Preview('left');
+        });
+        
+        document.getElementById('dualL3RightSlot')?.addEventListener('change', () => {
+            this.updateDualL3Preview('right');
+        });
+        
+        // Initial preview update
+        this.updateDualL3Preview('left');
+        this.updateDualL3Preview('right');
+        
+        document.getElementById('btnShowDualL3Preview')?.addEventListener('click', () => {
+            const configLeft = this.getDualL3Config('left');
+            const configRight = this.getDualL3Config('right');
+            this.sendToFrame('preview', 'showL3Dual', { configLeft, configRight });
+        });
+        
+        document.getElementById('btnShowDualL3Transmit')?.addEventListener('click', () => {
+            const configLeft = this.getDualL3Config('left');
+            const configRight = this.getDualL3Config('right');
+            this.sendToFrame('transmit', 'showL3Dual', { configLeft, configRight });
+        });
+        
+        document.getElementById('btnShowDualL3Both')?.addEventListener('click', () => {
+            const configLeft = this.getDualL3Config('left');
+            const configRight = this.getDualL3Config('right');
+            this.sendToFrame('both', 'showL3Dual', { configLeft, configRight });
+        });
+        
+        document.getElementById('btnHideDualL3Both')?.addEventListener('click', () => {
+            this.sendToFrame('both', 'hideL3Dual', {});
+        });
+    }
+    
+    updateDualL3Preview(side) {
+        const slotSelector = document.getElementById(`dualL3${side === 'left' ? 'Left' : 'Right'}Slot`);
+        const selectedSlot = parseInt(slotSelector?.value || '1');
+        const slotConfig = this.l3Slots[selectedSlot];
+        
+        const primaryEl = document.getElementById(`dualL3${side === 'left' ? 'Left' : 'Right'}PreviewPrimary`);
+        const secondaryEl = document.getElementById(`dualL3${side === 'left' ? 'Left' : 'Right'}PreviewSecondary`);
+        
+        if (primaryEl && secondaryEl && slotConfig) {
+            primaryEl.textContent = slotConfig.primaryText || '(No text set)';
+            secondaryEl.textContent = slotConfig.secondaryText || '(No text set)';
+        }
+    }
+    
+    getDualL3Config(side) {
+        const slotSelector = document.getElementById(`dualL3${side === 'left' ? 'Left' : 'Right'}Slot`);
+        const selectedSlot = parseInt(slotSelector?.value || '1');
+        return this.l3Slots[selectedSlot];
+    }
+    
+    // Bug Controls
+    setupBugControls() {
+        document.getElementById('btnShowBugLeft')?.addEventListener('click', () => {
+            this.sendToFrame('both', 'showBugLeft', { config: this.getBugConfig('left') });
+        });
+        
+        document.getElementById('btnShowBugRight')?.addEventListener('click', () => {
+            this.sendToFrame('both', 'showBugRight', { config: this.getBugConfig('right') });
+        });
+        
+        document.getElementById('btnHideBugLeft')?.addEventListener('click', () => {
+            this.sendToFrame('both', 'hideBugLeft', {});
+        });
+        
+        document.getElementById('btnHideBugRight')?.addEventListener('click', () => {
+            this.sendToFrame('both', 'hideBugRight', {});
+        });
+        
+        document.getElementById('btnShowBothBugs')?.addEventListener('click', () => {
+            this.sendToFrame('both', 'showBugLeft', { config: this.getBugConfig('left') });
+            this.sendToFrame('both', 'showBugRight', { config: this.getBugConfig('right') });
+        });
+        
+        document.getElementById('btnHideBothBugs')?.addEventListener('click', () => {
+            this.sendToFrame('both', 'hideBugLeft', {});
+            this.sendToFrame('both', 'hideBugRight', {});
+        });
+    }
+    
+    getBugConfig(position) {
+        const prefix = position === 'left' ? 'bugLeft' : 'bugRight';
+        return {
+            text: document.getElementById(`${prefix}Text`)?.value || '',
+            bg: document.getElementById(`${prefix}Bg`)?.value || '#dc3545',  // Red color to match L3s
+            color: '#ffffff'
+        };
     }
     
     // Data Source Controls
@@ -672,8 +1013,12 @@ class ControlPanel {
     }
     
     saveState() {
+        // Save current slot before saving state
+        this.saveCurrentL3ToSlot();
+        
         const state = {
-            lowerThird: this.getLowerThirdConfig(),
+            l3Slots: this.l3Slots,
+            currentL3Slot: this.currentL3Slot,
             ticker: this.getTickerConfig(),
             gsheetUrl: document.getElementById('gsheetUrl').value,
             rcChannel: document.getElementById('rcChannel').value,
@@ -682,7 +1027,7 @@ class ControlPanel {
         };
         
         localStorage.setItem('vmixGraphicsState', JSON.stringify(state));
-        alert('State saved successfully!');
+        alert('State saved successfully! (All 3 L3 slots saved)');
     }
     
     loadSavedState() {
@@ -695,23 +1040,15 @@ class ControlPanel {
         try {
             const state = JSON.parse(savedState);
             
-            // Load lower third config
-            if (state.lowerThird) {
-                const lt = state.lowerThird;
-                document.getElementById('l3Primary').value = lt.primaryText || '';
-                document.getElementById('l3Secondary').value = lt.secondaryText || '';
-                document.getElementById('l3X').value = lt.x || 80;
-                document.getElementById('l3Y').value = lt.y || 850;
-                document.getElementById('l3FontSize1').value = lt.fontSize1 || 42;
-                document.getElementById('l3FontSize2').value = lt.fontSize2 || 36;
-                document.getElementById('l3BorderRadius').value = lt.borderRadius || 25;
-                document.getElementById('l3BoxSpacing').value = lt.boxSpacing || 10;
-                document.getElementById('l3PrimaryBg').value = lt.primaryBg || '#ffffff';
-                document.getElementById('l3PrimaryColor').value = lt.primaryColor || '#000000';
-                document.getElementById('l3SecondaryBg').value = lt.secondaryBg || '#dc3545';
-                document.getElementById('l3SecondaryColor').value = lt.secondaryColor || '#ffffff';
-                document.getElementById('l3ShowPrimary').checked = lt.showPrimary !== false;
-                document.getElementById('l3ShowSecondary').checked = lt.showSecondary !== false;
+            // Load L3 slots
+            if (state.l3Slots) {
+                this.l3Slots = state.l3Slots;
+                this.currentL3Slot = state.currentL3Slot || 1;
+                this.loadL3SlotToForm(this.currentL3Slot);
+            } else if (state.lowerThird) {
+                // Legacy support - old single L3 format
+                this.l3Slots[1] = state.lowerThird;
+                this.loadL3SlotToForm(1);
             }
             
             // Load ticker config
@@ -734,15 +1071,20 @@ class ControlPanel {
                 document.getElementById('rcApiToken').value = state.rcApiToken;
             }
             
-            console.log('State loaded successfully');
+            console.log('State loaded successfully (including all L3 slots)');
         } catch (error) {
             console.error('Error loading state:', error);
         }
     }
     
     // Communication with iframes
-    sendToFrame(target, action, config = {}) {
-        const message = { action, config };
+    sendToFrame(target, action, data = {}) {
+        // For dual L3s, data has configLeft and configRight
+        // For single actions, data is the config
+        // Need to spread data into the message properly
+        const message = { action, ...data };
+        
+        console.log('Sending to', target, ':', message);
         
         if (target === 'preview' || target === 'both') {
             this.previewFrame.contentWindow.postMessage(message, '*');
