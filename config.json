@@ -21,13 +21,13 @@
     "show": false,
     "items": [
       "Breaking News",
-      "Weather Update: Sunny 75°F",
-      "Sports: Team A defeats Team B 3-2",
-      "Market Update: Stocks rise 2%"
+      "Latest Updates",
+      "Live Coverage",
+      "More Information Coming Soon"
     ],
     "speed": 20,
     "position": "bottom",
-    "bg": "rgba(0, 0, 0, 0.85)",
+    "bg": "#dc3545",
     "color": "#ffffff",
     "fontSize": 28,
     "height": 50

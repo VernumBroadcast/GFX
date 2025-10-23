@@ -7,12 +7,21 @@ class ControlPanel {
         this.transmitFrame = document.getElementById('transmitFrame');
         this.customFontUrl = null;
         
+        // Global logo settings
+        this.globalLogo = {
+            url: 'ravelogo.png',
+            size: 120,
+            enabled: true
+        };
+        
         // L3 Slot Management
         this.currentL3Slot = 1;
         this.l3Slots = {
             1: this.getDefaultL3Config(),
             2: this.getDefaultL3Config(),
-            3: this.getDefaultL3Config()
+            3: this.getDefaultL3Config(),
+            4: this.getDefaultL3Config(),
+            5: this.getDefaultL3Config()
         };
         
         // Track what's on preview vs transmit
@@ -26,8 +35,8 @@ class ControlPanel {
     
     getDefaultL3Config() {
         return {
-            primaryText: '',
-            secondaryText: '',
+            primaryText: 'Your Name Here',
+            secondaryText: 'Your Title Here',
             primaryBg: '#ffffff',
             primaryColor: '#000000',
             secondaryBg: '#dc3545',  // Red color for all L3s
@@ -39,7 +48,10 @@ class ControlPanel {
             borderRadius: 25,
             boxSpacing: 10,
             showPrimary: true,
-            showSecondary: true
+            showSecondary: true,
+            logoEnabled: 'global',  // 'global', 'yes', or 'no'
+            customLogoUrl: '',
+            logoSize: 120
         };
     }
     
@@ -49,20 +61,70 @@ class ControlPanel {
         this.setupLowerThirdControls();
         this.setupDualL3Controls();
         this.setupBugControls();
+        this.setupTimerControls();
         this.setupTickerControls();
         this.setupDataSourceControls();
+        this.setupGlobalColorControls();
+        this.setupLogoControls();
         this.setupStylingControls();
         this.setupOutputControls();
         this.updateOutputUrl();
         this.loadSavedState();
         this.setupPreviewScaling();
         
+        // Debug: Check if iframes are loaded
+        this.previewFrame.addEventListener('load', () => {
+            console.log('✓ Preview iframe loaded');
+            console.log('Preview contentWindow:', this.previewFrame.contentWindow);
+        });
+        
+        this.transmitFrame.addEventListener('load', () => {
+            console.log('✓ Transmit iframe loaded');
+            console.log('Transmit contentWindow:', this.transmitFrame.contentWindow);
+        });
+        
         console.log('Vernum Media GFX Package initialized');
+        console.log('Preview frame:', this.previewFrame);
+        console.log('Transmit frame:', this.transmitFrame);
+        
+        // Initialize dropdown labels
+        this.updateL3DropdownLabels();
+        
+        // Start header clock
+        this.startHeaderClock();
+    }
+    
+    startHeaderClock() {
+        const updateClock = () => {
+            const now = new Date();
+            const timeString = now.toLocaleTimeString('en-US', { 
+                hour12: false,
+                hour: '2-digit',
+                minute: '2-digit',
+                second: '2-digit'
+            });
+            const timeEl = document.getElementById('headerTime');
+            if (timeEl) {
+                timeEl.textContent = timeString;
+            }
+        };
+        updateClock();
+        setInterval(updateClock, 1000);
     }
     
     // Quick Action Buttons
     setupQuickActions() {
-        // L3 Slot Selector (Quick Actions Bar)
+        // L3 Dropdown Selector (Quick Actions Bar)
+        const quickL3Selector = document.getElementById('quickL3Selector');
+        if (quickL3Selector) {
+            quickL3Selector.addEventListener('change', (e) => {
+                const slot = parseInt(e.target.value);
+                this.switchL3Slot(slot);
+                this.updateL3DropdownLabels();
+            });
+        }
+        
+        // Keep old button selector for compatibility
         document.querySelectorAll('.l3-slot-btn').forEach(btn => {
             btn.addEventListener('click', (e) => {
                 const slot = parseInt(e.target.dataset.slot);
@@ -71,6 +133,7 @@ class ControlPanel {
                 // Update active state
                 document.querySelectorAll('.l3-slot-btn').forEach(b => b.classList.remove('active'));
                 e.target.classList.add('active');
+                this.updateL3DropdownLabels();
             });
         });
         
@@ -91,13 +154,17 @@ class ControlPanel {
         
         // Lower Third Quick Actions
         document.getElementById('quickPreviewL3').addEventListener('click', () => {
-            const config = this.l3Slots[this.currentL3Slot];
+            const baseConfig = this.l3Slots[this.currentL3Slot];
+            const logoConfig = this.getL3LogoConfig(baseConfig);
+            const config = { ...baseConfig, ...logoConfig };
             this.sendToFrame('preview', 'showL3', { config });
             this.previewState.l3 = this.currentL3Slot;
         });
         
         document.getElementById('quickShowL3').addEventListener('click', () => {
-            const config = this.l3Slots[this.currentL3Slot];
+            const baseConfig = this.l3Slots[this.currentL3Slot];
+            const logoConfig = this.getL3LogoConfig(baseConfig);
+            const config = { ...baseConfig, ...logoConfig };
             this.sendToFrame('transmit', 'showL3', { config });
         });
         
@@ -125,7 +192,9 @@ class ControlPanel {
         document.getElementById('quickPreviewToLive').addEventListener('click', () => {
             // Send whatever is on preview to transmit
             if (this.previewState.l3 !== null) {
-                const config = this.l3Slots[this.previewState.l3];
+                const baseConfig = this.l3Slots[this.previewState.l3];
+                const logoConfig = this.getL3LogoConfig(baseConfig);
+                const config = { ...baseConfig, ...logoConfig };
                 this.sendToFrame('transmit', 'showL3', { config });
             }
             if (this.previewState.ticker) {
@@ -139,11 +208,36 @@ class ControlPanel {
             this.sendToFrame('both', 'hideTicker');
             this.sendToFrame('both', 'hideBugLeft');
             this.sendToFrame('both', 'hideBugRight');
+            this.sendToFrame('both', 'hideTimer');
             this.previewState.l3 = null;
             this.previewState.ticker = false;
         });
         
         // Dual L3 Quick Actions
+        // Sync quick selectors with main dual L3 dropdowns
+        const quickDualL3Left = document.getElementById('quickDualL3Left');
+        const quickDualL3Right = document.getElementById('quickDualL3Right');
+        
+        if (quickDualL3Left) {
+            quickDualL3Left.addEventListener('change', () => {
+                const mainDropdown = document.getElementById('dualL3LeftSlot');
+                if (mainDropdown) {
+                    mainDropdown.value = quickDualL3Left.value;
+                    mainDropdown.dispatchEvent(new Event('change'));
+                }
+            });
+        }
+        
+        if (quickDualL3Right) {
+            quickDualL3Right.addEventListener('change', () => {
+                const mainDropdown = document.getElementById('dualL3RightSlot');
+                if (mainDropdown) {
+                    mainDropdown.value = quickDualL3Right.value;
+                    mainDropdown.dispatchEvent(new Event('change'));
+                }
+            });
+        }
+        
         document.getElementById('quickPreviewDualL3').addEventListener('click', () => {
             const configLeft = this.getDualL3Config('left');
             const configRight = this.getDualL3Config('right');
@@ -160,18 +254,75 @@ class ControlPanel {
             this.sendToFrame('both', 'hideL3Dual');
         });
         
-        // Bug Quick Actions
-        document.getElementById('quickShowBugs').addEventListener('click', () => {
-            const leftConfig = this.getBugConfig('left');
-            const rightConfig = this.getBugConfig('right');
-            this.sendToFrame('transmit', 'showBugLeft', { config: leftConfig });
-            this.sendToFrame('transmit', 'showBugRight', { config: rightConfig });
-        });
+        // Bug Quick Actions - Individual buttons
+        const quickShowBugLeft = document.getElementById('quickShowBugLeft');
+        if (quickShowBugLeft) {
+            quickShowBugLeft.addEventListener('click', () => {
+                const leftConfig = this.getBugConfig('left');
+                this.sendToFrame('transmit', 'showBugLeft', { config: leftConfig });
+            });
+        }
         
-        document.getElementById('quickHideBugs').addEventListener('click', () => {
-            this.sendToFrame('both', 'hideBugLeft', {});
-            this.sendToFrame('both', 'hideBugRight', {});
-        });
+        const quickShowBugRight = document.getElementById('quickShowBugRight');
+        if (quickShowBugRight) {
+            quickShowBugRight.addEventListener('click', () => {
+                const rightConfig = this.getBugConfig('right');
+                this.sendToFrame('transmit', 'showBugRight', { config: rightConfig });
+            });
+        }
+        
+        const quickHideBugLeft = document.getElementById('quickHideBugLeft');
+        if (quickHideBugLeft) {
+            quickHideBugLeft.addEventListener('click', () => {
+                this.sendToFrame('both', 'hideBugLeft', {});
+            });
+        }
+        
+        const quickHideBugRight = document.getElementById('quickHideBugRight');
+        if (quickHideBugRight) {
+            quickHideBugRight.addEventListener('click', () => {
+                this.sendToFrame('both', 'hideBugRight', {});
+            });
+        }
+        
+        // Timer Quick Actions
+        const quickStartTimer = document.getElementById('quickStartTimer');
+        if (quickStartTimer) {
+            quickStartTimer.addEventListener('click', () => {
+                const config = this.getTimerConfig();
+                if (config.type !== 'none') {
+                    this.sendToFrame('both', 'startTimer', { config });
+                } else {
+                    alert('Please select a timer type in the Corner Bugs tab first');
+                }
+            });
+        }
+        
+        const quickHideTimer = document.getElementById('quickHideTimer');
+        if (quickHideTimer) {
+            quickHideTimer.addEventListener('click', () => {
+                this.sendToFrame('both', 'hideTimer', {});
+            });
+        }
+        
+        // Legacy combined bug buttons (if they exist)
+        const quickShowBugs = document.getElementById('quickShowBugs');
+        if (quickShowBugs) {
+            quickShowBugs.addEventListener('click', () => {
+                const leftConfig = this.getBugConfig('left');
+                const rightConfig = this.getBugConfig('right');
+                this.sendToFrame('transmit', 'showBugLeft', { config: leftConfig });
+                this.sendToFrame('transmit', 'showBugRight', { config: rightConfig });
+            });
+        }
+        
+        const quickHideBugs = document.getElementById('quickHideBugs');
+        if (quickHideBugs) {
+            quickHideBugs.addEventListener('click', () => {
+                this.sendToFrame('both', 'hideBugLeft', {});
+                this.sendToFrame('both', 'hideBugRight', {});
+            });
+        }
     }
     
     switchL3Slot(slot) {
@@ -191,6 +342,45 @@ class ControlPanel {
         document.querySelectorAll('.l3-tab-btn').forEach(btn => {
             btn.classList.toggle('active', parseInt(btn.dataset.slot) === slot);
         });
+        
+        // Update dropdown to match
+        const quickL3Selector = document.getElementById('quickL3Selector');
+        if (quickL3Selector) {
+            quickL3Selector.value = slot;
+        }
+    }
+    
+    updateL3DropdownLabels() {
+        const quickL3Selector = document.getElementById('quickL3Selector');
+        const quickDualL3Left = document.getElementById('quickDualL3Left');
+        const quickDualL3Right = document.getElementById('quickDualL3Right');
+        
+        // Update each option with the current content
+        for (let i = 1; i <= 5; i++) {
+            const slot = this.l3Slots[i];
+            if (!slot) continue;
+            
+            const primaryText = slot.primaryText || 'Your Name Here';
+            const label = `L3-${i}: ${primaryText}`;
+            
+            // Update quick L3 selector
+            if (quickL3Selector) {
+                const option = quickL3Selector.querySelector(`option[value="${i}"]`);
+                if (option) option.textContent = label;
+            }
+            
+            // Update dual L3 left selector
+            if (quickDualL3Left) {
+                const option = quickDualL3Left.querySelector(`option[value="${i}"]`);
+                if (option) option.textContent = label;
+            }
+            
+            // Update dual L3 right selector
+            if (quickDualL3Right) {
+                const option = quickDualL3Right.querySelector(`option[value="${i}"]`);
+                if (option) option.textContent = label;
+            }
+        }
     }
     
     saveCurrentL3ToSlot() {
@@ -231,6 +421,9 @@ class ControlPanel {
                 contentEl.textContent = '(Empty - add text above)';
             }
         }
+        
+        // Also update dropdown labels
+        this.updateL3DropdownLabels();
     }
     
     // Setup preview window scaling
@@ -522,7 +715,9 @@ class ControlPanel {
     getDualL3Config(side) {
         const slotSelector = document.getElementById(`dualL3${side === 'left' ? 'Left' : 'Right'}Slot`);
         const selectedSlot = parseInt(slotSelector?.value || '1');
-        return this.l3Slots[selectedSlot];
+        const baseConfig = this.l3Slots[selectedSlot];
+        const logoConfig = this.getL3LogoConfig(baseConfig);
+        return { ...baseConfig, ...logoConfig };
     }
     
     // Bug Controls
@@ -542,16 +737,6 @@ class ControlPanel {
         document.getElementById('btnHideBugRight')?.addEventListener('click', () => {
             this.sendToFrame('both', 'hideBugRight', {});
         });
-        
-        document.getElementById('btnShowBothBugs')?.addEventListener('click', () => {
-            this.sendToFrame('both', 'showBugLeft', { config: this.getBugConfig('left') });
-            this.sendToFrame('both', 'showBugRight', { config: this.getBugConfig('right') });
-        });
-        
-        document.getElementById('btnHideBothBugs')?.addEventListener('click', () => {
-            this.sendToFrame('both', 'hideBugLeft', {});
-            this.sendToFrame('both', 'hideBugRight', {});
-        });
     }
     
     getBugConfig(position) {
@@ -560,6 +745,220 @@ class ControlPanel {
             text: document.getElementById(`${prefix}Text`)?.value || '',
             bg: document.getElementById(`${prefix}Bg`)?.value || '#dc3545',  // Red color to match L3s
             color: '#ffffff'
+        };
+    }
+    
+    // Timer Controls
+    setupTimerControls() {
+        // Show/hide target time and duration fields based on timer type
+        document.getElementById('timerType').addEventListener('change', (e) => {
+            const timerType = e.target.value;
+            const targetTimeRow = document.getElementById('timerTargetTimeRow');
+            const durationRow = document.getElementById('timerDurationRow');
+            
+            targetTimeRow.style.display = timerType === 'countdownTo' ? 'grid' : 'none';
+            durationRow.style.display = timerType === 'countdownFrom' ? 'grid' : 'none';
+        });
+        
+        // Start/Show Timer
+        document.getElementById('btnStartTimer').addEventListener('click', () => {
+            const config = this.getTimerConfig();
+            if (config.type !== 'none') {
+                this.sendToFrame('both', 'startTimer', { config });
+            }
+        });
+        
+        // Pause Timer
+        document.getElementById('btnPauseTimer').addEventListener('click', () => {
+            this.sendToFrame('both', 'pauseTimer', {});
+        });
+        
+        // Reset Timer
+        document.getElementById('btnResetTimer').addEventListener('click', () => {
+            this.sendToFrame('both', 'resetTimer', {});
+        });
+        
+        // Hide Timer
+        document.getElementById('btnHideTimer').addEventListener('click', () => {
+            this.sendToFrame('both', 'hideTimer', {});
+        });
+    }
+    
+    getTimerConfig() {
+        const timerType = document.getElementById('timerType').value;
+        const config = {
+            type: timerType,
+            format: document.getElementById('timerFormat').value || 'hms',
+            label: document.getElementById('timerLabel').value || '',
+            bg: document.getElementById('timerBg').value || '#dc3545',
+            color: '#ffffff'
+        };
+        
+        if (timerType === 'countdownTo') {
+            const targetTime = document.getElementById('timerTargetTime').value;
+            if (targetTime) {
+                // Convert HH:MM:SS to timestamp for today
+                const now = new Date();
+                const [hours, minutes, seconds = 0] = targetTime.split(':').map(Number);
+                const target = new Date(now.getFullYear(), now.getMonth(), now.getDate(), hours, minutes, seconds);
+                config.targetTime = target.getTime();
+            }
+        } else if (timerType === 'countdownFrom') {
+            const duration = parseInt(document.getElementById('timerDuration').value) || 5;
+            config.duration = duration * 60; // Convert minutes to seconds
+        }
+        
+        return config;
+    }
+    
+    // Global Color Controls
+    setupGlobalColorControls() {
+        document.getElementById('btnApplyGlobalColors')?.addEventListener('click', () => {
+            const primaryBg = document.getElementById('globalPrimaryBg').value;
+            const primaryText = document.getElementById('globalPrimaryText').value;
+            const secondaryBg = document.getElementById('globalSecondaryBg').value;
+            const secondaryText = document.getElementById('globalSecondaryText').value;
+            
+            // Update all 5 L3 slots
+            for (let i = 1; i <= 5; i++) {
+                this.l3Slots[i].primaryBg = primaryBg;
+                this.l3Slots[i].primaryColor = primaryText;
+                this.l3Slots[i].secondaryBg = secondaryBg;
+                this.l3Slots[i].secondaryColor = secondaryText;
+            }
+            
+            // Update the currently displayed L3 form
+            document.getElementById('l3PrimaryBg').value = primaryBg;
+            document.getElementById('l3PrimaryColor').value = primaryText;
+            document.getElementById('l3SecondaryBg').value = secondaryBg;
+            document.getElementById('l3SecondaryColor').value = secondaryText;
+            
+            // Update bugs
+            document.getElementById('bugLeftBg').value = secondaryBg;
+            document.getElementById('bugRightBg').value = secondaryBg;
+            
+            // Update ticker
+            document.getElementById('tickerBg').value = secondaryBg;
+            document.getElementById('tickerColor').value = secondaryText;
+            
+            // Update timer
+            document.getElementById('timerBg').value = secondaryBg;
+            
+            // Save state
+            this.saveState();
+            
+            alert('✅ Global colors applied to all L3s, bugs, ticker, and timer!\n\nColors will show when you next display graphics.');
+        });
+    }
+    
+    // Logo Controls
+    setupLogoControls() {
+        // Handle global logo file upload
+        document.getElementById('globalLogoFile')?.addEventListener('change', (e) => {
+            const file = e.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = (event) => {
+                    const logoUrl = event.target.result;
+                    this.globalLogo.url = logoUrl;
+                    document.getElementById('globalLogoUrl').value = logoUrl.substring(0, 50) + '...';
+                    this.saveState();
+                };
+                reader.readAsDataURL(file);
+            }
+        });
+        
+        // Handle global logo URL input
+        document.getElementById('globalLogoUrl')?.addEventListener('change', (e) => {
+            this.globalLogo.url = e.target.value;
+            this.saveState();
+        });
+        
+        // Handle global logo size
+        document.getElementById('globalLogoSize')?.addEventListener('change', (e) => {
+            this.globalLogo.size = parseInt(e.target.value) || 120;
+            this.saveState();
+        });
+        
+        // Handle global logo enabled checkbox
+        document.getElementById('globalLogoEnabled')?.addEventListener('change', (e) => {
+            this.globalLogo.enabled = e.target.checked;
+            this.saveState();
+        });
+        
+        // Apply logo to all L3s
+        document.getElementById('btnApplyGlobalLogo')?.addEventListener('click', () => {
+            for (let i = 1; i <= 5; i++) {
+                this.l3Slots[i].logoEnabled = 'global';
+                this.l3Slots[i].customLogoUrl = '';
+            }
+            this.saveState();
+            alert('✅ Global logo settings applied to all L3 slots!');
+        });
+        
+        // Clear all logos
+        document.getElementById('btnClearGlobalLogo')?.addEventListener('click', () => {
+            this.globalLogo.url = '';
+            this.globalLogo.enabled = false;
+            document.getElementById('globalLogoUrl').value = '';
+            document.getElementById('globalLogoEnabled').checked = false;
+            for (let i = 1; i <= 5; i++) {
+                this.l3Slots[i].logoEnabled = 'no';
+                this.l3Slots[i].customLogoUrl = '';
+            }
+            this.saveState();
+            alert('✅ All logos cleared!');
+        });
+        
+        // Handle per-L3 custom logo upload
+        document.getElementById('l3CustomLogoFile')?.addEventListener('change', (e) => {
+            const file = e.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = (event) => {
+                    const logoUrl = event.target.result;
+                    this.l3Slots[this.currentL3Slot].customLogoUrl = logoUrl;
+                    document.getElementById('l3CustomLogoUrl').value = logoUrl.substring(0, 50) + '...';
+                    this.saveState();
+                };
+                reader.readAsDataURL(file);
+            }
+        });
+        
+        // Handle per-L3 custom logo URL
+        document.getElementById('l3CustomLogoUrl')?.addEventListener('change', (e) => {
+            this.l3Slots[this.currentL3Slot].customLogoUrl = e.target.value;
+            this.saveState();
+        });
+        
+        // Handle per-L3 logo enabled dropdown
+        document.getElementById('l3LogoEnabled')?.addEventListener('change', (e) => {
+            this.l3Slots[this.currentL3Slot].logoEnabled = e.target.value;
+            this.saveState();
+        });
+    }
+    
+    // Helper to get final logo config for an L3
+    getL3LogoConfig(l3Config) {
+        const logoEnabled = l3Config.logoEnabled || 'global';
+        
+        if (logoEnabled === 'no') {
+            return { showLogo: false };
+        }
+        
+        if (logoEnabled === 'yes') {
+            return {
+                showLogo: true,
+                logoUrl: l3Config.customLogoUrl || this.globalLogo.url,
+                logoSize: l3Config.logoSize || this.globalLogo.size
+            };
+        }
+        
+        // 'global' setting
+        return {
+            showLogo: this.globalLogo.enabled && this.globalLogo.url !== '',
+            logoUrl: this.globalLogo.url,
+            logoSize: this.globalLogo.size
         };
     }
     
@@ -834,6 +1233,8 @@ class ControlPanel {
             } else {
                 customFontRow.style.display = 'none';
                 customFontNameRow.style.display = 'none';
+                // Auto-apply standard fonts when selected
+                this.applyFont();
             }
         });
         
@@ -894,8 +1295,29 @@ class ControlPanel {
             this.sendToFrame('both', 'setFont', fontData);
         }
         
-        // Update L3 with new font
-        this.sendToFrame('both', 'updateL3', this.getLowerThirdConfig());
+        // Update L3 with new font (for all L3 slots)
+        for (let i = 1; i <= 5; i++) {
+            if (this.l3Slots[i]) {
+                this.l3Slots[i].fontFamily = this.getCurrentFont();
+            }
+        }
+        
+        // Update preview and transmit with new font
+        const config = this.getLowerThirdConfig();
+        this.sendToFrame('preview', 'updateL3', { config });
+        this.sendToFrame('transmit', 'updateL3', { config });
+        
+        // Update ticker with new font
+        const tickerConfig = this.getTickerConfig();
+        tickerConfig.fontFamily = this.getCurrentFont();
+        this.sendToFrame('preview', 'updateTicker', { config: tickerConfig });
+        this.sendToFrame('transmit', 'updateTicker', { config: tickerConfig });
+        
+        // Update bugs with new font
+        this.sendToFrame('both', 'updateBugFont', { fontFamily: this.getCurrentFont() });
+        
+        // Update timer with new font
+        this.sendToFrame('both', 'updateTimerFont', { fontFamily: this.getCurrentFont() });
     }
     
     applyPreset(preset) {
@@ -978,6 +1400,33 @@ class ControlPanel {
     updateOutputUrl() {
         const fullUrl = window.location.href.replace('control.html', 'output.html');
         document.getElementById('outputUrl').value = fullUrl;
+        
+        // Also update the quick transmit URL display
+        const quickUrlInput = document.getElementById('quickTransmitUrl');
+        if (quickUrlInput) {
+            quickUrlInput.value = fullUrl;
+        }
+        
+        // Setup quick copy and open buttons
+        const btnQuickCopy = document.getElementById('btnQuickCopyUrl');
+        const btnQuickOpen = document.getElementById('btnQuickOpenTab');
+        
+        if (btnQuickCopy) {
+            btnQuickCopy.addEventListener('click', () => {
+                quickUrlInput.select();
+                document.execCommand('copy');
+                btnQuickCopy.textContent = '✓ Copied!';
+                setTimeout(() => {
+                    btnQuickCopy.textContent = 'Copy URL';
+                }, 2000);
+            });
+        }
+        
+        if (btnQuickOpen) {
+            btnQuickOpen.addEventListener('click', () => {
+                window.open(fullUrl, '_blank');
+            });
+        }
     }
     
     generateParameterUrl() {
@@ -1092,6 +1541,12 @@ class ControlPanel {
         
         if (target === 'transmit' || target === 'both') {
             this.transmitFrame.contentWindow.postMessage(message, '*');
+            
+            // ALSO broadcast to localStorage for VMix and other standalone windows
+            localStorage.setItem('vmix_graphics_command', JSON.stringify({
+                timestamp: Date.now(),
+                message: message
+            }));
         }
     }
 }

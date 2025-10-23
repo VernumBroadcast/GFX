@@ -4,18 +4,30 @@
 
 class GraphicsEngine {
     constructor() {
+        // Enable debug mode by adding ?debug=true to the URL
+        this.debugMode = new URLSearchParams(window.location.search).has('debug');
+        
         this.elements = {
             lowerThird: document.getElementById('lowerThird'),
             l3Primary: document.getElementById('l3Primary'),
             l3Secondary: document.getElementById('l3Secondary'),
+            l3Logo: document.getElementById('l3Logo'),
+            l3LogoContainer: document.getElementById('l3LogoContainer'),
             lowerThirdLeft: document.getElementById('lowerThirdLeft'),
             l3LeftPrimary: document.getElementById('l3LeftPrimary'),
             l3LeftSecondary: document.getElementById('l3LeftSecondary'),
+            l3LogoLeft: document.getElementById('l3LogoLeft'),
+            l3LogoLeftContainer: document.getElementById('l3LogoLeftContainer'),
             lowerThirdRight: document.getElementById('lowerThirdRight'),
             l3RightPrimary: document.getElementById('l3RightPrimary'),
             l3RightSecondary: document.getElementById('l3RightSecondary'),
+            l3LogoRight: document.getElementById('l3LogoRight'),
+            l3LogoRightContainer: document.getElementById('l3LogoRightContainer'),
             bugTopLeft: document.getElementById('bugTopLeft'),
             bugTopRight: document.getElementById('bugTopRight'),
+            timerBottomRight: document.getElementById('timerBottomRight'),
+            timerLabel: document.getElementById('timerLabel'),
+            timerDisplay: document.getElementById('timerDisplay'),
             ticker: document.getElementById('ticker'),
             tickerContent: document.getElementById('tickerContent'),
             customGraphics: document.getElementById('customGraphics'),
@@ -28,9 +40,15 @@ class GraphicsEngine {
             tickerVisible: false,
             bugLeftVisible: false,
             bugRightVisible: false,
+            timerVisible: false,
             l3Config: {},
             tickerConfig: {},
-            customFont: null
+            customFont: null,
+            timerConfig: {},
+            timerInterval: null,
+            timerPaused: false,
+            timerElapsed: 0,
+            timerStartTime: null
         };
         
         this.init();
@@ -39,7 +57,7 @@ class GraphicsEngine {
     updateStatusIndicator() {
         // Hide status indicator if any graphics are visible
         if (this.state.l3Visible || this.state.l3DualVisible || this.state.tickerVisible || 
-            this.state.bugLeftVisible || this.state.bugRightVisible) {
+            this.state.bugLeftVisible || this.state.bugRightVisible || this.state.timerVisible) {
             this.elements.statusIndicator.classList.add('hidden');
         } else {
             this.elements.statusIndicator.classList.remove('hidden');
@@ -47,22 +65,93 @@ class GraphicsEngine {
     }
     
     init() {
-        // Listen for postMessage commands from control panel
+        // Setup visual debug log (only show if debug mode enabled)
+        this.debugLog = document.getElementById('debugLog');
+        if (this.debugMode) {
+            document.getElementById('debugIndicator').style.display = 'block';
+            this.debugLog.style.display = 'block';
+            this.addDebugLog('Graphics Engine Starting...');
+        }
+        
+        // Listen for postMessage commands from control panel (when in iframe)
         window.addEventListener('message', (event) => {
+            if (this.debugMode) {
+                console.log('===== MESSAGE RECEIVED (postMessage) =====');
+                console.log('Event origin:', event.origin);
+                console.log('Event data:', event.data);
+                console.log('===========================');
+                this.addDebugLog('MSG: ' + event.data.action);
+            }
             this.handleMessage(event.data);
         });
+        
+        // Listen for localStorage commands (when opened standalone for VMix)
+        this.lastCommandTimestamp = 0;
+        window.addEventListener('storage', (event) => {
+            if (event.key === 'vmix_graphics_command' && event.newValue) {
+                try {
+                    const data = JSON.parse(event.newValue);
+                    // Only process if this is a new command (prevent duplicates)
+                    if (data.timestamp > this.lastCommandTimestamp) {
+                        this.lastCommandTimestamp = data.timestamp;
+                        if (this.debugMode) {
+                            console.log('===== COMMAND RECEIVED (localStorage) =====');
+                            console.log('Command:', data.message);
+                            console.log('===========================');
+                            this.addDebugLog('localStorage: ' + data.message.action);
+                        }
+                        this.handleMessage(data.message);
+                    }
+                } catch (error) {
+                    console.error('Error parsing localStorage command:', error);
+                }
+            }
+        });
+        
+        // Also check localStorage on load (in case command was sent before this page loaded)
+        this.checkInitialCommand();
         
         // Parse URL parameters on load
         this.parseURLParams();
         
-        // Monitor for config file changes (check every 5 seconds)
-        this.startConfigMonitoring();
+        // Config monitoring disabled to avoid CORS errors with file:// protocol
+        // Use postMessage from control panel instead
+        // this.startConfigMonitoring();
         
         // Add test button handler
         this.setupTestButton();
         
-        console.log('VMix Graphics Engine initialized');
-        console.log('Ready to receive messages from control panel');
+        if (this.debugMode) {
+            this.addDebugLog('✓ Initialized');
+            this.addDebugLog('Is iframe: ' + (window !== window.parent));
+            console.log('VMix Graphics Engine initialized (DEBUG MODE)');
+            console.log('Window location:', window.location.href);
+            console.log('Is in iframe:', window !== window.parent);
+        }
+    }
+    
+    checkInitialCommand() {
+        try {
+            const stored = localStorage.getItem('vmix_graphics_command');
+            if (stored) {
+                const data = JSON.parse(stored);
+                this.lastCommandTimestamp = data.timestamp;
+                // Apply the last command (e.g., if reloading output.html while graphic is live)
+                // This ensures graphics persist when refreshing the VMix input
+                console.log('Applying stored command on load:', data.message);
+                this.handleMessage(data.message);
+            }
+        } catch (error) {
+            console.error('Error checking initial command:', error);
+        }
+    }
+    
+    addDebugLog(message) {
+        if (this.debugMode && this.debugLog) {
+            const timestamp = new Date().toLocaleTimeString();
+            this.debugLog.innerHTML += `<div>[${timestamp}] ${message}</div>`;
+            this.debugLog.scrollTop = this.debugLog.scrollHeight;
+        }
     }
     
     setupTestButton() {
@@ -91,55 +180,82 @@ class GraphicsEngine {
     }
     
     handleMessage(data) {
-        if (!data.action) return;
+        if (!data || !data.action) {
+            this.addDebugLog('ERROR: Invalid message data');
+            return;
+        }
         
         console.log('Received message:', data.action);
         
-        switch(data.action) {
-            case 'showL3':
-                this.showLowerThird(data.config);
-                break;
-            case 'hideL3':
-                this.hideLowerThird();
-                break;
-            case 'updateL3':
-                this.updateLowerThird(data.config);
-                break;
-            case 'showL3Dual':
-                this.showDualLowerThirds(data.configLeft, data.configRight);
-                break;
-            case 'hideL3Dual':
-                this.hideDualLowerThirds();
-                break;
-            case 'showBugLeft':
-                this.showBug('left', data.config);
-                break;
-            case 'showBugRight':
-                this.showBug('right', data.config);
-                break;
-            case 'hideBugLeft':
-                this.hideBug('left');
-                break;
-            case 'hideBugRight':
-                this.hideBug('right');
-                break;
-            case 'showTicker':
-                this.showTicker(data.config);
-                break;
-            case 'hideTicker':
-                this.hideTicker();
-                break;
-            case 'updateTicker':
-                this.updateTicker(data.config);
-                break;
-            case 'setFont':
-                this.setCustomFont(data.font);
-                break;
-            case 'updateStyles':
-                this.updateStyles(data.styles);
-                break;
-            default:
-                console.warn('Unknown action:', data.action);
+        try {
+            switch(data.action) {
+                case 'showL3':
+                    this.showLowerThird(data.config);
+                    break;
+                case 'hideL3':
+                    this.hideLowerThird();
+                    break;
+                case 'updateL3':
+                    this.updateLowerThird(data.config);
+                    break;
+                case 'showL3Dual':
+                    this.showDualLowerThirds(data.configLeft, data.configRight);
+                    break;
+                case 'hideL3Dual':
+                    this.hideDualLowerThirds();
+                    break;
+                case 'showBugLeft':
+                    this.showBug('left', data.config);
+                    break;
+                case 'showBugRight':
+                    this.showBug('right', data.config);
+                    break;
+                case 'hideBugLeft':
+                    this.hideBug('left');
+                    break;
+                case 'hideBugRight':
+                    this.hideBug('right');
+                    break;
+                case 'startTimer':
+                    this.startTimer(data.config);
+                    break;
+                case 'pauseTimer':
+                    this.pauseTimer();
+                    break;
+                case 'resetTimer':
+                    this.resetTimer();
+                    break;
+                case 'hideTimer':
+                    this.hideTimer();
+                    break;
+                case 'updateBugFont':
+                    this.updateBugFont(data.fontFamily);
+                    break;
+                case 'updateTimerFont':
+                    this.updateTimerFont(data.fontFamily);
+                    break;
+                case 'showTicker':
+                    this.showTicker(data.config);
+                    break;
+                case 'hideTicker':
+                    this.hideTicker();
+                    break;
+                case 'updateTicker':
+                    this.updateTicker(data.config);
+                    break;
+                case 'setFont':
+                    this.setCustomFont(data.font);
+                    break;
+                case 'updateStyles':
+                    this.updateStyles(data.styles);
+                    break;
+                default:
+                    this.addDebugLog('WARN: Unknown action - ' + data.action);
+                    console.warn('Unknown action:', data.action);
+            }
+        } catch (error) {
+            this.addDebugLog('ERROR: ' + error.message);
+            console.error('Error handling message:', error);
         }
     }
     
@@ -176,6 +292,11 @@ class GraphicsEngine {
     
     // Lower Third Methods
     showLowerThird(config) {
+        if (this.debugMode) {
+            console.log('showLowerThird called with config:', config);
+            this.addDebugLog('showL3: ' + (config ? config.primaryText : 'NO CONFIG'));
+        }
+        
         this.state.l3Config = config;
         this.updateLowerThird(config);
         
@@ -183,6 +304,10 @@ class GraphicsEngine {
         this.elements.lowerThird.classList.add('visible');
         this.state.l3Visible = true;
         this.updateStatusIndicator();
+        
+        if (this.debugMode) {
+            this.addDebugLog('✓ L3 shown');
+        }
     }
     
     hideLowerThird() {
@@ -212,7 +337,10 @@ class GraphicsEngine {
             borderRadius = 25,
             padding = '20px 40px',
             boxSpacing = 10,
-            fontFamily
+            fontFamily,
+            logoUrl,
+            logoSize = 120,
+            showLogo = false
         } = config;
         
         // Update primary box
@@ -245,7 +373,9 @@ class GraphicsEngine {
         
         // Update positioning
         this.elements.lowerThird.style.left = x + 'px';
-        this.elements.lowerThird.style.top = y + 'px';
+        // Use bottom positioning (CSS default is 150px from bottom)
+        this.elements.lowerThird.style.bottom = '150px';
+        this.elements.lowerThird.style.top = 'auto'; // Override any top positioning
         
         // Update styling
         if (borderRadius) {
@@ -257,16 +387,51 @@ class GraphicsEngine {
             this.elements.l3Secondary.style.padding = padding;
         }
         if (boxSpacing) {
-            this.elements.lowerThird.style.gap = boxSpacing + 'px';
+            const contentWrapper = this.elements.lowerThird.querySelector('.l3-content-wrapper');
+            if (contentWrapper) {
+                contentWrapper.style.gap = boxSpacing + 'px';
+            }
         }
         if (fontFamily) {
             this.elements.l3Primary.style.fontFamily = fontFamily;
             this.elements.l3Secondary.style.fontFamily = fontFamily;
         }
         
-        // Toggle box visibility
+        // Toggle box visibility first
         this.elements.l3Primary.classList.toggle('hidden', !showPrimary);
         this.elements.l3Secondary.classList.toggle('hidden', !showSecondary);
+        
+        // Update logo
+        console.log('Logo config:', { showLogo, logoUrl, logoSize });
+        if (showLogo && logoUrl) {
+            this.elements.l3Logo.src = logoUrl;
+            
+            // Calculate total height of visible L3 boxes
+            setTimeout(() => {
+                let totalHeight = 0;
+                if (showPrimary) {
+                    totalHeight += this.elements.l3Primary.offsetHeight;
+                }
+                if (showSecondary) {
+                    totalHeight += this.elements.l3Secondary.offsetHeight;
+                }
+                if (showPrimary && showSecondary) {
+                    totalHeight += 10; // gap between boxes
+                }
+                
+                // Add some padding for visual balance (reduced padding on container)
+                totalHeight += 6;
+                
+                console.log('Calculated L3 height:', totalHeight);
+                this.elements.l3LogoContainer.style.height = totalHeight + 'px';
+                this.elements.l3LogoContainer.classList.add('visible');
+            }, 50); // Small delay to ensure boxes are rendered
+            
+            console.log('Logo should be visible now');
+        } else {
+            this.elements.l3LogoContainer.classList.remove('visible');
+            console.log('Logo hidden');
+        }
     }
     
     // Ticker Methods
@@ -274,15 +439,21 @@ class GraphicsEngine {
         this.state.tickerConfig = config;
         this.updateTicker(config);
         
+        this.elements.ticker.classList.remove('animating-out');
         this.elements.ticker.classList.add('visible');
         this.state.tickerVisible = true;
         this.updateStatusIndicator();
     }
     
     hideTicker() {
-        this.elements.ticker.classList.remove('visible');
+        this.elements.ticker.classList.add('animating-out');
         this.state.tickerVisible = false;
         this.updateStatusIndicator();
+        
+        // Remove visible class after animation completes
+        setTimeout(() => {
+            this.elements.ticker.classList.remove('visible', 'animating-out');
+        }, 600); // Match the animation duration in CSS
     }
     
     updateTicker(config) {
@@ -293,7 +464,8 @@ class GraphicsEngine {
             bg = 'rgba(0, 0, 0, 0.85)',
             color = '#ffffff',
             fontSize = 28,
-            height = 50
+            height = 50,
+            fontFamily
         } = config;
         
         // Clear existing content
@@ -313,6 +485,11 @@ class GraphicsEngine {
         this.elements.tickerContent.style.fontSize = fontSize + 'px';
         this.elements.ticker.style.height = height + 'px';
         this.elements.tickerContent.style.lineHeight = height + 'px';
+        
+        // Apply font family if provided
+        if (fontFamily) {
+            this.elements.tickerContent.style.fontFamily = fontFamily;
+        }
         
         // Position ticker
         if (position === 'bottom') {
@@ -348,6 +525,33 @@ class GraphicsEngine {
             // Toggle box visibility
             this.elements.l3LeftPrimary.classList.toggle('hidden', !configLeft.showPrimary);
             this.elements.l3LeftSecondary.classList.toggle('hidden', !configLeft.showSecondary);
+            
+            // Update logo
+            if (configLeft.showLogo && configLeft.logoUrl) {
+                this.elements.l3LogoLeft.src = configLeft.logoUrl;
+                
+                // Calculate total height
+                setTimeout(() => {
+                    let totalHeight = 0;
+                    if (configLeft.showPrimary) {
+                        totalHeight += this.elements.l3LeftPrimary.offsetHeight;
+                    }
+                    if (configLeft.showSecondary) {
+                        totalHeight += this.elements.l3LeftSecondary.offsetHeight;
+                    }
+                    if (configLeft.showPrimary && configLeft.showSecondary) {
+                        totalHeight += 10;
+                    }
+                    
+                    // Add padding for visual balance
+                    totalHeight += 6;
+                    
+                    this.elements.l3LogoLeftContainer.style.height = totalHeight + 'px';
+                    this.elements.l3LogoLeftContainer.classList.add('visible');
+                }, 50);
+            } else {
+                this.elements.l3LogoLeftContainer.classList.remove('visible');
+            }
         }
         
         // Update right side
@@ -364,6 +568,33 @@ class GraphicsEngine {
             // Toggle box visibility
             this.elements.l3RightPrimary.classList.toggle('hidden', !configRight.showPrimary);
             this.elements.l3RightSecondary.classList.toggle('hidden', !configRight.showSecondary);
+            
+            // Update logo
+            if (configRight.showLogo && configRight.logoUrl) {
+                this.elements.l3LogoRight.src = configRight.logoUrl;
+                
+                // Calculate total height
+                setTimeout(() => {
+                    let totalHeight = 0;
+                    if (configRight.showPrimary) {
+                        totalHeight += this.elements.l3RightPrimary.offsetHeight;
+                    }
+                    if (configRight.showSecondary) {
+                        totalHeight += this.elements.l3RightSecondary.offsetHeight;
+                    }
+                    if (configRight.showPrimary && configRight.showSecondary) {
+                        totalHeight += 10;
+                    }
+                    
+                    // Add padding for visual balance
+                    totalHeight += 6;
+                    
+                    this.elements.l3LogoRightContainer.style.height = totalHeight + 'px';
+                    this.elements.l3LogoRightContainer.classList.add('visible');
+                }, 50);
+            } else {
+                this.elements.l3LogoRightContainer.classList.remove('visible');
+            }
         }
         
         // Show both
@@ -456,6 +687,195 @@ class GraphicsEngine {
         setTimeout(() => {
             bugElement.classList.remove('visible', 'animating-out');
         }, 400);
+    }
+    
+    // Timer Methods
+    startTimer(config) {
+        this.state.timerConfig = config;
+        this.state.timerPaused = false;
+        
+        // Apply styling
+        this.elements.timerBottomRight.style.backgroundColor = config.bg || '#dc3545';
+        this.elements.timerBottomRight.style.color = config.color || '#ffffff';
+        this.elements.timerLabel.textContent = config.label || '';
+        this.elements.timerLabel.style.display = config.label ? 'block' : 'none';
+        
+        // Clear any existing interval
+        if (this.state.timerInterval) {
+            clearInterval(this.state.timerInterval);
+        }
+        
+        // Determine update interval based on format (faster for milliseconds)
+        const format = config.format || 'hms';
+        const needsMs = format.includes('ms') && format !== 'hms' && format !== 'ms';
+        const updateInterval = needsMs ? 10 : (config.type === 'clock' ? 1000 : 100);
+        
+        // Initialize timer based on type
+        if (config.type === 'clock') {
+            this.updateTimerDisplay();
+            this.state.timerInterval = setInterval(() => this.updateTimerDisplay(), updateInterval);
+        } else if (config.type === 'countdownTo') {
+            this.state.timerStartTime = Date.now();
+            this.updateTimerDisplay();
+            this.state.timerInterval = setInterval(() => this.updateTimerDisplay(), updateInterval);
+        } else if (config.type === 'stopwatch') {
+            this.state.timerElapsed = 0;
+            this.state.timerStartTime = Date.now();
+            this.updateTimerDisplay();
+            this.state.timerInterval = setInterval(() => this.updateTimerDisplay(), updateInterval);
+        } else if (config.type === 'countdownFrom') {
+            this.state.timerElapsed = 0;
+            this.state.timerStartTime = Date.now();
+            this.updateTimerDisplay();
+            this.state.timerInterval = setInterval(() => this.updateTimerDisplay(), updateInterval);
+        }
+        
+        // Show timer
+        this.elements.timerBottomRight.classList.remove('animating-out');
+        this.elements.timerBottomRight.classList.add('visible');
+        this.state.timerVisible = true;
+        this.updateStatusIndicator();
+    }
+    
+    pauseTimer() {
+        this.state.timerPaused = !this.state.timerPaused;
+        
+        if (this.state.timerPaused) {
+            if (this.state.timerInterval) {
+                clearInterval(this.state.timerInterval);
+                this.state.timerInterval = null;
+            }
+        } else {
+            // Resume timer
+            const config = this.state.timerConfig;
+            if (config.type === 'stopwatch' || config.type === 'countdownFrom') {
+                this.state.timerStartTime = Date.now() - (this.state.timerElapsed * 1000);
+            }
+            this.startTimer(config);
+        }
+    }
+    
+    resetTimer() {
+        this.state.timerElapsed = 0;
+        this.state.timerStartTime = Date.now();
+        this.updateTimerDisplay();
+    }
+    
+    hideTimer() {
+        if (this.state.timerInterval) {
+            clearInterval(this.state.timerInterval);
+            this.state.timerInterval = null;
+        }
+        
+        this.elements.timerBottomRight.classList.add('animating-out');
+        this.state.timerVisible = false;
+        this.updateStatusIndicator();
+        
+        setTimeout(() => {
+            this.elements.timerBottomRight.classList.remove('visible', 'animating-out');
+        }, 400);
+    }
+    
+    updateTimerDisplay() {
+        if (this.state.timerPaused) return;
+        
+        const config = this.state.timerConfig;
+        const format = config.format || 'hms';
+        let timeInMs = 0;
+        let shouldStop = false;
+        
+        // Calculate time in milliseconds based on timer type
+        if (config.type === 'clock') {
+            const now = new Date();
+            timeInMs = (now.getHours() * 3600 + now.getMinutes() * 60 + now.getSeconds()) * 1000 + now.getMilliseconds();
+        } else if (config.type === 'countdownTo' && config.targetTime) {
+            const now = Date.now();
+            const remaining = Math.max(0, config.targetTime - now);
+            timeInMs = remaining;
+            if (remaining === 0) shouldStop = true;
+        } else if (config.type === 'stopwatch') {
+            const elapsed = Date.now() - this.state.timerStartTime;
+            this.state.timerElapsed = elapsed / 1000;
+            timeInMs = elapsed;
+        } else if (config.type === 'countdownFrom' && config.duration) {
+            const elapsed = Date.now() - this.state.timerStartTime;
+            this.state.timerElapsed = elapsed / 1000;
+            const remaining = Math.max(0, (config.duration * 1000) - elapsed);
+            timeInMs = remaining;
+            if (remaining === 0) shouldStop = true;
+        }
+        
+        // Format the display based on selected format
+        const displayText = this.formatTime(timeInMs, format);
+        this.elements.timerDisplay.textContent = displayText;
+        
+        // Stop timer if countdown reached zero
+        if (shouldStop && this.state.timerInterval) {
+            clearInterval(this.state.timerInterval);
+            this.state.timerInterval = null;
+        }
+    }
+    
+    formatTime(milliseconds, format) {
+        const totalSeconds = Math.floor(milliseconds / 1000);
+        const ms = Math.floor(milliseconds % 1000);
+        const hours = Math.floor(totalSeconds / 3600);
+        const minutes = Math.floor((totalSeconds % 3600) / 60);
+        const seconds = totalSeconds % 60;
+        
+        switch(format) {
+            case 'hm':
+                // HH:MM (hours and minutes only)
+                return `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}`;
+            
+            case 'hms':
+                // HH:MM:SS
+                return `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
+            
+            case 'ms':
+                // MM:SS
+                const totalMinutes = Math.floor(totalSeconds / 60);
+                const secs = totalSeconds % 60;
+                return `${String(totalMinutes).padStart(2, '0')}:${String(secs).padStart(2, '0')}`;
+            
+            case 'hmsms':
+                // HH:MM:SS.000
+                return `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}.${String(ms).padStart(3, '0')}`;
+            
+            case 'msms':
+                // MM:SS.000
+                const totalMins = Math.floor(totalSeconds / 60);
+                const secsForMs = totalSeconds % 60;
+                return `${String(totalMins).padStart(2, '0')}:${String(secsForMs).padStart(2, '0')}.${String(ms).padStart(3, '0')}`;
+            
+            case 'sms':
+                // SS.000
+                return `${String(totalSeconds).padStart(2, '0')}.${String(ms).padStart(3, '0')}`;
+            
+            default:
+                return `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
+        }
+    }
+    
+    // Update bug font
+    updateBugFont(fontFamily) {
+        if (fontFamily && this.elements.bugTopLeft) {
+            this.elements.bugTopLeft.style.fontFamily = fontFamily;
+        }
+        if (fontFamily && this.elements.bugTopRight) {
+            this.elements.bugTopRight.style.fontFamily = fontFamily;
+        }
+    }
+    
+    // Update timer font
+    updateTimerFont(fontFamily) {
+        if (fontFamily && this.elements.timerDisplay) {
+            // Keep Courier New for timer display for monospace look, but allow override
+            this.elements.timerDisplay.style.fontFamily = fontFamily;
+        }
+        if (fontFamily && this.elements.timerLabel) {
+            this.elements.timerLabel.style.fontFamily = fontFamily;
+        }
     }
     
     // Custom Font Management

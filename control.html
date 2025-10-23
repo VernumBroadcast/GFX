@@ -9,9 +9,18 @@
 <body class="control-page">
     <div class="control-container">
         <!-- Header -->
-        <div class="header">
-            <h1>VERNUM MEDIA GFX PACKAGE</h1>
-            <p class="subtitle">Professional Broadcast Graphics System</p>
+        <div class="header" style="background: #000000; padding: 15px 30px; display: flex; align-items: center; justify-content: space-between; box-shadow: 0 4px 20px rgba(0,0,0,0.8);">
+            <div style="display: flex; align-items: center; gap: 30px;">
+                <img src="vernum-logo.png" alt="Vernum Broadcast" class="header-logo" style="height: 70px; width: auto; display: block;" onerror="console.warn('Logo not found. Please save your logo as vernum-logo.png in the same folder as control.html');">
+                <div style="text-align: left;">
+                    <h1 style="margin: 0; font-size: 28px; letter-spacing: 2px;">GFX PACKAGE</h1>
+                    <p class="subtitle" style="margin: 5px 0 0 0; font-size: 13px; opacity: 0.8;">Made available by James Watson</p>
+                </div>
+            </div>
+            <div style="text-align: right; color: rgba(255,255,255,0.6); font-size: 12px;">
+                <div style="font-weight: 600; color: #2E7CFF; margin-bottom: 3px;">BROADCAST CONTROL</div>
+                <div id="headerTime" style="font-family: monospace; letter-spacing: 1px;">--:--:--</div>
+            </div>
         </div>
 
         <!-- Quick Action Bar -->
@@ -19,9 +28,13 @@
             <div class="quick-action-group quick-l3-group">
                 <h3>Lower Thirds (L3)</h3>
                 <div class="l3-selector">
-                    <button class="l3-slot-btn active" data-slot="1">L3-1</button>
-                    <button class="l3-slot-btn" data-slot="2">L3-2</button>
-                    <button class="l3-slot-btn" data-slot="3">L3-3</button>
+                    <select id="quickL3Selector" style="width: 100%; padding: 8px; margin-bottom: 10px; border-radius: 5px; background: rgba(255,255,255,0.1); color: white; border: 1px solid rgba(255,255,255,0.3); font-size: 14px;">
+                        <option value="1">L3-1: Your Name Here</option>
+                        <option value="2">L3-2: Your Name Here</option>
+                        <option value="3">L3-3: Your Name Here</option>
+                        <option value="4">L3-4: Your Name Here</option>
+                        <option value="5">L3-5: Your Name Here</option>
+                    </select>
                 </div>
                 <div class="button-group">
                     <button class="btn-preview btn-info" id="quickPreviewL3">
@@ -37,6 +50,24 @@
             </div>
             <div class="quick-action-group">
                 <h3>Dual L3s</h3>
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 5px; margin-bottom: 8px;">
+                    <div style="font-size: 10px; color: rgba(255,255,255,0.6); text-align: center;">LEFT</div>
+                    <div style="font-size: 10px; color: rgba(255,255,255,0.6); text-align: center;">RIGHT</div>
+                    <select id="quickDualL3Left" style="padding: 4px; border-radius: 4px; background: rgba(255,255,255,0.1); color: white; border: 1px solid rgba(255,255,255,0.3); font-size: 11px;">
+                        <option value="1">L3-1: Your Name Here</option>
+                        <option value="2">L3-2: Your Name Here</option>
+                        <option value="3">L3-3: Your Name Here</option>
+                        <option value="4">L3-4: Your Name Here</option>
+                        <option value="5">L3-5: Your Name Here</option>
+                    </select>
+                    <select id="quickDualL3Right" style="padding: 4px; border-radius: 4px; background: rgba(255,255,255,0.1); color: white; border: 1px solid rgba(255,255,255,0.3); font-size: 11px;">
+                        <option value="1">L3-1: Your Name Here</option>
+                        <option value="2" selected>L3-2: Your Name Here</option>
+                        <option value="3">L3-3: Your Name Here</option>
+                        <option value="4">L3-4: Your Name Here</option>
+                        <option value="5">L3-5: Your Name Here</option>
+                    </select>
+                </div>
                 <div class="button-group">
                     <button class="btn-preview btn-info" id="quickPreviewDualL3">
                         <span class="icon">👁</span> PVW
@@ -50,12 +81,27 @@
                 </div>
             </div>
             <div class="quick-action-group">
-                <h3>Corner Bugs</h3>
-                <div class="button-group">
-                    <button class="btn-live btn-success" id="quickShowBugs">
+                <h3>Corner Bugs + Timer</h3>
+                <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 5px; margin-bottom: 10px;">
+                    <div style="text-align: center; font-size: 10px; color: rgba(255,255,255,0.7);">TOP LEFT</div>
+                    <div style="text-align: center; font-size: 10px; color: rgba(255,255,255,0.7);">TOP RIGHT</div>
+                    <div style="text-align: center; font-size: 10px; color: rgba(255,255,255,0.7);">TIMER (BR)</div>
+                    <button class="btn-live btn-success" id="quickShowBugLeft" style="font-size: 11px; padding: 6px 4px;">
                         <span class="icon">▶</span> SHOW
                     </button>
-                    <button class="btn-off btn-danger" id="quickHideBugs">
+                    <button class="btn-live btn-success" id="quickShowBugRight" style="font-size: 11px; padding: 6px 4px;">
+                        <span class="icon">▶</span> SHOW
+                    </button>
+                    <button class="btn-live btn-success" id="quickStartTimer" style="font-size: 11px; padding: 6px 4px;">
+                        <span class="icon">▶</span> START
+                    </button>
+                    <button class="btn-off btn-danger" id="quickHideBugLeft" style="font-size: 11px; padding: 6px 4px;">
+                        <span class="icon">■</span> OFF
+                    </button>
+                    <button class="btn-off btn-danger" id="quickHideBugRight" style="font-size: 11px; padding: 6px 4px;">
+                        <span class="icon">■</span> OFF
+                    </button>
+                    <button class="btn-off btn-danger" id="quickHideTimer" style="font-size: 11px; padding: 6px 4px;">
                         <span class="icon">■</span> OFF
                     </button>
                 </div>
@@ -101,6 +147,12 @@
             <div class="preview-frame">
                 <iframe id="transmitFrame" src="output.html"></iframe>
             </div>
+            <div style="display: flex; gap: 6px; align-items: center; margin-top: 5px; padding: 6px 10px; background: rgba(122, 26, 26, 0.3); border-radius: 5px;">
+                <span style="font-size: 10px; color: rgba(255,255,255,0.7); white-space: nowrap;">VMix URL:</span>
+                <input type="text" id="quickTransmitUrl" readonly style="flex: 1; padding: 4px 8px; background: rgba(0,0,0,0.4); border: 1px solid rgba(255,255,255,0.2); color: white; font-family: monospace; border-radius: 3px; font-size: 10px;">
+                <button id="btnQuickCopyUrl" style="padding: 4px 12px; background: #28a745; color: white; border: none; border-radius: 3px; cursor: pointer; font-weight: 600; font-size: 10px; white-space: nowrap;">Copy URL</button>
+                <button id="btnQuickOpenTab" style="padding: 4px 12px; background: #17a2b8; color: white; border: none; border-radius: 3px; cursor: pointer; font-weight: 600; font-size: 10px; white-space: nowrap;">Open Tab</button>
+            </div>
         </div>
 
         <!-- Control Panels -->
@@ -125,8 +177,10 @@
                         <button class="l3-tab-btn active" data-slot="1">L3-1</button>
                         <button class="l3-tab-btn" data-slot="2">L3-2</button>
                         <button class="l3-tab-btn" data-slot="3">L3-3</button>
+                        <button class="l3-tab-btn" data-slot="4">L3-4</button>
+                        <button class="l3-tab-btn" data-slot="5">L3-5</button>
                     </div>
-                    <p class="info-text">Prepare up to 3 lower thirds. Click a tab to edit that slot.</p>
+                    <p class="info-text">Prepare up to 5 lower thirds. Click a tab to edit that slot.</p>
                 </div>
 
                 <!-- L3 Content (changes based on selected slot) -->
@@ -202,6 +256,27 @@
                 </div>
 
                 <div class="control-group">
+                    <h3>Logo Override (This Slot Only)</h3>
+                    <p class="info-text">Override the global logo for this specific L3 slot.</p>
+                    <div class="form-row">
+                        <label for="l3LogoEnabled">Use Logo for This L3:</label>
+                        <select id="l3LogoEnabled">
+                            <option value="global">Use Global Setting</option>
+                            <option value="yes">Yes (Force On)</option>
+                            <option value="no">No (Force Off)</option>
+                        </select>
+                    </div>
+                    <div class="form-row">
+                        <label for="l3CustomLogoUrl">Custom Logo URL (Optional):</label>
+                        <input type="text" id="l3CustomLogoUrl" placeholder="Leave empty to use global logo">
+                    </div>
+                    <div class="form-row">
+                        <label for="l3CustomLogoFile">Or Upload Custom Logo:</label>
+                        <input type="file" id="l3CustomLogoFile" accept="image/*">
+                    </div>
+                </div>
+
+                <div class="control-group">
                     <h3>Animation Controls</h3>
                     <div class="button-group">
                         <button class="btn-success" id="btnShowL3Preview">Show on Preview</button>
@@ -220,7 +295,7 @@
             <div id="dual-l3" class="tab-content">
                 <div class="control-group">
                     <h3>Dual Lower Thirds Setup</h3>
-                    <p class="info-text">Display two lower thirds simultaneously - one on the left, one on the right of the screen. Select which of your 3 prepared L3 slots to show on each side. Great for debates, interviews, or split-screen scenarios.</p>
+                    <p class="info-text">Display two lower thirds simultaneously - one on the left, one on the right of the screen. Select which of your 5 prepared L3 slots to show on each side. Great for debates, interviews, or split-screen scenarios.</p>
                 </div>
 
                 <div class="control-group">
@@ -231,6 +306,8 @@
                             <option value="1">L3-1</option>
                             <option value="2">L3-2</option>
                             <option value="3">L3-3</option>
+                            <option value="4">L3-4</option>
+                            <option value="5">L3-5</option>
                         </select>
                     </div>
                     <div class="dual-l3-preview" id="dualL3LeftPreview">
@@ -250,6 +327,8 @@
                             <option value="1">L3-1</option>
                             <option value="2" selected>L3-2</option>
                             <option value="3">L3-3</option>
+                            <option value="4">L3-4</option>
+                            <option value="5">L3-5</option>
                         </select>
                     </div>
                     <div class="dual-l3-preview" id="dualL3RightPreview">
@@ -285,7 +364,7 @@
                     <h3>Top Left Bug</h3>
                     <div class="form-row">
                         <label for="bugLeftText">Text:</label>
-                        <input type="text" id="bugLeftText" placeholder="e.g., LIVE or Channel Name">
+                        <input type="text" id="bugLeftText" value="LIVE" placeholder="e.g., LIVE or Channel Name">
                     </div>
                     <div class="form-row">
                         <label for="bugLeftBg">Background Color:</label>
@@ -301,7 +380,7 @@
                     <h3>Top Right Bug</h3>
                     <div class="form-row">
                         <label for="bugRightText">Text:</label>
-                        <input type="text" id="bugRightText" placeholder="e.g., Breaking News">
+                        <input type="text" id="bugRightText" value="PREVIOUSLY" placeholder="e.g., Breaking News">
                     </div>
                     <div class="form-row">
                         <label for="bugRightBg">Background Color:</label>
@@ -313,11 +392,58 @@
                     </div>
                 </div>
 
-                <div class="control-group">
-                    <h3>Both Bugs Control</h3>
+                <div class="control-group" style="border-top: 2px solid #2E7CFF; margin-top: 30px; padding-top: 20px;">
+                    <h3>Bottom Right Timer/Clock</h3>
+                    <p class="info-text">Display a live clock, countdown, or stopwatch in the bottom right corner. Perfect for timed events, live shows, or countdown to a specific time.</p>
+                    
+                    <div class="form-row">
+                        <label for="timerType">Timer Type:</label>
+                        <select id="timerType">
+                            <option value="none">None (Hidden)</option>
+                            <option value="clock" selected>Live Clock (HH:MM:SS)</option>
+                            <option value="countdownTo">Countdown to Time</option>
+                            <option value="stopwatch">Stopwatch (Count Up)</option>
+                            <option value="countdownFrom">Countdown from Duration</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-row">
+                        <label for="timerFormat">Display Format:</label>
+                        <select id="timerFormat">
+                            <option value="hm" selected>HH:MM (Hours, Minutes - Clock Only)</option>
+                            <option value="hms">HH:MM:SS (Hours, Minutes, Seconds)</option>
+                            <option value="ms">MM:SS (Minutes, Seconds)</option>
+                            <option value="hmsms">HH:MM:SS.000 (With Milliseconds)</option>
+                            <option value="msms">MM:SS.000 (Minutes, Seconds, Milliseconds)</option>
+                            <option value="sms">SS.000 (Seconds, Milliseconds only)</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-row" id="timerTargetTimeRow" style="display: none;">
+                        <label for="timerTargetTime">Target Time (HH:MM:SS):</label>
+                        <input type="time" id="timerTargetTime" step="1">
+                    </div>
+                    
+                    <div class="form-row" id="timerDurationRow" style="display: none;">
+                        <label for="timerDuration">Duration (minutes):</label>
+                        <input type="number" id="timerDuration" value="5" min="1" max="999">
+                    </div>
+                    
+                    <div class="form-row">
+                        <label for="timerLabel">Label (optional):</label>
+                        <input type="text" id="timerLabel" placeholder="e.g., TIME REMAINING, LIVE TIME">
+                    </div>
+                    
+                    <div class="form-row">
+                        <label for="timerBg">Background Color:</label>
+                        <input type="color" id="timerBg" value="#dc3545">
+                    </div>
+                    
                     <div class="button-group">
-                        <button class="btn-success" id="btnShowBothBugs">Show Both</button>
-                        <button class="btn-danger" id="btnHideBothBugs">Hide Both</button>
+                        <button class="btn-success" id="btnStartTimer">Start/Show Timer</button>
+                        <button class="btn-warning" id="btnPauseTimer">Pause</button>
+                        <button class="btn-secondary" id="btnResetTimer">Reset</button>
+                        <button class="btn-danger" id="btnHideTimer">Hide</button>
                     </div>
                 </div>
             </div>
@@ -328,7 +454,7 @@
                     <h3>Ticker Content</h3>
                     <div class="form-row">
                         <label for="tickerText">Ticker Items:</label>
-                        <textarea id="tickerText" placeholder="Enter ticker items separated by | (pipe character)&#10;Example: Breaking News | Weather Update | Sports Score"></textarea>
+                        <textarea id="tickerText" placeholder="Enter ticker items separated by | (pipe character)&#10;Example: Breaking News | Weather Update | Sports Score">Breaking News | Latest Updates | Live Coverage | More Information Coming Soon</textarea>
                     </div>
                     <p class="info-text">Separate multiple items with | (pipe character)</p>
                 </div>
@@ -353,11 +479,11 @@
                     </div>
                     <div class="form-row">
                         <label for="tickerBg">Background Color:</label>
-                        <input type="color" id="tickerBg" value="#000000">
+                        <input type="color" id="tickerBg" value="#dc3545">
                     </div>
                     <div class="form-row">
                         <label for="tickerBgOpacity">Background Opacity:</label>
-                        <input type="number" id="tickerBgOpacity" value="85" min="0" max="100" step="5">
+                        <input type="number" id="tickerBgOpacity" value="100" min="0" max="100" step="5">
                     </div>
                     <div class="form-row">
                         <label for="tickerColor">Text Color:</label>
@@ -449,6 +575,61 @@
 
             <!-- Styling Tab -->
             <div id="styling" class="tab-content">
+                <div class="control-group">
+                    <h3>🎨 Global Color Settings</h3>
+                    <p class="info-text">Batch change colors across ALL L3s, bugs, ticker, and timer at once.</p>
+                    <div class="form-row">
+                        <label for="globalPrimaryBg">Primary Box Background:</label>
+                        <input type="color" id="globalPrimaryBg" value="#ffffff">
+                    </div>
+                    <div class="form-row">
+                        <label for="globalPrimaryText">Primary Box Text:</label>
+                        <input type="color" id="globalPrimaryText" value="#000000">
+                    </div>
+                    <div class="form-row">
+                        <label for="globalSecondaryBg">Secondary Box/Bugs/Ticker Background:</label>
+                        <input type="color" id="globalSecondaryBg" value="#dc3545">
+                    </div>
+                    <div class="form-row">
+                        <label for="globalSecondaryText">Secondary Box/Bugs/Ticker Text:</label>
+                        <input type="color" id="globalSecondaryText" value="#ffffff">
+                    </div>
+                    <div class="button-group">
+                        <button class="btn-primary" id="btnApplyGlobalColors" style="font-size: 16px; padding: 12px 24px;">
+                            ✨ Apply to All Graphics
+                        </button>
+                    </div>
+                </div>
+
+                <div class="control-group">
+                    <h3>🖼️ Global Logo Settings</h3>
+                    <p class="info-text">Set a default logo that appears next to all L3s. You can override this per L3 slot if needed.</p>
+                    <div class="form-row">
+                        <label for="globalLogoUrl">Logo URL or Data:</label>
+                        <input type="text" id="globalLogoUrl" value="ravelogo.png" placeholder="https://example.com/logo.png or paste base64">
+                    </div>
+                    <div class="form-row">
+                        <label for="globalLogoFile">Or Upload Logo:</label>
+                        <input type="file" id="globalLogoFile" accept="image/*">
+                    </div>
+                    <div class="form-row">
+                        <label for="globalLogoSize">Logo Size (px):</label>
+                        <input type="number" id="globalLogoSize" value="120" min="50" max="300" step="10">
+                    </div>
+                    <div class="form-row">
+                        <label for="globalLogoEnabled">Enable Logo by Default:</label>
+                        <input type="checkbox" id="globalLogoEnabled" checked>
+                    </div>
+                    <div class="button-group">
+                        <button class="btn-primary" id="btnApplyGlobalLogo">
+                            ✅ Apply Logo to All L3s
+                        </button>
+                        <button class="btn-secondary" id="btnClearGlobalLogo">
+                            🗑️ Clear All Logos
+                        </button>
+                    </div>
+                </div>
+
                 <div class="control-group">
                     <h3>Font Selection</h3>
                     <div class="form-row">

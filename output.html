@@ -7,11 +7,11 @@
     <link rel="stylesheet" href="styles.css">
     <style id="custom-font-style"></style>
     <style>
-        /* Fallback inline styles to ensure page loads */
-        body {
+        /* Fallback inline styles - completely transparent for VMix */
+        html, body {
             margin: 0;
             padding: 0;
-            background: #f0f0f0;
+            background: transparent;
             font-family: Arial, sans-serif;
         }
         .status-indicator {
@@ -24,10 +24,13 @@
             align-items: center;
             justify-content: center;
             z-index: 9999;
+            opacity: 0;
+            pointer-events: none;
         }
         .status-content {
             text-align: center;
-            color: #333;
+            color: transparent;
+            opacity: 0;
         }
     </style>
     <script>
@@ -38,8 +41,12 @@
     </script>
 </head>
 <body class="output-page">
-    <div style="position: fixed; top: 20px; left: 20px; background: red; color: white; padding: 10px; z-index: 10000;">
+    <!-- Debug overlays - remove these for production use -->
+    <div id="debugIndicator" style="position: fixed; top: 20px; left: 20px; background: red; color: white; padding: 10px; z-index: 10000; display: none;">
         PAGE LOADED - If you see this, HTML is working
+    </div>
+    <div id="debugLog" style="position: fixed; top: 60px; left: 20px; background: rgba(0,0,0,0.8); color: lime; padding: 10px; z-index: 10000; font-family: monospace; font-size: 12px; max-width: 400px; max-height: 300px; overflow-y: auto; display: none;">
+        Waiting for messages...
     </div>
     <!-- Status Indicator (hidden when graphics are shown) -->
     <div id="statusIndicator" class="status-indicator">
@@ -55,24 +62,45 @@
 
     <!-- Single Lower Third Component -->
     <div id="lowerThird" class="lower-third">
-        <div id="l3Primary" class="l3-box l3-primary"></div>
-        <div id="l3Secondary" class="l3-box l3-secondary"></div>
+        <div id="l3LogoContainer" class="l3-logo-container">
+            <img id="l3Logo" class="l3-logo" alt="Logo" />
+        </div>
+        <div class="l3-content-wrapper">
+            <div id="l3Primary" class="l3-box l3-primary"></div>
+            <div id="l3Secondary" class="l3-box l3-secondary"></div>
+        </div>
     </div>
 
     <!-- Dual Lower Thirds -->
     <div id="lowerThirdLeft" class="lower-third lower-third-dual lower-third-left">
-        <div id="l3LeftPrimary" class="l3-box l3-primary"></div>
-        <div id="l3LeftSecondary" class="l3-box l3-secondary"></div>
+        <div id="l3LogoLeftContainer" class="l3-logo-container logo-left">
+            <img id="l3LogoLeft" class="l3-logo" alt="Logo" />
+        </div>
+        <div class="l3-content-wrapper">
+            <div id="l3LeftPrimary" class="l3-box l3-primary"></div>
+            <div id="l3LeftSecondary" class="l3-box l3-secondary"></div>
+        </div>
     </div>
     
     <div id="lowerThirdRight" class="lower-third lower-third-dual lower-third-right">
-        <div id="l3RightPrimary" class="l3-box l3-primary"></div>
-        <div id="l3RightSecondary" class="l3-box l3-secondary"></div>
+        <div class="l3-content-wrapper">
+            <div id="l3RightPrimary" class="l3-box l3-primary"></div>
+            <div id="l3RightSecondary" class="l3-box l3-secondary"></div>
+        </div>
+        <div id="l3LogoRightContainer" class="l3-logo-container logo-right">
+            <img id="l3LogoRight" class="l3-logo" alt="Logo" />
+        </div>
     </div>
 
     <!-- Corner Bugs -->
     <div id="bugTopLeft" class="bug bug-top-left"></div>
     <div id="bugTopRight" class="bug bug-top-right"></div>
+    
+    <!-- Timer/Clock (Bottom Right) -->
+    <div id="timerBottomRight" class="timer-bug">
+        <div id="timerLabel" class="timer-label"></div>
+        <div id="timerDisplay" class="timer-display">00:00:00</div>
+    </div>
 
     <!-- Ticker Component -->
     <div id="ticker" class="ticker-container">
