@@ -1,0 +1,350 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>VMix Graphics Control Panel</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body class="control-page">
+    <div class="control-container">
+        <!-- Header -->
+        <div class="header">
+            <h1>VMix HTML5 Graphics Control Panel</h1>
+        </div>
+
+        <!-- Preview Window -->
+        <div class="preview-section">
+            <div class="preview-label pvw">PREVIEW</div>
+            <div class="preview-frame">
+                <iframe id="previewFrame" src="output.html"></iframe>
+            </div>
+        </div>
+
+        <!-- Transmit Window -->
+        <div class="preview-section">
+            <div class="preview-label tx">TRANSMIT (Use this URL in VMix)</div>
+            <div class="preview-frame">
+                <iframe id="transmitFrame" src="output.html"></iframe>
+            </div>
+        </div>
+
+        <!-- Control Panels -->
+        <div class="controls-section">
+            <!-- Tabs -->
+            <div class="control-tabs">
+                <button class="tab-button active" data-tab="lower-third">Lower Third</button>
+                <button class="tab-button" data-tab="ticker">Ticker</button>
+                <button class="tab-button" data-tab="data-sources">Data Sources</button>
+                <button class="tab-button" data-tab="styling">Styling</button>
+                <button class="tab-button" data-tab="output">Output</button>
+            </div>
+
+            <!-- Lower Third Tab -->
+            <div id="lower-third" class="tab-content active">
+                <div class="control-group">
+                    <h3>Lower Third Content</h3>
+                    <div class="form-row">
+                        <label for="l3Primary">Primary Text:</label>
+                        <input type="text" id="l3Primary" placeholder="e.g., Rich McDonald" value="">
+                    </div>
+                    <div class="form-row">
+                        <label for="l3Secondary">Secondary Text:</label>
+                        <input type="text" id="l3Secondary" placeholder="e.g., Trade Live With IG" value="">
+                    </div>
+                    <div class="form-row">
+                        <label for="l3ShowPrimary">Show Primary Box:</label>
+                        <input type="checkbox" id="l3ShowPrimary" checked>
+                    </div>
+                    <div class="form-row">
+                        <label for="l3ShowSecondary">Show Secondary Box:</label>
+                        <input type="checkbox" id="l3ShowSecondary" checked>
+                    </div>
+                </div>
+
+                <div class="control-group">
+                    <h3>Position & Appearance</h3>
+                    <div class="form-row">
+                        <label for="l3X">X Position (px):</label>
+                        <input type="number" id="l3X" value="80" min="0" max="1920">
+                    </div>
+                    <div class="form-row">
+                        <label for="l3Y">Y Position (px):</label>
+                        <input type="number" id="l3Y" value="850" min="0" max="1080">
+                    </div>
+                    <div class="form-row">
+                        <label for="l3FontSize1">Primary Font Size (px):</label>
+                        <input type="number" id="l3FontSize1" value="42" min="10" max="120">
+                    </div>
+                    <div class="form-row">
+                        <label for="l3FontSize2">Secondary Font Size (px):</label>
+                        <input type="number" id="l3FontSize2" value="36" min="10" max="120">
+                    </div>
+                    <div class="form-row">
+                        <label for="l3BorderRadius">Border Radius (px):</label>
+                        <input type="number" id="l3BorderRadius" value="25" min="0" max="100">
+                    </div>
+                    <div class="form-row">
+                        <label for="l3BoxSpacing">Box Spacing (px):</label>
+                        <input type="number" id="l3BoxSpacing" value="10" min="0" max="50">
+                    </div>
+                </div>
+
+                <div class="control-group">
+                    <h3>Colors</h3>
+                    <div class="form-row">
+                        <label for="l3PrimaryBg">Primary Background:</label>
+                        <input type="color" id="l3PrimaryBg" value="#ffffff">
+                    </div>
+                    <div class="form-row">
+                        <label for="l3PrimaryColor">Primary Text Color:</label>
+                        <input type="color" id="l3PrimaryColor" value="#000000">
+                    </div>
+                    <div class="form-row">
+                        <label for="l3SecondaryBg">Secondary Background:</label>
+                        <input type="color" id="l3SecondaryBg" value="#dc3545">
+                    </div>
+                    <div class="form-row">
+                        <label for="l3SecondaryColor">Secondary Text Color:</label>
+                        <input type="color" id="l3SecondaryColor" value="#ffffff">
+                    </div>
+                </div>
+
+                <div class="control-group">
+                    <h3>Animation Controls</h3>
+                    <div class="button-group">
+                        <button class="btn-success" id="btnShowL3Preview">Show on Preview</button>
+                        <button class="btn-success" id="btnShowL3Transmit">Show on Transmit</button>
+                        <button class="btn-success" id="btnShowL3Both">Show on Both</button>
+                    </div>
+                    <div class="button-group">
+                        <button class="btn-danger" id="btnHideL3Preview">Hide Preview</button>
+                        <button class="btn-danger" id="btnHideL3Transmit">Hide Transmit</button>
+                        <button class="btn-danger" id="btnHideL3Both">Hide Both</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Ticker Tab -->
+            <div id="ticker" class="tab-content">
+                <div class="control-group">
+                    <h3>Ticker Content</h3>
+                    <div class="form-row">
+                        <label for="tickerText">Ticker Items:</label>
+                        <textarea id="tickerText" placeholder="Enter ticker items separated by | (pipe character)&#10;Example: Breaking News | Weather Update | Sports Score"></textarea>
+                    </div>
+                    <p class="info-text">Separate multiple items with | (pipe character)</p>
+                </div>
+
+                <div class="control-group">
+                    <h3>Ticker Settings</h3>
+                    <div class="form-row">
+                        <label for="tickerSpeed">Speed (seconds):</label>
+                        <input type="number" id="tickerSpeed" value="20" min="5" max="60">
+                    </div>
+                    <div class="form-row">
+                        <label for="tickerPosition">Position:</label>
+                        <select id="tickerPosition">
+                            <option value="bottom">Bottom</option>
+                            <option value="top">Top</option>
+                            <option value="custom">Custom Y Position</option>
+                        </select>
+                    </div>
+                    <div class="form-row" id="tickerCustomPosRow" style="display: none;">
+                        <label for="tickerCustomPos">Custom Y (px):</label>
+                        <input type="number" id="tickerCustomPos" value="0" min="0" max="1080">
+                    </div>
+                    <div class="form-row">
+                        <label for="tickerBg">Background Color:</label>
+                        <input type="color" id="tickerBg" value="#000000">
+                    </div>
+                    <div class="form-row">
+                        <label for="tickerBgOpacity">Background Opacity:</label>
+                        <input type="number" id="tickerBgOpacity" value="85" min="0" max="100" step="5">
+                    </div>
+                    <div class="form-row">
+                        <label for="tickerColor">Text Color:</label>
+                        <input type="color" id="tickerColor" value="#ffffff">
+                    </div>
+                    <div class="form-row">
+                        <label for="tickerFontSize">Font Size (px):</label>
+                        <input type="number" id="tickerFontSize" value="28" min="12" max="60">
+                    </div>
+                </div>
+
+                <div class="control-group">
+                    <h3>Ticker Controls</h3>
+                    <div class="button-group">
+                        <button class="btn-success" id="btnShowTickerPreview">Show on Preview</button>
+                        <button class="btn-success" id="btnShowTickerTransmit">Show on Transmit</button>
+                        <button class="btn-success" id="btnShowTickerBoth">Show on Both</button>
+                    </div>
+                    <div class="button-group">
+                        <button class="btn-danger" id="btnHideTickerPreview">Hide Preview</button>
+                        <button class="btn-danger" id="btnHideTickerTransmit">Hide Transmit</button>
+                        <button class="btn-danger" id="btnHideTickerBoth">Hide Both</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Data Sources Tab -->
+            <div id="data-sources" class="tab-content">
+                <div class="control-group">
+                    <h3>Google Sheets Integration</h3>
+                    <div class="form-row">
+                        <label for="gsheetUrl">Google Sheet URL:</label>
+                        <input type="url" id="gsheetUrl" placeholder="https://docs.google.com/spreadsheets/d/...">
+                    </div>
+                    <p class="info-text">
+                        To use Google Sheets: 
+                        <br>1. Make your sheet public (Share → Anyone with the link can view)
+                        <br>2. Paste the full URL above
+                        <br>3. Your sheet should have columns: Name, Title (for lower thirds)
+                    </p>
+                    <div class="button-group">
+                        <button class="btn-primary" id="btnLoadGsheet">Load from Google Sheets</button>
+                        <button class="btn-secondary" id="btnTestGsheet">Test Connection</button>
+                    </div>
+                    <div id="gsheetStatus" style="margin-top: 10px;"></div>
+                </div>
+
+                <div class="control-group">
+                    <h3>Rundown Creator API</h3>
+                    <div class="form-row">
+                        <label for="rcChannel">Channel Name:</label>
+                        <input type="text" id="rcChannel" placeholder="e.g., channel4news">
+                    </div>
+                    <div class="form-row">
+                        <label for="rcApiKey">API Key:</label>
+                        <input type="text" id="rcApiKey" placeholder="Your API Key">
+                    </div>
+                    <div class="form-row">
+                        <label for="rcApiToken">API Token:</label>
+                        <input type="text" id="rcApiToken" placeholder="Your API Token">
+                    </div>
+                    <div class="form-row">
+                        <label for="rcRundownId">Rundown ID:</label>
+                        <input type="number" id="rcRundownId" placeholder="Leave empty to list all">
+                    </div>
+                    <p class="info-text">
+                        Get your API credentials from Rundown Creator settings.
+                        <br>Leave Rundown ID empty to see a list of available rundowns.
+                    </p>
+                    <div class="button-group">
+                        <button class="btn-primary" id="btnLoadRundown">Load Rundown</button>
+                        <button class="btn-secondary" id="btnListRundowns">List Rundowns</button>
+                    </div>
+                    <div id="rcStatus" style="margin-top: 10px;"></div>
+                </div>
+
+                <div class="control-group">
+                    <h3>JSON Config File</h3>
+                    <div class="form-row">
+                        <label for="jsonFile">Upload Config:</label>
+                        <input type="file" id="jsonFile" accept=".json">
+                    </div>
+                    <div class="button-group">
+                        <button class="btn-primary" id="btnLoadJson">Load JSON Config</button>
+                        <button class="btn-info" id="btnExportJson">Export Current Config</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Styling Tab -->
+            <div id="styling" class="tab-content">
+                <div class="control-group">
+                    <h3>Font Selection</h3>
+                    <div class="form-row">
+                        <label for="fontFamily">Font Family:</label>
+                        <select id="fontFamily">
+                            <option value="Arial, Helvetica, sans-serif">Arial / Helvetica</option>
+                            <option value="'Times New Roman', Times, serif">Times New Roman</option>
+                            <option value="'Courier New', Courier, monospace">Courier New</option>
+                            <option value="Georgia, serif">Georgia</option>
+                            <option value="Verdana, sans-serif">Verdana</option>
+                            <option value="'Trebuchet MS', sans-serif">Trebuchet MS</option>
+                            <option value="'Arial Black', sans-serif">Arial Black</option>
+                            <option value="Impact, sans-serif">Impact</option>
+                            <option value="'Comic Sans MS', cursive">Comic Sans MS</option>
+                            <option value="custom">Custom Font (Upload)</option>
+                        </select>
+                    </div>
+                    <div class="form-row" id="customFontRow" style="display: none;">
+                        <label for="customFont">Upload Font:</label>
+                        <input type="file" id="customFont" accept=".ttf,.otf,.woff,.woff2">
+                    </div>
+                    <div class="form-row" id="customFontNameRow" style="display: none;">
+                        <label for="customFontName">Font Name:</label>
+                        <input type="text" id="customFontName" placeholder="e.g., MyCustomFont">
+                    </div>
+                    <div class="button-group">
+                        <button class="btn-primary" id="btnApplyFont">Apply Font</button>
+                    </div>
+                </div>
+
+                <div class="control-group">
+                    <h3>Quick Presets</h3>
+                    <div class="button-group">
+                        <button class="btn-secondary" id="btnPresetDefault">Default Style</button>
+                        <button class="btn-secondary" id="btnPresetNews">News Style</button>
+                        <button class="btn-secondary" id="btnPresetSports">Sports Style</button>
+                        <button class="btn-secondary" id="btnPresetCorporate">Corporate Style</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Output Tab -->
+            <div id="output" class="tab-content">
+                <div class="control-group">
+                    <h3>Output URL for VMix</h3>
+                    <div class="form-row">
+                        <label>Full URL:</label>
+                        <input type="text" id="outputUrl" readonly>
+                    </div>
+                    <div class="button-group">
+                        <button class="btn-info" id="btnCopyUrl">Copy URL</button>
+                        <button class="btn-secondary" id="btnOpenOutput">Open in New Tab</button>
+                    </div>
+                    <p class="info-text">
+                        Use this URL in VMix as an HTML input for transparent graphics overlay.
+                        <br>In VMix: Add Input → More → Web Browser → paste this URL
+                    </p>
+                </div>
+
+                <div class="control-group">
+                    <h3>URL with Parameters (Static Setup)</h3>
+                    <div class="button-group">
+                        <button class="btn-primary" id="btnGenerateUrl">Generate URL with Current Settings</button>
+                    </div>
+                    <div class="form-row">
+                        <label>Generated URL:</label>
+                        <textarea id="generatedUrl" readonly rows="4"></textarea>
+                    </div>
+                    <div class="button-group">
+                        <button class="btn-info" id="btnCopyGeneratedUrl">Copy Generated URL</button>
+                    </div>
+                    <p class="info-text">
+                        This URL includes all current settings as parameters. 
+                        <br>Graphics will appear automatically when loaded in VMix.
+                    </p>
+                </div>
+
+                <div class="control-group">
+                    <h3>State Management</h3>
+                    <div class="button-group">
+                        <button class="btn-success" id="btnSaveState">Save Current State</button>
+                        <button class="btn-secondary" id="btnLoadState">Load Saved State</button>
+                        <button class="btn-danger" id="btnClearState">Clear Saved State</button>
+                    </div>
+                    <p class="info-text">
+                        Save your current settings to browser localStorage for quick recall.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="control.js"></script>
+</body>
+</html>
+

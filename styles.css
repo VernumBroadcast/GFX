@@ -1,0 +1,462 @@
+/* VMix HTML5 Graphics System - Styles */
+/* Optimized for 1920x1080 transparent output */
+
+:root {
+    --l3-primary-bg: #ffffff;
+    --l3-primary-text: #000000;
+    --l3-secondary-bg: #dc3545;
+    --l3-secondary-text: #ffffff;
+    --l3-border-radius: 25px;
+    --l3-padding: 20px 40px;
+    --l3-font-size-primary: 42px;
+    --l3-font-size-secondary: 36px;
+    --l3-box-spacing: 10px;
+    --ticker-bg: rgba(0, 0, 0, 0.85);
+    --ticker-text: #ffffff;
+    --ticker-height: 50px;
+    --ticker-font-size: 28px;
+    --animation-duration: 0.5s;
+    --animation-easing: cubic-bezier(0.4, 0.0, 0.2, 1);
+}
+
+/* Base styles for output page */
+body {
+    margin: 0;
+    padding: 0;
+    overflow: hidden;
+    font-family: 'Arial', 'Helvetica', sans-serif;
+}
+
+body.output-page {
+    width: 1920px;
+    height: 1080px;
+    background: transparent;
+}
+
+/* Lower Third Container */
+.lower-third {
+    position: fixed;
+    display: none;
+    flex-direction: column;
+    gap: var(--l3-box-spacing);
+    z-index: 100;
+    animation: slideIn var(--animation-duration) var(--animation-easing);
+}
+
+.lower-third.visible {
+    display: flex;
+}
+
+.lower-third.animating-out {
+    animation: slideOut var(--animation-duration) var(--animation-easing) forwards;
+}
+
+/* Lower Third Boxes */
+.l3-box {
+    padding: var(--l3-padding);
+    border-radius: var(--l3-border-radius);
+    font-weight: 600;
+    white-space: nowrap;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+}
+
+.l3-primary {
+    background-color: var(--l3-primary-bg);
+    color: var(--l3-primary-text);
+    font-size: var(--l3-font-size-primary);
+}
+
+.l3-secondary {
+    background-color: var(--l3-secondary-bg);
+    color: var(--l3-secondary-text);
+    font-size: var(--l3-font-size-secondary);
+}
+
+.l3-box.hidden {
+    display: none;
+}
+
+/* Ticker */
+.ticker-container {
+    position: fixed;
+    width: 100%;
+    height: var(--ticker-height);
+    background-color: var(--ticker-bg);
+    overflow: hidden;
+    display: none;
+    z-index: 90;
+}
+
+.ticker-container.visible {
+    display: block;
+}
+
+.ticker-content {
+    display: inline-block;
+    white-space: nowrap;
+    padding-left: 100%;
+    animation: tickerScroll linear infinite;
+    color: var(--ticker-text);
+    font-size: var(--ticker-font-size);
+    line-height: var(--ticker-height);
+    font-weight: 500;
+}
+
+.ticker-item {
+    display: inline-block;
+    padding: 0 50px;
+}
+
+.ticker-item:not(:last-child)::after {
+    content: "•";
+    margin-left: 50px;
+    opacity: 0.5;
+}
+
+/* Custom Graphics */
+.custom-graphic {
+    position: fixed;
+    z-index: 80;
+    display: none;
+}
+
+.custom-graphic.visible {
+    display: block;
+}
+
+/* Animations */
+@keyframes slideIn {
+    from {
+        transform: translateX(-100%);
+        opacity: 0;
+    }
+    to {
+        transform: translateX(0);
+        opacity: 1;
+    }
+}
+
+@keyframes slideOut {
+    from {
+        transform: translateX(0);
+        opacity: 1;
+    }
+    to {
+        transform: translateX(-100%);
+        opacity: 0;
+    }
+}
+
+@keyframes tickerScroll {
+    0% {
+        transform: translateX(0);
+    }
+    100% {
+        transform: translateX(-50%);
+    }
+}
+
+/* Fade animations for alternative transitions */
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+    }
+    to {
+        opacity: 1;
+    }
+}
+
+@keyframes fadeOut {
+    from {
+        opacity: 1;
+    }
+    to {
+        opacity: 0;
+    }
+}
+
+/* =========================== */
+/* CONTROL PANEL STYLES */
+/* =========================== */
+
+body.control-page {
+    background: #1a1a1a;
+    color: #ffffff;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
+    padding: 20px;
+}
+
+.control-container {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    grid-template-rows: auto auto 1fr;
+    gap: 20px;
+    min-height: calc(100vh - 40px);
+}
+
+.header {
+    grid-column: 1 / -1;
+    text-align: center;
+    padding: 20px;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    border-radius: 10px;
+}
+
+.header h1 {
+    margin: 0;
+    font-size: 32px;
+    font-weight: 700;
+}
+
+.preview-section {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.preview-label {
+    font-size: 18px;
+    font-weight: 600;
+    padding: 10px;
+    background: #2a2a2a;
+    border-radius: 5px;
+    text-align: center;
+}
+
+.preview-label.pvw {
+    background: #2d5016;
+}
+
+.preview-label.tx {
+    background: #7a1a1a;
+}
+
+.preview-frame {
+    width: 100%;
+    aspect-ratio: 16 / 9;
+    background: #000;
+    border: 3px solid #333;
+    border-radius: 5px;
+    overflow: hidden;
+    position: relative;
+}
+
+.preview-frame iframe {
+    width: 1920px;
+    height: 1080px;
+    border: none;
+    transform-origin: top left;
+    position: absolute;
+    top: 0;
+    left: 0;
+}
+
+.controls-section {
+    grid-column: 1 / -1;
+    background: #2a2a2a;
+    border-radius: 10px;
+    padding: 20px;
+    overflow-y: auto;
+    max-height: 600px;
+}
+
+.control-tabs {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 20px;
+    border-bottom: 2px solid #444;
+}
+
+.tab-button {
+    padding: 12px 24px;
+    background: transparent;
+    color: #aaa;
+    border: none;
+    border-bottom: 3px solid transparent;
+    cursor: pointer;
+    font-size: 16px;
+    font-weight: 600;
+    transition: all 0.3s;
+}
+
+.tab-button:hover {
+    color: #fff;
+}
+
+.tab-button.active {
+    color: #667eea;
+    border-bottom-color: #667eea;
+}
+
+.tab-content {
+    display: none;
+}
+
+.tab-content.active {
+    display: block;
+}
+
+.control-group {
+    margin-bottom: 25px;
+    padding: 20px;
+    background: #1a1a1a;
+    border-radius: 8px;
+    border-left: 4px solid #667eea;
+}
+
+.control-group h3 {
+    margin-top: 0;
+    margin-bottom: 15px;
+    font-size: 18px;
+    color: #667eea;
+}
+
+.form-row {
+    display: grid;
+    grid-template-columns: 150px 1fr;
+    gap: 15px;
+    align-items: center;
+    margin-bottom: 15px;
+}
+
+.form-row label {
+    font-weight: 500;
+    color: #ccc;
+}
+
+.form-row input[type="text"],
+.form-row input[type="number"],
+.form-row input[type="url"],
+.form-row select,
+.form-row textarea {
+    padding: 10px;
+    background: #333;
+    border: 1px solid #555;
+    border-radius: 5px;
+    color: #fff;
+    font-size: 14px;
+    font-family: inherit;
+}
+
+.form-row textarea {
+    min-height: 80px;
+    resize: vertical;
+}
+
+.form-row input[type="color"] {
+    height: 40px;
+    border: 1px solid #555;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+.form-row input[type="checkbox"] {
+    width: 20px;
+    height: 20px;
+    cursor: pointer;
+}
+
+.form-row input[type="file"] {
+    color: #ccc;
+}
+
+.button-group {
+    display: flex;
+    gap: 10px;
+    margin-top: 15px;
+}
+
+button {
+    padding: 12px 24px;
+    border: none;
+    border-radius: 5px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s;
+}
+
+.btn-primary {
+    background: #667eea;
+    color: white;
+}
+
+.btn-primary:hover {
+    background: #5568d3;
+}
+
+.btn-success {
+    background: #28a745;
+    color: white;
+}
+
+.btn-success:hover {
+    background: #218838;
+}
+
+.btn-danger {
+    background: #dc3545;
+    color: white;
+}
+
+.btn-danger:hover {
+    background: #c82333;
+}
+
+.btn-secondary {
+    background: #6c757d;
+    color: white;
+}
+
+.btn-secondary:hover {
+    background: #5a6268;
+}
+
+.btn-info {
+    background: #17a2b8;
+    color: white;
+}
+
+.btn-info:hover {
+    background: #138496;
+}
+
+.info-text {
+    font-size: 12px;
+    color: #888;
+    margin-top: 5px;
+    font-style: italic;
+}
+
+.data-source-section {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 15px;
+}
+
+.data-source-section button {
+    flex: 1;
+}
+
+/* Responsive adjustments */
+@media (max-width: 1400px) {
+    .control-container {
+        grid-template-columns: 1fr;
+        grid-template-rows: auto auto auto 1fr;
+    }
+}
+
+@media (max-width: 768px) {
+    body.control-page {
+        padding: 10px;
+    }
+    
+    .control-container {
+        gap: 10px;
+    }
+    
+    .form-row {
+        grid-template-columns: 1fr;
+    }
+}
+

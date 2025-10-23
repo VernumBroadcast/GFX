@@ -1,0 +1,42 @@
+{
+  "lowerThird": {
+    "show": false,
+    "primaryText": "Rich McDonald",
+    "secondaryText": "Trade Live With IG",
+    "primaryBg": "#ffffff",
+    "primaryColor": "#000000",
+    "secondaryBg": "#dc3545",
+    "secondaryColor": "#ffffff",
+    "x": 80,
+    "y": 850,
+    "fontSize1": 42,
+    "fontSize2": 36,
+    "borderRadius": 25,
+    "boxSpacing": 10,
+    "showPrimary": true,
+    "showSecondary": true,
+    "fontFamily": "Arial, Helvetica, sans-serif"
+  },
+  "ticker": {
+    "show": false,
+    "items": [
+      "Breaking News",
+      "Weather Update: Sunny 75°F",
+      "Sports: Team A defeats Team B 3-2",
+      "Market Update: Stocks rise 2%"
+    ],
+    "speed": 20,
+    "position": "bottom",
+    "bg": "rgba(0, 0, 0, 0.85)",
+    "color": "#ffffff",
+    "fontSize": 28,
+    "height": 50
+  },
+  "customFont": null,
+  "metadata": {
+    "version": "1.0",
+    "description": "VMix HTML5 Graphics System Configuration",
+    "lastModified": "2025-10-23"
+  }
+}
+
