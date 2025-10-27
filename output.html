@@ -51,18 +51,6 @@
     </script>
 </head>
 <body class="output-page">
-    <!-- Firebase Status Indicator (shows Firebase connection status) -->
-    <div id="firebaseStatus" style="position: fixed; top: 10px; left: 10px; background: rgba(255,165,0,0.8); color: white; padding: 8px 12px; z-index: 99999; font-family: monospace; font-size: 12px; font-weight: bold; border-radius: 5px; border: 2px solid orange;">
-        🔄 Loading...
-    </div>
-    
-    <!-- Debug overlays - remove these for production use -->
-    <div id="debugIndicator" style="position: fixed; top: 20px; left: 20px; background: red; color: white; padding: 10px; z-index: 10000; display: none;">
-        PAGE LOADED - If you see this, HTML is working
-    </div>
-    <div id="debugLog" style="position: fixed; top: 60px; left: 20px; background: rgba(0,0,0,0.8); color: lime; padding: 10px; z-index: 10000; font-family: monospace; font-size: 12px; max-width: 400px; max-height: 300px; overflow-y: auto; display: none;">
-        Waiting for messages...
-    </div>
     <!-- Status Indicator (hidden when graphics are shown) -->
     <div id="statusIndicator" class="status-indicator">
         <div class="status-content">
@@ -107,12 +95,11 @@
         </div>
     </div>
 
-    <!-- Corner Bugs -->
+    <!-- Corner Bugs (All three can display text OR timer) -->
     <div id="bugTopLeft" class="bug bug-top-left"></div>
     <div id="bugTopRight" class="bug bug-top-right"></div>
-    
-    <!-- Timer/Clock (Bottom Right) -->
     <div id="timerBottomRight" class="timer-bug">
+        <!-- Timer/Clock elements dynamically added when in timer mode -->
         <div id="timerLabel" class="timer-label"></div>
         <div id="timerDisplay" class="timer-display">00:00:00</div>
     </div>

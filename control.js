@@ -11,6 +11,7 @@ class ControlPanel {
         this.globalLogo = {
             url: 'ravelogo.png',
             size: 120,
+            bg: '#ffffff',
             enabled: true
         };
         
@@ -221,8 +222,9 @@ class ControlPanel {
             this.sendToFrame('both', 'hideL3');
             this.sendToFrame('both', 'hideL3Dual');
             this.sendToFrame('both', 'hideTicker');
-            this.sendToFrame('both', 'hideBugLeft');
-            this.sendToFrame('both', 'hideBugRight');
+            this.sendToFrame('both', 'hideBug', { position: 'top-left' });
+            this.sendToFrame('both', 'hideBug', { position: 'top-right' });
+            this.sendToFrame('both', 'hideBug', { position: 'bottom-right' });
             this.sendToFrame('both', 'hideTimer');
             this.previewState.l3 = null;
             this.previewState.ticker = false;
@@ -274,7 +276,7 @@ class ControlPanel {
         if (quickShowBugLeft) {
             quickShowBugLeft.addEventListener('click', () => {
                 const leftConfig = this.getBugConfig('left');
-                this.sendToFrame('transmit', 'showBugLeft', { config: leftConfig });
+                this.sendToFrame('transmit', 'showBug', { position: 'top-left', config: leftConfig });
             });
         }
         
@@ -282,21 +284,21 @@ class ControlPanel {
         if (quickShowBugRight) {
             quickShowBugRight.addEventListener('click', () => {
                 const rightConfig = this.getBugConfig('right');
-                this.sendToFrame('transmit', 'showBugRight', { config: rightConfig });
+                this.sendToFrame('transmit', 'showBug', { position: 'top-right', config: rightConfig });
             });
         }
         
         const quickHideBugLeft = document.getElementById('quickHideBugLeft');
         if (quickHideBugLeft) {
             quickHideBugLeft.addEventListener('click', () => {
-                this.sendToFrame('both', 'hideBugLeft', {});
+                this.sendToFrame('both', 'hideBug', { position: 'top-left' });
             });
         }
         
         const quickHideBugRight = document.getElementById('quickHideBugRight');
         if (quickHideBugRight) {
             quickHideBugRight.addEventListener('click', () => {
-                this.sendToFrame('both', 'hideBugRight', {});
+                this.sendToFrame('both', 'hideBug', { position: 'top-right' });
             });
         }
         
@@ -326,16 +328,16 @@ class ControlPanel {
             quickShowBugs.addEventListener('click', () => {
                 const leftConfig = this.getBugConfig('left');
                 const rightConfig = this.getBugConfig('right');
-                this.sendToFrame('transmit', 'showBugLeft', { config: leftConfig });
-                this.sendToFrame('transmit', 'showBugRight', { config: rightConfig });
+                this.sendToFrame('transmit', 'showBug', { position: 'top-left', config: leftConfig });
+                this.sendToFrame('transmit', 'showBug', { position: 'top-right', config: rightConfig });
             });
         }
         
         const quickHideBugs = document.getElementById('quickHideBugs');
         if (quickHideBugs) {
             quickHideBugs.addEventListener('click', () => {
-                this.sendToFrame('both', 'hideBugLeft', {});
-                this.sendToFrame('both', 'hideBugRight', {});
+                this.sendToFrame('both', 'hideBug', { position: 'top-left' });
+                this.sendToFrame('both', 'hideBug', { position: 'top-right' });
             });
         }
     }
@@ -738,27 +740,35 @@ class ControlPanel {
     // Bug Controls
     setupBugControls() {
         document.getElementById('btnShowBugLeft')?.addEventListener('click', () => {
-            this.sendToFrame('both', 'showBugLeft', { config: this.getBugConfig('left') });
+            this.sendToFrame('both', 'showBug', { position: 'top-left', config: this.getBugConfig('left') });
         });
         
         document.getElementById('btnShowBugRight')?.addEventListener('click', () => {
-            this.sendToFrame('both', 'showBugRight', { config: this.getBugConfig('right') });
+            this.sendToFrame('both', 'showBug', { position: 'top-right', config: this.getBugConfig('right') });
+        });
+        
+        document.getElementById('btnShowBugBottom')?.addEventListener('click', () => {
+            this.sendToFrame('both', 'showBug', { position: 'bottom-right', config: this.getBugConfig('bottom') });
         });
         
         document.getElementById('btnHideBugLeft')?.addEventListener('click', () => {
-            this.sendToFrame('both', 'hideBugLeft', {});
+            this.sendToFrame('both', 'hideBug', { position: 'top-left' });
         });
         
         document.getElementById('btnHideBugRight')?.addEventListener('click', () => {
-            this.sendToFrame('both', 'hideBugRight', {});
+            this.sendToFrame('both', 'hideBug', { position: 'top-right' });
+        });
+        
+        document.getElementById('btnHideBugBottom')?.addEventListener('click', () => {
+            this.sendToFrame('both', 'hideBug', { position: 'bottom-right' });
         });
     }
     
     getBugConfig(position) {
-        const prefix = position === 'left' ? 'bugLeft' : 'bugRight';
+        const prefix = position === 'left' ? 'bugLeft' : position === 'right' ? 'bugRight' : 'bugBottom';
         return {
             text: document.getElementById(`${prefix}Text`)?.value || '',
-            bg: document.getElementById(`${prefix}Bg`)?.value || '#dc3545',  // Red color to match L3s
+            bg: document.getElementById(`${prefix}Bg`)?.value || '#dc3545',
             color: '#ffffff'
         };
     }
@@ -801,8 +811,11 @@ class ControlPanel {
     
     getTimerConfig() {
         const timerType = document.getElementById('timerType').value;
+        const position = document.getElementById('timerPosition').value || 'bottom-right';
+        
         const config = {
             type: timerType,
+            position: position,
             format: document.getElementById('timerFormat').value || 'hms',
             label: document.getElementById('timerLabel').value || '',
             bg: document.getElementById('timerBg').value || '#dc3545',
@@ -828,12 +841,7 @@ class ControlPanel {
     
     // Global Color Controls
     setupGlobalColorControls() {
-        document.getElementById('btnApplyGlobalColors')?.addEventListener('click', () => {
-            const primaryBg = document.getElementById('globalPrimaryBg').value;
-            const primaryText = document.getElementById('globalPrimaryText').value;
-            const secondaryBg = document.getElementById('globalSecondaryBg').value;
-            const secondaryText = document.getElementById('globalSecondaryText').value;
-            
+        const applyColors = (primaryBg, primaryText, secondaryBg, secondaryText) => {
             // Update all 5 L3 slots
             for (let i = 1; i <= 5; i++) {
                 this.l3Slots[i].primaryBg = primaryBg;
@@ -859,10 +867,51 @@ class ControlPanel {
             // Update timer
             document.getElementById('timerBg').value = secondaryBg;
             
+            // Update color picker inputs to reflect preset
+            document.getElementById('globalPrimaryBg').value = primaryBg;
+            document.getElementById('globalPrimaryText').value = primaryText;
+            document.getElementById('globalSecondaryBg').value = secondaryBg;
+            document.getElementById('globalSecondaryText').value = secondaryText;
+            
             // Save state
             this.saveState();
+        };
+        
+        // Color preset buttons
+        document.getElementById('btnPresetRed')?.addEventListener('click', () => {
+            applyColors('#ffffff', '#000000', '#dc3545', '#ffffff');
+            alert('🔴 RED preset applied to all graphics!');
+        });
+        
+        document.getElementById('btnPresetGreen')?.addEventListener('click', () => {
+            applyColors('#ffffff', '#000000', '#28a745', '#ffffff');
+            alert('🟢 GREEN preset applied to all graphics!');
+        });
+        
+        document.getElementById('btnPresetBlue')?.addEventListener('click', () => {
+            applyColors('#ffffff', '#000000', '#0056b3', '#ffffff');
+            alert('🔵 ROYAL BLUE preset applied to all graphics!');
+        });
+        
+        document.getElementById('btnPresetOrange')?.addEventListener('click', () => {
+            applyColors('#ffffff', '#000000', '#fd7e14', '#ffffff');
+            alert('🟠 ORANGE preset applied to all graphics!');
+        });
+        
+        document.getElementById('btnPresetPurple')?.addEventListener('click', () => {
+            applyColors('#ffffff', '#000000', '#6f42c1', '#ffffff');
+            alert('🟣 PURPLE preset applied to all graphics!');
+        });
+        
+        // Custom colors button
+        document.getElementById('btnApplyGlobalColors')?.addEventListener('click', () => {
+            const primaryBg = document.getElementById('globalPrimaryBg').value;
+            const primaryText = document.getElementById('globalPrimaryText').value;
+            const secondaryBg = document.getElementById('globalSecondaryBg').value;
+            const secondaryText = document.getElementById('globalSecondaryText').value;
             
-            alert('✅ Global colors applied to all L3s, bugs, ticker, and timer!\n\nColors will show when you next display graphics.');
+            applyColors(primaryBg, primaryText, secondaryBg, secondaryText);
+            alert('✅ Custom colors applied to all L3s, bugs, ticker, and timer!\n\nColors will show when you next display graphics.');
         });
     }
     
@@ -892,6 +941,12 @@ class ControlPanel {
         // Handle global logo size
         document.getElementById('globalLogoSize')?.addEventListener('change', (e) => {
             this.globalLogo.size = parseInt(e.target.value) || 120;
+            this.saveState();
+        });
+        
+        // Handle global logo background color
+        document.getElementById('globalLogoBg')?.addEventListener('change', (e) => {
+            this.globalLogo.bg = e.target.value;
             this.saveState();
         });
         
@@ -965,7 +1020,8 @@ class ControlPanel {
             return {
                 showLogo: true,
                 logoUrl: l3Config.customLogoUrl || this.globalLogo.url,
-                logoSize: l3Config.logoSize || this.globalLogo.size
+                logoSize: l3Config.logoSize || this.globalLogo.size,
+                logoBg: this.globalLogo.bg
             };
         }
         
@@ -973,7 +1029,8 @@ class ControlPanel {
         return {
             showLogo: this.globalLogo.enabled && this.globalLogo.url !== '',
             logoUrl: this.globalLogo.url,
-            logoSize: this.globalLogo.size
+            logoSize: this.globalLogo.size,
+            logoBg: this.globalLogo.bg
         };
     }
     
@@ -1439,7 +1496,9 @@ class ControlPanel {
         
         if (btnQuickOpen) {
             btnQuickOpen.addEventListener('click', () => {
-                window.open(fullUrl, '_blank');
+                // Open output.html, not control.html
+                const outputUrl = fullUrl.replace('control.html', 'output.html');
+                window.open(outputUrl, '_blank');
             });
         }
     }
@@ -1483,6 +1542,7 @@ class ControlPanel {
         const state = {
             l3Slots: this.l3Slots,
             currentL3Slot: this.currentL3Slot,
+            globalLogo: this.globalLogo,  // Save logo settings including bg color
             ticker: this.getTickerConfig(),
             gsheetUrl: document.getElementById('gsheetUrl').value,
             rcChannel: document.getElementById('rcChannel').value,
@@ -1491,7 +1551,7 @@ class ControlPanel {
         };
         
         localStorage.setItem('vmixGraphicsState', JSON.stringify(state));
-        alert('State saved successfully! (All 3 L3 slots saved)');
+        alert('State saved successfully! (All 5 L3 slots + colors saved)');
     }
     
     loadSavedState() {
@@ -1513,6 +1573,15 @@ class ControlPanel {
                 // Legacy support - old single L3 format
                 this.l3Slots[1] = state.lowerThird;
                 this.loadL3SlotToForm(1);
+            }
+            
+            // Load global logo settings (including bg color)
+            if (state.globalLogo) {
+                this.globalLogo = state.globalLogo;
+                document.getElementById('globalLogoUrl').value = this.globalLogo.url || '';
+                document.getElementById('globalLogoSize').value = this.globalLogo.size || 120;
+                document.getElementById('globalLogoBg').value = this.globalLogo.bg || '#ffffff';
+                document.getElementById('globalLogoEnabled').checked = this.globalLogo.enabled || false;
             }
             
             // Load ticker config

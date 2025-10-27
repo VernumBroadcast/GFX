@@ -138,7 +138,7 @@ body.output-page {
 .lower-third .l3-logo-container {
     display: none;
     background: #ffffff;
-    padding: 12px;
+    padding: 7px 12px;
     border-radius: 25px;
     box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
     flex-shrink: 0;
@@ -353,7 +353,7 @@ body.output-page {
 .lower-third-dual .l3-logo-container {
     display: none;
     background: #ffffff;
-    padding: 12px;
+    padding: 7px 12px;
     border-radius: 25px;
     box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
     flex-shrink: 0;
@@ -426,7 +426,7 @@ body.output-page {
         transform: translateX(0);
     }
     100% {
-        transform: translateX(-50%);
+        transform: translateX(-100%);
     }
 }
 

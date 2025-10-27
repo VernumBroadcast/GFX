@@ -8,8 +8,8 @@ A professional, broadcast-grade graphics overlay system designed for VMix with t
 
 - **Single & Dual Lower Thirds** - Display L3s on left, right, or both sides of screen
 - **5 L3 Slots** - Pre-configure up to 5 lower thirds for instant recall
-- **Corner Bugs** - Top-left and top-right corner bugs with auto-scaling text
-- **Live Timer/Clock** - Bottom-right timer with clock, countdown, stopwatch modes
+- **Three Corner Bugs** - Top-left, top-right, and bottom-right bugs with auto-scaling text
+- **Flexible Timer/Clock** - Display clock, countdown, or stopwatch on ANY corner bug
 - **Scrolling Ticker** - Bottom-screen news ticker with smooth animations
 - **Logo Support** - Global and per-L3 logo integration with auto-sizing
 - **Real-time Control** - Side-by-side Preview and Transmit views

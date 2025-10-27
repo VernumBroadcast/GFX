@@ -38,9 +38,12 @@ class GraphicsEngine {
             l3Visible: false,
             l3DualVisible: false,
             tickerVisible: false,
-            bugLeftVisible: false,
-            bugRightVisible: false,
-            timerVisible: false,
+            // Track bugs by position and mode (text or timer)
+            bugs: {
+                'top-left': { visible: false, mode: 'text', config: {} },
+                'top-right': { visible: false, mode: 'text', config: {} },
+                'bottom-right': { visible: false, mode: 'text', config: {} }
+            },
             l3Config: {},
             tickerConfig: {},
             customFont: null,
@@ -48,7 +51,8 @@ class GraphicsEngine {
             timerInterval: null,
             timerPaused: false,
             timerElapsed: 0,
-            timerStartTime: null
+            timerStartTime: null,
+            activeTimerPosition: null  // Which position has the active timer
         };
         
         this.init();
@@ -56,8 +60,8 @@ class GraphicsEngine {
     
     updateStatusIndicator() {
         // Hide status indicator if any graphics are visible
-        if (this.state.l3Visible || this.state.l3DualVisible || this.state.tickerVisible || 
-            this.state.bugLeftVisible || this.state.bugRightVisible || this.state.timerVisible) {
+        const anyBugVisible = Object.values(this.state.bugs).some(bug => bug.visible);
+        if (this.state.l3Visible || this.state.l3DualVisible || this.state.tickerVisible || anyBugVisible) {
             this.elements.statusIndicator.classList.add('hidden');
         } else {
             this.elements.statusIndicator.classList.remove('hidden');
@@ -114,31 +118,11 @@ class GraphicsEngine {
         // Parse URL parameters on load
         this.parseURLParams();
         
-        // Update Firebase status indicator
-        const updateFirebaseStatus = (status, color) => {
-            const indicator = document.getElementById('firebaseStatus');
-            if (indicator) {
-                indicator.textContent = status;
-                indicator.style.borderColor = color;
-                indicator.style.background = `rgba(${color === 'green' ? '0,128,0' : color === 'red' ? '255,0,0' : '255,165,0'}, 0.8)`;
-            }
-        };
-        
         // Listen for Firebase commands (GitHub Pages + VMix real-time control)
         if (window.ENABLE_FIREBASE && window.FIREBASE_CONFIG && window.firebaseBridge) {
-            updateFirebaseStatus('🔄 Initializing Firebase...', 'orange');
-            
             const firebaseInitialized = window.firebaseBridge.init(window.FIREBASE_CONFIG);
             if (firebaseInitialized) {
-                updateFirebaseStatus('🔥 Firebase Active - Listening...', 'green');
-                
                 window.firebaseBridge.listen((message) => {
-                    // Flash the indicator when command received
-                    updateFirebaseStatus('📥 Command: ' + message.action, 'lime');
-                    setTimeout(() => {
-                        updateFirebaseStatus('🔥 Firebase Active - Listening...', 'green');
-                    }, 1000);
-                    
                     if (this.debugMode) {
                         console.log('📥 Firebase command received:', message);
                         this.addDebugLog('🔥 Firebase: ' + message.action);
@@ -149,11 +133,8 @@ class GraphicsEngine {
                 if (this.debugMode) {
                     this.addDebugLog('🔥 Firebase listener active');
                 }
-            } else {
-                updateFirebaseStatus('❌ Firebase Init Failed', 'red');
             }
         } else {
-            updateFirebaseStatus('⚠️ Firebase Not Configured', 'orange');
             console.log('ℹ️  Firebase not configured - using postMessage/localStorage only');
         }
         
@@ -247,17 +228,24 @@ class GraphicsEngine {
                 case 'hideL3Dual':
                     this.hideDualLowerThirds();
                     break;
+                case 'showBug':
+                    this.showBug(data.position, data.config);
+                    break;
+                case 'hideBug':
+                    this.hideBug(data.position);
+                    break;
+                // Legacy bug commands for backwards compatibility
                 case 'showBugLeft':
-                    this.showBug('left', data.config);
+                    this.showBug('top-left', data.config);
                     break;
                 case 'showBugRight':
-                    this.showBug('right', data.config);
+                    this.showBug('top-right', data.config);
                     break;
                 case 'hideBugLeft':
-                    this.hideBug('left');
+                    this.hideBug('top-left');
                     break;
                 case 'hideBugRight':
-                    this.hideBug('right');
+                    this.hideBug('top-right');
                     break;
                 case 'startTimer':
                     this.startTimer(data.config);
@@ -445,9 +433,14 @@ class GraphicsEngine {
         this.elements.l3Secondary.classList.toggle('hidden', !showSecondary);
         
         // Update logo
-        console.log('Logo config:', { showLogo, logoUrl, logoSize });
+        console.log('Logo config:', { showLogo, logoUrl, logoSize, logoBg: config.logoBg });
         if (showLogo && logoUrl) {
             this.elements.l3Logo.src = logoUrl;
+            
+            // Apply logo background color
+            if (config.logoBg) {
+                this.elements.l3LogoContainer.style.background = config.logoBg;
+            }
             
             // Calculate total height of visible L3 boxes
             setTimeout(() => {
@@ -462,8 +455,8 @@ class GraphicsEngine {
                     totalHeight += 10; // gap between boxes
                 }
                 
-                // Add some padding for visual balance (reduced padding on container)
-                totalHeight += 6;
+                // Add some padding for visual balance (7px top + 7px bottom padding on container)
+                totalHeight += 0;  // No extra needed since padding is included
                 
                 console.log('Calculated L3 height:', totalHeight);
                 this.elements.l3LogoContainer.style.height = totalHeight + 'px';
@@ -573,6 +566,11 @@ class GraphicsEngine {
             if (configLeft.showLogo && configLeft.logoUrl) {
                 this.elements.l3LogoLeft.src = configLeft.logoUrl;
                 
+                // Apply logo background color
+                if (configLeft.logoBg) {
+                    this.elements.l3LogoLeftContainer.style.background = configLeft.logoBg;
+                }
+                
                 // Calculate total height
                 setTimeout(() => {
                     let totalHeight = 0;
@@ -586,8 +584,8 @@ class GraphicsEngine {
                         totalHeight += 10;
                     }
                     
-                    // Add padding for visual balance
-                    totalHeight += 6;
+                    // No extra padding needed (7px top + 7px bottom is in container)
+                    totalHeight += 0;
                     
                     this.elements.l3LogoLeftContainer.style.height = totalHeight + 'px';
                     this.elements.l3LogoLeftContainer.classList.add('visible');
@@ -616,6 +614,11 @@ class GraphicsEngine {
             if (configRight.showLogo && configRight.logoUrl) {
                 this.elements.l3LogoRight.src = configRight.logoUrl;
                 
+                // Apply logo background color
+                if (configRight.logoBg) {
+                    this.elements.l3LogoRightContainer.style.background = configRight.logoBg;
+                }
+                
                 // Calculate total height
                 setTimeout(() => {
                     let totalHeight = 0;
@@ -629,8 +632,8 @@ class GraphicsEngine {
                         totalHeight += 10;
                     }
                     
-                    // Add padding for visual balance
-                    totalHeight += 6;
+                    // No extra padding needed (7px top + 7px bottom is in container)
+                    totalHeight += 0;
                     
                     this.elements.l3LogoRightContainer.style.height = totalHeight + 'px';
                     this.elements.l3LogoRightContainer.classList.add('visible');
@@ -681,10 +684,22 @@ class GraphicsEngine {
         // This ensures dual L3s match single L3 styling
     }
     
-    // Bug Methods (auto-scaling)
+    // Bug Methods (flexible - supports text OR timer on any position)
     showBug(position, config) {
+        // Get the correct bug element based on position
+        const bugElement = this.getBugElement(position);
+        if (!bugElement) return;
+        
+        // Hide timer content if this bug was showing a timer
+        const timerLabel = bugElement.querySelector('.timer-label');
+        const timerDisplay = bugElement.querySelector('.timer-display');
+        if (timerLabel && timerDisplay) {
+            timerLabel.style.display = 'none';
+            timerDisplay.style.display = 'none';
+        }
+        
+        // Show as text bug
         const { text = '', fontSize = 24, bg = '#dc3545', color = '#ffffff' } = config;
-        const bugElement = position === 'left' ? this.elements.bugTopLeft : this.elements.bugTopRight;
         
         bugElement.textContent = text;
         bugElement.style.fontSize = fontSize + 'px';
@@ -707,24 +722,27 @@ class GraphicsEngine {
         bugElement.classList.remove('animating-out');
         bugElement.classList.add('visible');
         
-        if (position === 'left') {
-            this.state.bugLeftVisible = true;
-        } else {
-            this.state.bugRightVisible = true;
-        }
+        // Update state
+        this.state.bugs[position].visible = true;
+        this.state.bugs[position].mode = 'text';
+        this.state.bugs[position].config = config;
+        
         this.updateStatusIndicator();
     }
     
     hideBug(position) {
-        const bugElement = position === 'left' ? this.elements.bugTopLeft : this.elements.bugTopRight;
+        const bugElement = this.getBugElement(position);
+        if (!bugElement) return;
+        
+        // Stop timer if this bug has an active timer
+        if (this.state.activeTimerPosition === position) {
+            this.stopTimerAtPosition(position);
+        }
         
         bugElement.classList.add('animating-out');
         
-        if (position === 'left') {
-            this.state.bugLeftVisible = false;
-        } else {
-            this.state.bugRightVisible = false;
-        }
+        // Update state
+        this.state.bugs[position].visible = false;
         this.updateStatusIndicator();
         
         setTimeout(() => {
@@ -732,16 +750,55 @@ class GraphicsEngine {
         }, 400);
     }
     
-    // Timer Methods
+    // Helper to get bug element by position
+    getBugElement(position) {
+        switch (position) {
+            case 'top-left':
+                return this.elements.bugTopLeft;
+            case 'top-right':
+                return this.elements.bugTopRight;
+            case 'bottom-right':
+                return this.elements.timerBottomRight;
+            default:
+                console.error('Unknown bug position:', position);
+                return null;
+        }
+    }
+    
+    // Timer Methods (flexible positioning)
     startTimer(config) {
+        const position = config.position || 'bottom-right';
+        const bugElement = this.getBugElement(position);
+        if (!bugElement) return;
+        
+        // Stop any existing timer first
+        if (this.state.activeTimerPosition) {
+            this.stopTimerAtPosition(this.state.activeTimerPosition);
+        }
+        
+        // Save timer config and position
         this.state.timerConfig = config;
         this.state.timerPaused = false;
+        this.state.activeTimerPosition = position;
+        
+        // Clear bug text content and set up timer structure
+        bugElement.innerHTML = '';
+        
+        // Create timer elements if they don't exist
+        let timerLabel = document.createElement('div');
+        timerLabel.className = 'timer-label';
+        timerLabel.textContent = config.label || '';
+        timerLabel.style.display = config.label ? 'block' : 'none';
+        
+        let timerDisplay = document.createElement('div');
+        timerDisplay.className = 'timer-display';
+        
+        bugElement.appendChild(timerLabel);
+        bugElement.appendChild(timerDisplay);
         
         // Apply styling
-        this.elements.timerBottomRight.style.backgroundColor = config.bg || '#dc3545';
-        this.elements.timerBottomRight.style.color = config.color || '#ffffff';
-        this.elements.timerLabel.textContent = config.label || '';
-        this.elements.timerLabel.style.display = config.label ? 'block' : 'none';
+        bugElement.style.backgroundColor = config.bg || '#dc3545';
+        bugElement.style.color = config.color || '#ffffff';
         
         // Clear any existing interval
         if (this.state.timerInterval) {
@@ -774,9 +831,14 @@ class GraphicsEngine {
         }
         
         // Show timer
-        this.elements.timerBottomRight.classList.remove('animating-out');
-        this.elements.timerBottomRight.classList.add('visible');
-        this.state.timerVisible = true;
+        bugElement.classList.remove('animating-out');
+        bugElement.classList.add('visible');
+        
+        // Update state
+        this.state.bugs[position].visible = true;
+        this.state.bugs[position].mode = 'timer';
+        this.state.bugs[position].config = config;
+        
         this.updateStatusIndicator();
     }
     
@@ -805,18 +867,19 @@ class GraphicsEngine {
     }
     
     hideTimer() {
+        if (this.state.activeTimerPosition) {
+            this.stopTimerAtPosition(this.state.activeTimerPosition);
+            this.hideBug(this.state.activeTimerPosition);
+            this.state.activeTimerPosition = null;
+        }
+    }
+    
+    stopTimerAtPosition(position) {
         if (this.state.timerInterval) {
             clearInterval(this.state.timerInterval);
             this.state.timerInterval = null;
         }
-        
-        this.elements.timerBottomRight.classList.add('animating-out');
-        this.state.timerVisible = false;
-        this.updateStatusIndicator();
-        
-        setTimeout(() => {
-            this.elements.timerBottomRight.classList.remove('visible', 'animating-out');
-        }, 400);
+        this.state.bugs[position].mode = 'text';
     }
     
     updateTimerDisplay() {
@@ -850,7 +913,17 @@ class GraphicsEngine {
         
         // Format the display based on selected format
         const displayText = this.formatTime(timeInMs, format);
-        this.elements.timerDisplay.textContent = displayText;
+        
+        // Update timer display in the active position
+        if (this.state.activeTimerPosition) {
+            const bugElement = this.getBugElement(this.state.activeTimerPosition);
+            if (bugElement) {
+                const timerDisplay = bugElement.querySelector('.timer-display');
+                if (timerDisplay) {
+                    timerDisplay.textContent = displayText;
+                }
+            }
+        }
         
         // Stop timer if countdown reached zero
         if (shouldStop && this.state.timerInterval) {
@@ -902,23 +975,25 @@ class GraphicsEngine {
     
     // Update bug font
     updateBugFont(fontFamily) {
-        if (fontFamily && this.elements.bugTopLeft) {
-            this.elements.bugTopLeft.style.fontFamily = fontFamily;
-        }
-        if (fontFamily && this.elements.bugTopRight) {
-            this.elements.bugTopRight.style.fontFamily = fontFamily;
-        }
+        if (!fontFamily) return;
+        
+        // Update all three bug positions
+        ['top-left', 'top-right', 'bottom-right'].forEach(position => {
+            const bugElement = this.getBugElement(position);
+            if (bugElement) {
+                bugElement.style.fontFamily = fontFamily;
+                // Also update timer elements if present
+                const timerLabel = bugElement.querySelector('.timer-label');
+                const timerDisplay = bugElement.querySelector('.timer-display');
+                if (timerLabel) timerLabel.style.fontFamily = fontFamily;
+                if (timerDisplay) timerDisplay.style.fontFamily = fontFamily;
+            }
+        });
     }
     
-    // Update timer font
+    // Update timer font (alias for updateBugFont for backwards compatibility)
     updateTimerFont(fontFamily) {
-        if (fontFamily && this.elements.timerDisplay) {
-            // Keep Courier New for timer display for monospace look, but allow override
-            this.elements.timerDisplay.style.fontFamily = fontFamily;
-        }
-        if (fontFamily && this.elements.timerLabel) {
-            this.elements.timerLabel.style.fontFamily = fontFamily;
-        }
+        this.updateBugFont(fontFamily);
     }
     
     // Custom Font Management

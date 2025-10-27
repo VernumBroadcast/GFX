@@ -55,6 +55,30 @@
 3. Click **"Show on Transmit"**
 4. Your ticker appears at the bottom, scrolling continuously!
 
+## 🔴 Corner Bugs & Timer/Clock
+
+**New Feature: Any corner can be text OR timer!**
+
+### Show Text Bugs
+1. Click the **"Corner Bugs"** tab
+2. Choose a position (Top-Left, Top-Right, or Bottom-Right)
+3. Type your text (e.g., "LIVE", "BREAKING NEWS")
+4. Pick a color
+5. Click **"Show Bug"**
+
+### Show a Timer/Clock
+1. In the **"⏰ Timer/Clock Control"** section:
+2. Select **Timer Position** (where to show it)
+3. Choose **Timer Type**:
+   - **Live Clock** - Current time (e.g., 14:32)
+   - **Countdown to Time** - Count down to a specific time
+   - **Stopwatch** - Count up from zero
+   - **Countdown from Duration** - Count down from X minutes
+4. Select **Display Format** (HH:MM, HH:MM:SS, with milliseconds, etc.)
+5. Click **"Start Timer"**
+
+**Tip:** You can move the timer to any corner! Just change the position and click "Start Timer" again.
+
 ## 💾 Save Your Work
 
 1. Go to **Output** tab

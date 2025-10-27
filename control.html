@@ -395,15 +395,40 @@
                     </div>
                 </div>
 
+                <div class="control-group">
+                    <h3>Bottom Right Bug</h3>
+                    <div class="form-row">
+                        <label for="bugBottomText">Text:</label>
+                        <input type="text" id="bugBottomText" value="" placeholder="e.g., COMING UP NEXT">
+                    </div>
+                    <div class="form-row">
+                        <label for="bugBottomBg">Background Color:</label>
+                        <input type="color" id="bugBottomBg" value="#dc3545">
+                    </div>
+                    <div class="button-group">
+                        <button class="btn-success" id="btnShowBugBottom">Show Bug</button>
+                        <button class="btn-danger" id="btnHideBugBottom">Hide Bug</button>
+                    </div>
+                </div>
+
                 <div class="control-group" style="border-top: 2px solid #2E7CFF; margin-top: 30px; padding-top: 20px;">
-                    <h3>Bottom Right Timer/Clock</h3>
-                    <p class="info-text">Display a live clock, countdown, or stopwatch in the bottom right corner. Perfect for timed events, live shows, or countdown to a specific time.</p>
+                    <h3>⏰ Timer/Clock Control</h3>
+                    <p class="info-text">Show a live clock, countdown, or stopwatch on any corner bug. Select position, configure timer, then click Start.</p>
+                    
+                    <div class="form-row">
+                        <label for="timerPosition">Timer Position:</label>
+                        <select id="timerPosition">
+                            <option value="top-left">Top Left Bug</option>
+                            <option value="top-right">Top Right Bug</option>
+                            <option value="bottom-right" selected>Bottom Right Bug</option>
+                        </select>
+                    </div>
                     
                     <div class="form-row">
                         <label for="timerType">Timer Type:</label>
                         <select id="timerType">
-                            <option value="none">None (Hidden)</option>
-                            <option value="clock" selected>Live Clock (HH:MM:SS)</option>
+                            <option value="none">None (Text Mode)</option>
+                            <option value="clock" selected>Live Clock (Time of Day)</option>
                             <option value="countdownTo">Countdown to Time</option>
                             <option value="stopwatch">Stopwatch (Count Up)</option>
                             <option value="countdownFrom">Countdown from Duration</option>
@@ -413,7 +438,7 @@
                     <div class="form-row">
                         <label for="timerFormat">Display Format:</label>
                         <select id="timerFormat">
-                            <option value="hm" selected>HH:MM (Hours, Minutes - Clock Only)</option>
+                            <option value="hm" selected>HH:MM (Hours, Minutes)</option>
                             <option value="hms">HH:MM:SS (Hours, Minutes, Seconds)</option>
                             <option value="ms">MM:SS (Minutes, Seconds)</option>
                             <option value="hmsms">HH:MM:SS.000 (With Milliseconds)</option>
@@ -443,10 +468,10 @@
                     </div>
                     
                     <div class="button-group">
-                        <button class="btn-success" id="btnStartTimer">Start/Show Timer</button>
+                        <button class="btn-success" id="btnStartTimer">Start Timer</button>
                         <button class="btn-warning" id="btnPauseTimer">Pause</button>
                         <button class="btn-secondary" id="btnResetTimer">Reset</button>
-                        <button class="btn-danger" id="btnHideTimer">Hide</button>
+                        <button class="btn-danger" id="btnHideTimer">Stop & Hide</button>
                     </div>
                 </div>
             </div>
@@ -581,6 +606,29 @@
                 <div class="control-group">
                     <h3>🎨 Global Color Settings</h3>
                     <p class="info-text">Batch change colors across ALL L3s, bugs, ticker, and timer at once.</p>
+                    
+                    <div class="control-group" style="background: rgba(255,255,255,0.05); padding: 15px; border-radius: 8px; margin-bottom: 20px;">
+                        <h4 style="margin-top: 0; margin-bottom: 12px; color: #2c5aa0;">⚡ Quick Color Presets</h4>
+                        <div style="display: grid; grid-template-columns: repeat(5, 1fr); gap: 8px;">
+                            <button class="btn-secondary" id="btnPresetRed" style="background: #dc3545; border: 2px solid #dc3545; padding: 10px 5px; font-size: 13px; font-weight: 700;">
+                                RED
+                            </button>
+                            <button class="btn-secondary" id="btnPresetGreen" style="background: #28a745; border: 2px solid #28a745; padding: 10px 5px; font-size: 13px; font-weight: 700;">
+                                GREEN
+                            </button>
+                            <button class="btn-secondary" id="btnPresetBlue" style="background: #0056b3; border: 2px solid #0056b3; padding: 10px 5px; font-size: 13px; font-weight: 700;">
+                                ROYAL BLUE
+                            </button>
+                            <button class="btn-secondary" id="btnPresetOrange" style="background: #fd7e14; border: 2px solid #fd7e14; padding: 10px 5px; font-size: 13px; font-weight: 700;">
+                                ORANGE
+                            </button>
+                            <button class="btn-secondary" id="btnPresetPurple" style="background: #6f42c1; border: 2px solid #6f42c1; padding: 10px 5px; font-size: 13px; font-weight: 700;">
+                                PURPLE
+                            </button>
+                        </div>
+                        <p style="margin-top: 10px; margin-bottom: 0; font-size: 12px; opacity: 0.7;">Click a preset to instantly apply that house color to all graphics</p>
+                    </div>
+                    
                     <div class="form-row">
                         <label for="globalPrimaryBg">Primary Box Background:</label>
                         <input type="color" id="globalPrimaryBg" value="#ffffff">
@@ -599,7 +647,7 @@
                     </div>
                     <div class="button-group">
                         <button class="btn-primary" id="btnApplyGlobalColors" style="font-size: 16px; padding: 12px 24px;">
-                            ✨ Apply to All Graphics
+                            ✨ Apply Custom Colors
                         </button>
                     </div>
                 </div>
@@ -618,6 +666,10 @@
                     <div class="form-row">
                         <label for="globalLogoSize">Logo Size (px):</label>
                         <input type="number" id="globalLogoSize" value="120" min="50" max="300" step="10">
+                    </div>
+                    <div class="form-row">
+                        <label for="globalLogoBg">Logo Box Background Color:</label>
+                        <input type="color" id="globalLogoBg" value="#ffffff">
                     </div>
                     <div class="form-row">
                         <label for="globalLogoEnabled">Enable Logo by Default:</label>
