@@ -961,34 +961,37 @@ class ControlPanel {
             document.getElementById('globalSecondaryBg').value = secondaryBg;
             document.getElementById('globalSecondaryText').value = secondaryText;
             
-            // Save state
-            this.saveState();
+            // Update the current L3 slot dropdowns
+            this.updateL3DropdownLabels();
+            
+            // Save state (silent - no double alert)
+            this.saveState(false);
         };
         
         // Color preset buttons
         document.getElementById('btnPresetRed')?.addEventListener('click', () => {
             applyColors('#ffffff', '#000000', '#dc3545', '#ffffff');
-            alert('🔴 RED preset applied to all graphics!');
+            alert('🔴 RED preset applied!\n\nAll stored graphics updated.\nRe-display graphics to see the new colors.');
         });
         
         document.getElementById('btnPresetGreen')?.addEventListener('click', () => {
             applyColors('#ffffff', '#000000', '#28a745', '#ffffff');
-            alert('🟢 GREEN preset applied to all graphics!');
+            alert('🟢 GREEN preset applied!\n\nAll stored graphics updated.\nRe-display graphics to see the new colors.');
         });
         
         document.getElementById('btnPresetBlue')?.addEventListener('click', () => {
             applyColors('#ffffff', '#000000', '#0056b3', '#ffffff');
-            alert('🔵 ROYAL BLUE preset applied to all graphics!');
+            alert('🔵 ROYAL BLUE preset applied!\n\nAll stored graphics updated.\nRe-display graphics to see the new colors.');
         });
         
         document.getElementById('btnPresetOrange')?.addEventListener('click', () => {
             applyColors('#ffffff', '#000000', '#fd7e14', '#ffffff');
-            alert('🟠 ORANGE preset applied to all graphics!');
+            alert('🟠 ORANGE preset applied!\n\nAll stored graphics updated.\nRe-display graphics to see the new colors.');
         });
         
         document.getElementById('btnPresetPurple')?.addEventListener('click', () => {
             applyColors('#ffffff', '#000000', '#6f42c1', '#ffffff');
-            alert('🟣 PURPLE preset applied to all graphics!');
+            alert('🟣 PURPLE preset applied!\n\nAll stored graphics updated.\nRe-display graphics to see the new colors.');
         });
         
         // Custom colors button
@@ -999,7 +1002,7 @@ class ControlPanel {
             const secondaryText = document.getElementById('globalSecondaryText').value;
             
             applyColors(primaryBg, primaryText, secondaryBg, secondaryText);
-            alert('✅ Custom colors applied to all L3s, bugs, ticker, and timer!\n\nColors will show when you next display graphics.');
+            alert('✅ Custom colors applied!\n\nAll stored graphics updated.\nRe-display graphics to see the new colors.');
         });
     }
     
