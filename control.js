@@ -1830,24 +1830,42 @@ class ControlPanel {
     // Communication with iframes
     setupPreviewScaling() {
         const scalePreview = () => {
-            const previewContainer = document.querySelector('.preview-frame');
-            const transmitContainer = document.querySelectorAll('.preview-frame')[1];
+            const previewContainers = document.querySelectorAll('.preview-frame');
             
-            if (previewContainer && this.previewFrame) {
-                const containerWidth = previewContainer.offsetWidth;
-                const scale = containerWidth / 1920;
+            if (previewContainers[0] && this.previewFrame) {
+                const containerWidth = previewContainers[0].offsetWidth;
+                const containerHeight = previewContainers[0].offsetHeight;
+                const scale = Math.min(containerWidth / 1920, containerHeight / 1080);
                 this.previewFrame.style.transform = `scale(${scale})`;
+                this.previewFrame.style.transformOrigin = 'top left';
+                console.log(`Preview scaled to ${scale.toFixed(3)}x (container: ${containerWidth}x${containerHeight})`);
             }
             
-            if (transmitContainer && this.transmitFrame) {
-                const containerWidth = transmitContainer.offsetWidth;
-                const scale = containerWidth / 1920;
+            if (previewContainers[1] && this.transmitFrame) {
+                const containerWidth = previewContainers[1].offsetWidth;
+                const containerHeight = previewContainers[1].offsetHeight;
+                const scale = Math.min(containerWidth / 1920, containerHeight / 1080);
                 this.transmitFrame.style.transform = `scale(${scale})`;
+                this.transmitFrame.style.transformOrigin = 'top left';
+                console.log(`Transmit scaled to ${scale.toFixed(3)}x (container: ${containerWidth}x${containerHeight})`);
             }
         };
         
-        // Scale on load
+        // Scale after a short delay to ensure containers are rendered
         setTimeout(scalePreview, 100);
+        setTimeout(scalePreview, 500);
+        setTimeout(scalePreview, 1000);
+        
+        // Scale when iframes load
+        this.previewFrame.addEventListener('load', () => {
+            console.log('Preview iframe loaded, scaling...');
+            setTimeout(scalePreview, 100);
+        });
+        
+        this.transmitFrame.addEventListener('load', () => {
+            console.log('Transmit iframe loaded, scaling...');
+            setTimeout(scalePreview, 100);
+        });
         
         // Re-scale on window resize
         window.addEventListener('resize', scalePreview);
