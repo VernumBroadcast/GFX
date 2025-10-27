@@ -22,7 +22,7 @@ const FIREBASE_CONFIG = {
     //    - API: Firebase Realtime Database API only
     // 4. Paste the new key below
     
-    apiKey: "YOUR_NEW_RESTRICTED_KEY_HERE",  // ← PASTE YOUR NEW KEY HERE
+    apiKey: "AIzaSyAxjvf-rTo68Klps2R4IDJKx7PEziQGDRQ",  // Restricted to vernumbroadcast.github.io
     authDomain: "webgfx-efd96.firebaseapp.com",
     databaseURL: "https://webgfx-efd96-default-rtdb.firebaseio.com",
     projectId: "webgfx-efd96",
