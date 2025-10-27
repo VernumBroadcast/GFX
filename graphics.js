@@ -452,11 +452,6 @@ class GraphicsEngine {
         if (showLogo && logoUrl) {
             this.elements.l3Logo.src = logoUrl;
             
-            // Apply logo background color
-            if (config.logoBg) {
-                this.elements.l3LogoContainer.style.background = config.logoBg;
-            }
-            
             // Calculate total height of visible L3 boxes
             setTimeout(() => {
                 let totalHeight = 0;
@@ -475,6 +470,12 @@ class GraphicsEngine {
                 // Set container height to match L3 boxes
                 this.elements.l3LogoContainer.style.height = totalHeight + 'px';
                 
+                // Apply logo background color (inside setTimeout to ensure it's applied after element is ready)
+                if (config.logoBg) {
+                    this.elements.l3LogoContainer.style.background = config.logoBg;
+                    console.log('Applied logo bg:', config.logoBg);
+                }
+                
                 // Set logo image height to fill container (minus padding)
                 const logoHeight = totalHeight - 14; // Subtract padding (7px top + 7px bottom)
                 this.elements.l3Logo.style.height = logoHeight + 'px';
@@ -482,7 +483,7 @@ class GraphicsEngine {
                 this.elements.l3Logo.style.maxHeight = logoHeight + 'px';
                 
                 this.elements.l3LogoContainer.classList.add('visible');
-                console.log(`Logo sized: container ${totalHeight}px, image ${logoHeight}px`);
+                console.log(`Logo sized: container ${totalHeight}px, image ${logoHeight}px, bg: ${config.logoBg}`);
             }, 50); // Small delay to ensure boxes are rendered
             
             console.log('Logo should be visible now');
@@ -661,11 +662,6 @@ class GraphicsEngine {
             if (configLeft.showLogo && configLeft.logoUrl) {
                 this.elements.l3LogoLeft.src = configLeft.logoUrl;
                 
-                // Apply logo background color
-                if (configLeft.logoBg) {
-                    this.elements.l3LogoLeftContainer.style.background = configLeft.logoBg;
-                }
-                
                 // Calculate total height
                 setTimeout(() => {
                     let totalHeight = 0;
@@ -681,6 +677,11 @@ class GraphicsEngine {
                     
                     // Set container height to match L3 boxes
                     this.elements.l3LogoLeftContainer.style.height = totalHeight + 'px';
+                    
+                    // Apply logo background color (inside setTimeout for proper timing)
+                    if (configLeft.logoBg) {
+                        this.elements.l3LogoLeftContainer.style.background = configLeft.logoBg;
+                    }
                     
                     // Set logo image height to fill container (minus padding)
                     const logoHeight = totalHeight - 14; // Subtract padding (7px top + 7px bottom)
@@ -714,11 +715,6 @@ class GraphicsEngine {
             if (configRight.showLogo && configRight.logoUrl) {
                 this.elements.l3LogoRight.src = configRight.logoUrl;
                 
-                // Apply logo background color
-                if (configRight.logoBg) {
-                    this.elements.l3LogoRightContainer.style.background = configRight.logoBg;
-                }
-                
                 // Calculate total height
                 setTimeout(() => {
                     let totalHeight = 0;
@@ -734,6 +730,11 @@ class GraphicsEngine {
                     
                     // Set container height to match L3 boxes
                     this.elements.l3LogoRightContainer.style.height = totalHeight + 'px';
+                    
+                    // Apply logo background color (inside setTimeout for proper timing)
+                    if (configRight.logoBg) {
+                        this.elements.l3LogoRightContainer.style.background = configRight.logoBg;
+                    }
                     
                     // Set logo image height to fill container (minus padding)
                     const logoHeight = totalHeight - 14; // Subtract padding (7px top + 7px bottom)
@@ -781,9 +782,6 @@ class GraphicsEngine {
             const showLogoLeft = configLeft.showLogo && configLeft.logoUrl;
             if (showLogoLeft) {
                 this.elements.l3LogoLeft.src = configLeft.logoUrl;
-                if (configLeft.logoBg) {
-                    this.elements.l3LogoLeftContainer.style.background = configLeft.logoBg;
-                }
                 
                 // Calculate total height to match L3 boxes
                 setTimeout(() => {
@@ -800,6 +798,11 @@ class GraphicsEngine {
                     
                     // Set container height
                     this.elements.l3LogoLeftContainer.style.height = totalHeight + 'px';
+                    
+                    // Apply logo background color (inside setTimeout for proper timing)
+                    if (configLeft.logoBg) {
+                        this.elements.l3LogoLeftContainer.style.background = configLeft.logoBg;
+                    }
                     
                     // Set logo image height (minus padding)
                     const logoHeight = totalHeight - 14;
@@ -831,9 +834,6 @@ class GraphicsEngine {
             const showLogoRight = configRight.showLogo && configRight.logoUrl;
             if (showLogoRight) {
                 this.elements.l3LogoRight.src = configRight.logoUrl;
-                if (configRight.logoBg) {
-                    this.elements.l3LogoRightContainer.style.background = configRight.logoBg;
-                }
                 
                 // Calculate total height to match L3 boxes
                 setTimeout(() => {
@@ -850,6 +850,11 @@ class GraphicsEngine {
                     
                     // Set container height
                     this.elements.l3LogoRightContainer.style.height = totalHeight + 'px';
+                    
+                    // Apply logo background color (inside setTimeout for proper timing)
+                    if (configRight.logoBg) {
+                        this.elements.l3LogoRightContainer.style.background = configRight.logoBg;
+                    }
                     
                     // Set logo image height (minus padding)
                     const logoHeight = totalHeight - 14;
