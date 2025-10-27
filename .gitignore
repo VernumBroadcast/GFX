@@ -1,5 +1,6 @@
-# Sensitive configuration files
-firebase-config.js
+# Firebase config is INCLUDED for cloud deployment
+# When properly restricted, Firebase API keys are safe in client-side code
+# See firebase-config.js comments for security details
 
 # OS files
 .DS_Store
@@ -19,3 +20,5 @@ Thumbs.db
 *.tmp
 .cache/
 
+# Local development overrides (if needed)
+firebase-config.local.js

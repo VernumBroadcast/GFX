@@ -39,19 +39,23 @@ TLWIG/
 └── ravelogo.png                      # Default logo (example)
 ```
 
-## 🚨 VMix Users: READ THIS FIRST
+## 🚨 QUICK START: Cloud Deployment (Recommended!)
 
-**Having issues with black screen or blank output in VMix?**
+**Want everything to work in the cloud with zero local setup?**
 
-### Local Setup (Files on your computer):
+### ☁️ Cloud Setup (GitHub Pages + Firebase):
+👉 **See `CLOUD_SETUP_CHECKLIST.md` for 5-minute setup**  
+👉 **See `CLOUD_DEPLOYMENT_GUIDE.md` for complete guide**  
+**Key features**: 
+- ✅ Control panel works from anywhere (phone, tablet, laptop)
+- ✅ Real-time sync to VMix via Firebase
+- ✅ Google Sheets auto-update
+- ✅ No local HTTP server needed
+
+### 💻 Local Setup (Files on your computer):
 👉 **See `README_VMIX_TROUBLESHOOTING.md` for quick fixes**  
 👉 **See `VMIX_SETUP.md` for complete setup guide**  
 **Key requirement**: You MUST use an HTTP server (not file://)
-
-### GitHub Pages Setup (Online hosting):
-👉 **See `FIX_GITHUB_VMIX.md` for 2-minute fix**  
-👉 **See `GITHUB_PAGES_SETUP.md` for complete guide**  
-**Key requirement**: You MUST use URL parameters (not control panel)
 
 ## 🚀 Quick Start
 
