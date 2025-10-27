@@ -1,7 +1,11 @@
-Slot,Primary Text,Secondary Text,Primary Color,Secondary Color,Notes
-1,John Smith,Sports Reporter,#ffffff,#dc3545,Example L3 for sports reporter
-2,Jane Doe,Weather Anchor,#ffffff,#dc3545,Example L3 for weather segment
-3,Breaking News,Live Coverage,#ffffff,#dc3545,Example L3 for breaking news
-4,Coming Up Next,Special Report,#ffffff,#dc3545,Example L3 for upcoming segment
-5,On Location,Downtown Studio,#ffffff,#dc3545,Example L3 for location identifier
-
+Type,ID,Primary Text,Secondary Text,Color,Notes
+L3,1,John Smith,Sports Reporter,#dc3545,Lower Third Slot 1
+L3,2,Jane Doe,Weather Anchor,#dc3545,Lower Third Slot 2
+L3,3,Breaking News,Live Coverage,#dc3545,Lower Third Slot 3
+L3,4,Coming Up Next,Special Report,#dc3545,Lower Third Slot 4
+L3,5,On Location,Downtown Studio,#dc3545,Lower Third Slot 5
+Bug,TopLeft,LIVE,,#dc3545,Top Left Corner Bug
+Bug,TopRight,PREVIOUSLY,,#dc3545,Top Right Corner Bug
+Bug,BottomLeft,Up Next:,,#dc3545,Bottom Left Corner Bug
+Bug,BottomRight,Up Next:,,#dc3545,Bottom Right Corner Bug
+Ticker,1,Breaking News | Latest Updates | Live Coverage | More Information Coming Soon,,#dc3545,Ticker items separated by |

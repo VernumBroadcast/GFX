@@ -8,12 +8,12 @@ A professional, broadcast-grade graphics overlay system designed for VMix with t
 
 - **Single & Dual Lower Thirds** - Display L3s on left, right, or both sides of screen
 - **5 L3 Slots** - Pre-configure up to 5 lower thirds for instant recall
-- **Three Corner Bugs** - Top-left, top-right, and bottom-right bugs with auto-scaling text
+- **Four Corner Bugs** - Top-left, top-right, bottom-left, and bottom-right bugs with auto-scaling text
 - **Flexible Timer/Clock** - Display clock, countdown, or stopwatch on ANY corner bug
 - **Scrolling Ticker** - Bottom-screen news ticker with smooth animations
 - **Logo Support** - Global and per-L3 logo integration with auto-sizing
 - **Real-time Control** - Side-by-side Preview and Transmit views
-- **Multiple Data Sources** - Google Sheets, Rundown Creator API, and JSON config
+- **Multiple Data Sources** - Google Sheets (with auto-update), Rundown Creator API, and JSON config
 - **Transparent Output** - VMix-compatible alpha channel support
 - **Custom Fonts** - Upload your own fonts or use web-safe options
 - **Global Color Controls** - Batch change all colors across the entire project
@@ -33,8 +33,9 @@ TLWIG/
 ├── README.md                         # This file (overview)
 ├── VMIX_SETUP.md                     # ⚠️ DETAILED VMix integration guide
 ├── README_VMIX_TROUBLESHOOTING.md    # ⚠️ Quick fixes for black screen issues
-├── L3_TEMPLATE.csv                   # Google Sheets template for L3 data
-├── GOOGLE_SHEETS_SETUP.md            # Guide for Google Sheets integration
+├── L3_TEMPLATE.csv                   # Google Sheets template for L3s, Bugs, and Ticker
+├── GOOGLE_SHEETS_SETUP.md            # Guide for Google Sheets integration with auto-update
+├── GOOGLE_SHEETS_AUTO_UPDATE.md      # Detailed guide for auto-update feature
 └── ravelogo.png                      # Default logo (example)
 ```
 

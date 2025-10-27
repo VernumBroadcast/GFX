@@ -280,6 +280,11 @@ body.output-page {
     right: 80px;
 }
 
+.bug-bottom-left {
+    bottom: 60px;
+    left: 80px;
+}
+
 /* Timer/Clock Bug (Bottom Right) */
 .timer-bug {
     position: fixed;

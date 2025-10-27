@@ -6,6 +6,7 @@ class ControlPanel {
         this.previewFrame = document.getElementById('previewFrame');
         this.transmitFrame = document.getElementById('transmitFrame');
         this.customFontUrl = null;
+        this.autoUpdateTimer = null;  // Timer for Google Sheets auto-update
         
         // Global logo settings
         this.globalLogo = {
@@ -65,6 +66,7 @@ class ControlPanel {
         this.setupTimerControls();
         this.setupTickerControls();
         this.setupDataSourceControls();
+        this.setupAutoUpdate();  // Google Sheets auto-update
         this.setupGlobalColorControls();
         this.setupLogoControls();
         this.setupTogglePreview();
@@ -212,6 +214,7 @@ class ControlPanel {
             this.sendToFrame('both', 'hideTicker');
             this.sendToFrame('both', 'hideBug', { position: 'top-left' });
             this.sendToFrame('both', 'hideBug', { position: 'top-right' });
+            this.sendToFrame('both', 'hideBug', { position: 'bottom-left' });
             this.sendToFrame('both', 'hideBug', { position: 'bottom-right' });
             this.sendToFrame('both', 'hideTimer');
             this.previewState.l3 = null;
@@ -244,19 +247,16 @@ class ControlPanel {
         }
         
         document.getElementById('quickPreviewDualL3').addEventListener('click', () => {
-            const configLeft = this.getDualL3Config('left');
-            const configRight = this.getDualL3Config('right');
-            this.sendToFrame('preview', 'showL3Dual', { configLeft, configRight });
+            this.showMultiL3('preview');
         });
         
         document.getElementById('quickShowDualL3').addEventListener('click', () => {
-            const configLeft = this.getDualL3Config('left');
-            const configRight = this.getDualL3Config('right');
-            this.sendToFrame('transmit', 'showL3Dual', { configLeft, configRight });
+            this.showMultiL3('transmit');
         });
         
         document.getElementById('quickHideDualL3').addEventListener('click', () => {
             this.sendToFrame('both', 'hideL3Dual');
+            this.sendToFrame('both', 'hideL3Triple');
         });
         
         // Bug Quick Actions - Individual buttons
@@ -424,6 +424,10 @@ class ControlPanel {
         document.getElementById('l3SecondaryColor').value = config.secondaryColor || '#ffffff';
         document.getElementById('l3ShowPrimary').checked = config.showPrimary !== false;
         document.getElementById('l3ShowSecondary').checked = config.showSecondary !== false;
+        
+        // Load logo settings
+        document.getElementById('l3LogoEnabled').value = config.logoEnabled || 'global';
+        document.getElementById('l3CustomLogoUrl').value = config.customLogoUrl || '';
         
         // Update the content display
         this.updateCurrentSlotContent();
@@ -788,6 +792,10 @@ class ControlPanel {
             this.sendToFrame('both', 'showBug', { position: 'top-right', config: this.getBugConfig('right') });
         });
         
+        document.getElementById('btnShowBugBottomLeft')?.addEventListener('click', () => {
+            this.sendToFrame('both', 'showBug', { position: 'bottom-left', config: this.getBugConfig('bottomLeft') });
+        });
+        
         document.getElementById('btnShowBugBottom')?.addEventListener('click', () => {
             this.sendToFrame('both', 'showBug', { position: 'bottom-right', config: this.getBugConfig('bottom') });
         });
@@ -800,13 +808,20 @@ class ControlPanel {
             this.sendToFrame('both', 'hideBug', { position: 'top-right' });
         });
         
+        document.getElementById('btnHideBugBottomLeft')?.addEventListener('click', () => {
+            this.sendToFrame('both', 'hideBug', { position: 'bottom-left' });
+        });
+        
         document.getElementById('btnHideBugBottom')?.addEventListener('click', () => {
             this.sendToFrame('both', 'hideBug', { position: 'bottom-right' });
         });
     }
     
     getBugConfig(position) {
-        const prefix = position === 'left' ? 'bugLeft' : position === 'right' ? 'bugRight' : 'bugBottom';
+        const prefix = position === 'left' ? 'bugLeft' : 
+                       position === 'right' ? 'bugRight' : 
+                       position === 'bottomLeft' ? 'bugBottomLeft' : 
+                       'bugBottom';
         return {
             text: document.getElementById(`${prefix}Text`)?.value || '',
             bg: document.getElementById(`${prefix}Bg`)?.value || '#dc3545',
@@ -897,9 +912,11 @@ class ControlPanel {
             document.getElementById('l3SecondaryBg').value = secondaryBg;
             document.getElementById('l3SecondaryColor').value = secondaryText;
             
-            // Update bugs
+            // Update all bugs
             document.getElementById('bugLeftBg').value = secondaryBg;
             document.getElementById('bugRightBg').value = secondaryBg;
+            document.getElementById('bugBottomLeftBg').value = secondaryBg;
+            document.getElementById('bugBottomBg').value = secondaryBg;
             
             // Update ticker
             document.getElementById('tickerBg').value = secondaryBg;
@@ -1047,6 +1064,24 @@ class ControlPanel {
             this.l3Slots[this.currentL3Slot].logoEnabled = e.target.value;
             this.saveState();
         });
+        
+        document.getElementById('l3CustomLogoUrl')?.addEventListener('change', (e) => {
+            this.l3Slots[this.currentL3Slot].customLogoUrl = e.target.value;
+            this.saveState();
+        });
+        
+        document.getElementById('l3CustomLogoFile')?.addEventListener('change', (e) => {
+            const file = e.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = (event) => {
+                    this.l3Slots[this.currentL3Slot].customLogoUrl = event.target.result;
+                    document.getElementById('l3CustomLogoUrl').value = '(Custom file uploaded)';
+                    this.saveState();
+                };
+                reader.readAsDataURL(file);
+            }
+        });
     }
     
     // Helper to get final logo config for an L3
@@ -1152,15 +1187,63 @@ class ControlPanel {
                 const rows = this.parseCSV(text);
                 
                 if (rows.length > 0) {
-                    // Assuming columns: Name, Title
-                    const firstRow = rows[0];
-                    document.getElementById('l3Primary').value = firstRow[0] || '';
-                    document.getElementById('l3Secondary').value = firstRow[1] || '';
+                    let l3Count = 0;
+                    let bugCount = 0;
+                    let tickerCount = 0;
                     
-                    statusDiv.innerHTML = `<p style="color: #28a745;">✓ Loaded: ${firstRow[0]}</p>`;
+                    // Parse CSV based on Type column
+                    // Format: Type,ID,Primary Text,Secondary Text,Color,Notes
+                    rows.forEach(row => {
+                        const type = row[0];
+                        const id = row[1];
+                        const primaryText = row[2] || '';
+                        const secondaryText = row[3] || '';
+                        const color = row[4] || '#dc3545';
+                        
+                        if (type === 'L3') {
+                            // Update L3 slot (1-5)
+                            const slotIndex = parseInt(id) - 1;
+                            if (slotIndex >= 0 && slotIndex < 5) {
+                                this.l3Slots[slotIndex].primaryText = primaryText;
+                                this.l3Slots[slotIndex].secondaryText = secondaryText;
+                                this.l3Slots[slotIndex].secondaryBg = color;
+                                l3Count++;
+                            }
+                        } else if (type === 'Bug') {
+                            // Update bug (TopLeft, TopRight, BottomLeft, BottomRight)
+                            if (id === 'TopLeft') {
+                                document.getElementById('bugLeftText').value = primaryText;
+                                document.getElementById('bugLeftBg').value = color;
+                                bugCount++;
+                            } else if (id === 'TopRight') {
+                                document.getElementById('bugRightText').value = primaryText;
+                                document.getElementById('bugRightBg').value = color;
+                                bugCount++;
+                            } else if (id === 'BottomLeft') {
+                                document.getElementById('bugBottomLeftText').value = primaryText;
+                                document.getElementById('bugBottomLeftBg').value = color;
+                                bugCount++;
+                            } else if (id === 'BottomRight') {
+                                document.getElementById('bugBottomText').value = primaryText;
+                                document.getElementById('timerBg').value = color;
+                                bugCount++;
+                            }
+                        } else if (type === 'Ticker') {
+                            // Update ticker
+                            document.getElementById('tickerText').value = primaryText;
+                            document.getElementById('tickerBg').value = color;
+                            tickerCount++;
+                        }
+                    });
                     
-                    // Update preview
-                    this.sendToFrame('preview', 'updateL3', this.getLowerThirdConfig());
+                    // Update L3 dropdowns and reload current slot
+                    this.updateL3DropdownLabels();
+                    this.loadL3SlotToForm(this.currentL3Slot);
+                    
+                    // Save all changes
+                    this.saveState();
+                    
+                    statusDiv.innerHTML = `<p style="color: #28a745;">✓ Loaded: ${l3Count} L3s, ${bugCount} Bugs, ${tickerCount} Ticker</p>`;
                 } else {
                     statusDiv.innerHTML = '<p style="color: #dc3545;">No data found in sheet</p>';
                 }
@@ -1194,6 +1277,57 @@ class ControlPanel {
         }
         
         return rows;
+    }
+    
+    startAutoUpdate() {
+        // Stop any existing auto-update
+        this.stopAutoUpdate();
+        
+        const interval = parseInt(document.getElementById('gsheetAutoUpdateInterval')?.value || 5);
+        const intervalMs = interval * 1000;
+        
+        console.log(`Starting auto-update every ${interval} seconds`);
+        
+        // Load immediately
+        this.loadGoogleSheets();
+        
+        // Then set interval for future updates
+        this.autoUpdateTimer = setInterval(() => {
+            console.log('Auto-updating from Google Sheets...');
+            this.loadGoogleSheets();
+        }, intervalMs);
+    }
+    
+    stopAutoUpdate() {
+        if (this.autoUpdateTimer) {
+            clearInterval(this.autoUpdateTimer);
+            this.autoUpdateTimer = null;
+            console.log('Auto-update stopped');
+        }
+    }
+    
+    setupAutoUpdate() {
+        const checkbox = document.getElementById('gsheetAutoUpdate');
+        const intervalInput = document.getElementById('gsheetAutoUpdateInterval');
+        
+        if (checkbox) {
+            checkbox.addEventListener('change', (e) => {
+                if (e.target.checked) {
+                    this.startAutoUpdate();
+                } else {
+                    this.stopAutoUpdate();
+                }
+            });
+        }
+        
+        if (intervalInput) {
+            intervalInput.addEventListener('change', () => {
+                // If auto-update is currently enabled, restart with new interval
+                if (checkbox?.checked) {
+                    this.startAutoUpdate();
+                }
+            });
+        }
     }
     
     async listRundowns() {

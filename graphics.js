@@ -28,6 +28,7 @@ class GraphicsEngine {
             l3CenterSecondary: document.getElementById('l3CenterSecondary'),
             bugTopLeft: document.getElementById('bugTopLeft'),
             bugTopRight: document.getElementById('bugTopRight'),
+            bugBottomLeft: document.getElementById('bugBottomLeft'),
             timerBottomRight: document.getElementById('timerBottomRight'),
             timerLabel: document.getElementById('timerLabel'),
             timerDisplay: document.getElementById('timerDisplay'),
@@ -46,11 +47,14 @@ class GraphicsEngine {
             bugs: {
                 'top-left': { visible: false, mode: 'text', config: {} },
                 'top-right': { visible: false, mode: 'text', config: {} },
+                'bottom-left': { visible: false, mode: 'text', config: {} },
                 'bottom-right': { visible: false, mode: 'text', config: {} }
             },
             l3Config: {},
             tickerConfig: {},
             tickerTimeout: null,
+            pendingTickerUpdate: null,  // Store pending ticker update for smooth transitions
+            tickerUpdateListener: null,  // Event listener for animation iteration
             customFont: null,
             timerConfig: {},
             timerInterval: null,
@@ -516,6 +520,13 @@ class GraphicsEngine {
             this.state.tickerTimeout = null;
         }
         
+        // Clear any pending update and remove listener
+        if (this.state.tickerUpdateListener) {
+            this.elements.tickerContent.removeEventListener('animationiteration', this.state.tickerUpdateListener);
+            this.state.tickerUpdateListener = null;
+        }
+        this.state.pendingTickerUpdate = null;
+        
         this.elements.ticker.classList.add('animating-out');
         this.state.tickerVisible = false;
         this.updateStatusIndicator();
@@ -527,6 +538,37 @@ class GraphicsEngine {
     }
     
     updateTicker(config) {
+        // If ticker is currently visible and animating, wait for current cycle to finish
+        if (this.state.tickerVisible && this.elements.ticker.classList.contains('visible')) {
+            // Store the new config for later
+            this.state.pendingTickerUpdate = config;
+            
+            // If not already listening, set up a listener for animation iteration
+            if (!this.state.tickerUpdateListener) {
+                this.state.tickerUpdateListener = () => {
+                    // Apply the pending update after current cycle completes
+                    if (this.state.pendingTickerUpdate) {
+                        this.applyTickerUpdate(this.state.pendingTickerUpdate);
+                        this.state.pendingTickerUpdate = null;
+                        
+                        // Remove the listener after one iteration
+                        this.elements.tickerContent.removeEventListener('animationiteration', this.state.tickerUpdateListener);
+                        this.state.tickerUpdateListener = null;
+                    }
+                };
+                
+                this.elements.tickerContent.addEventListener('animationiteration', this.state.tickerUpdateListener);
+            }
+            
+            // Don't apply update yet - wait for animation cycle to complete
+            return;
+        }
+        
+        // Ticker is not visible or just starting - apply update immediately
+        this.applyTickerUpdate(config);
+    }
+    
+    applyTickerUpdate(config) {
         const { 
             items = [], 
             speed = 20, 
@@ -574,9 +616,16 @@ class GraphicsEngine {
             this.elements.ticker.style.bottom = 'auto';
         }
         
-        // Set animation speed
+        // Set animation speed and iteration count based on mode
         const duration = speed + 's';
         this.elements.tickerContent.style.animationDuration = duration;
+        
+        // Set iteration count: 1 for "once" mode, infinite for "loop" mode
+        if (config.mode === 'once') {
+            this.elements.tickerContent.style.animationIterationCount = '1';
+        } else {
+            this.elements.tickerContent.style.animationIterationCount = 'infinite';
+        }
     }
     
     // Dual Lower Thirds Methods
@@ -868,6 +917,8 @@ class GraphicsEngine {
                 return this.elements.bugTopLeft;
             case 'top-right':
                 return this.elements.bugTopRight;
+            case 'bottom-left':
+                return this.elements.bugBottomLeft;
             case 'bottom-right':
                 return this.elements.timerBottomRight;
             default:
@@ -1088,8 +1139,8 @@ class GraphicsEngine {
     updateBugFont(fontFamily) {
         if (!fontFamily) return;
         
-        // Update all three bug positions
-        ['top-left', 'top-right', 'bottom-right'].forEach(position => {
+        // Update all four bug positions
+        ['top-left', 'top-right', 'bottom-left', 'bottom-right'].forEach(position => {
             const bugElement = this.getBugElement(position);
             if (bugElement) {
                 bugElement.style.fontFamily = fontFamily;

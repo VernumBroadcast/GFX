@@ -434,10 +434,26 @@
                 </div>
 
                 <div class="control-group">
+                    <h3>Bottom Left Bug</h3>
+                    <div class="form-row">
+                        <label for="bugBottomLeftText">Text:</label>
+                        <input type="text" id="bugBottomLeftText" value="Up Next:" placeholder="e.g., Up Next:">
+                    </div>
+                    <div class="form-row">
+                        <label for="bugBottomLeftBg">Background Color:</label>
+                        <input type="color" id="bugBottomLeftBg" value="#dc3545">
+                    </div>
+                    <div class="button-group">
+                        <button class="btn-success" id="btnShowBugBottomLeft">Show Bug</button>
+                        <button class="btn-danger" id="btnHideBugBottomLeft">Hide Bug</button>
+                    </div>
+                </div>
+
+                <div class="control-group">
                     <h3>Bottom Right Bug</h3>
                     <div class="form-row">
                         <label for="bugBottomText">Text:</label>
-                        <input type="text" id="bugBottomText" value="" placeholder="e.g., COMING UP NEXT">
+                        <input type="text" id="bugBottomText" value="Up Next:" placeholder="e.g., Up Next:">
                     </div>
                     <div class="form-row">
                         <label for="bugBottomBg">Background Color:</label>
@@ -458,6 +474,7 @@
                         <select id="timerPosition">
                             <option value="top-left">Top Left Bug</option>
                             <option value="top-right">Top Right Bug</option>
+                            <option value="bottom-left">Bottom Left Bug</option>
                             <option value="bottom-right" selected>Bottom Right Bug</option>
                         </select>
                     </div>
@@ -596,12 +613,33 @@
                         To use Google Sheets: 
                         <br>1. Make your sheet public (Share → Anyone with the link can view)
                         <br>2. Paste the full URL above
-                        <br>3. Your sheet should have columns: Name, Title (for lower thirds)
+                        <br>3. Use the CSV template format: <strong>Type, ID, Primary Text, Secondary Text, Color, Notes</strong>
+                        <br>4. Supports: L3s (1-5), Bugs (TopLeft/TopRight/BottomLeft/BottomRight), Ticker
                     </p>
                     <div class="button-group">
                         <button class="btn-primary" id="btnLoadGsheet">Load from Google Sheets</button>
                         <button class="btn-secondary" id="btnTestGsheet">Test Connection</button>
                     </div>
+                    
+                    <!-- Auto-Update Controls -->
+                    <div style="background: rgba(255,255,255,0.05); padding: 15px; border-radius: 8px; margin-top: 15px;">
+                        <h4 style="margin-top: 0; margin-bottom: 10px; color: #2c5aa0;">🔄 Auto-Update</h4>
+                        <div class="form-row" style="align-items: center;">
+                            <label for="gsheetAutoUpdate" style="display: flex; align-items: center; gap: 10px; cursor: pointer;">
+                                <input type="checkbox" id="gsheetAutoUpdate" style="width: 20px; height: 20px; cursor: pointer;">
+                                <span>Enable Auto-Update</span>
+                            </label>
+                        </div>
+                        <div class="form-row">
+                            <label for="gsheetAutoUpdateInterval">Update Interval (seconds):</label>
+                            <input type="number" id="gsheetAutoUpdateInterval" value="5" min="1" max="3600" style="width: 100px;">
+                        </div>
+                        <p style="font-size: 12px; opacity: 0.7; margin-top: 10px; margin-bottom: 0;">
+                            ✓ Graphics will automatically update when the sheet changes<br>
+                            ✓ Recommended: 5-10 seconds for live production
+                        </p>
+                    </div>
+                    
                     <div id="gsheetStatus" style="margin-top: 10px;"></div>
                 </div>
 
@@ -761,15 +799,6 @@
                     </div>
                 </div>
 
-                <div class="control-group">
-                    <h3>Quick Presets</h3>
-                    <div class="button-group">
-                        <button class="btn-secondary" id="btnPresetDefault">Default Style</button>
-                        <button class="btn-secondary" id="btnPresetNews">News Style</button>
-                        <button class="btn-secondary" id="btnPresetSports">Sports Style</button>
-                        <button class="btn-secondary" id="btnPresetCorporate">Corporate Style</button>
-                    </div>
-                </div>
             </div>
 
             <!-- Output Tab -->
