@@ -1828,6 +1828,31 @@ class ControlPanel {
     }
     
     // Communication with iframes
+    setupPreviewScaling() {
+        const scalePreview = () => {
+            const previewContainer = document.querySelector('.preview-frame');
+            const transmitContainer = document.querySelectorAll('.preview-frame')[1];
+            
+            if (previewContainer && this.previewFrame) {
+                const containerWidth = previewContainer.offsetWidth;
+                const scale = containerWidth / 1920;
+                this.previewFrame.style.transform = `scale(${scale})`;
+            }
+            
+            if (transmitContainer && this.transmitFrame) {
+                const containerWidth = transmitContainer.offsetWidth;
+                const scale = containerWidth / 1920;
+                this.transmitFrame.style.transform = `scale(${scale})`;
+            }
+        };
+        
+        // Scale on load
+        setTimeout(scalePreview, 100);
+        
+        // Re-scale on window resize
+        window.addEventListener('resize', scalePreview);
+    }
+    
     sendToFrame(target, action, data = {}) {
         // For dual L3s, data has configLeft and configRight
         // For single actions, data is the config
