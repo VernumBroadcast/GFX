@@ -205,22 +205,10 @@ class ControlPanel {
         });
         
         // Master Control Actions
-        document.getElementById('quickPreviewToLive').addEventListener('click', () => {
-            // Send whatever is on preview to transmit
-            if (this.previewState.l3 !== null) {
-                const baseConfig = this.l3Slots[this.previewState.l3];
-                const logoConfig = this.getL3LogoConfig(baseConfig);
-                const config = { ...baseConfig, ...logoConfig };
-                this.sendToFrame('transmit', 'showL3', { config });
-            }
-            if (this.previewState.ticker) {
-                this.sendToFrame('transmit', 'showTicker', { config: this.getTickerConfig() });
-            }
-        });
-        
         document.getElementById('quickHideAll').addEventListener('click', () => {
             this.sendToFrame('both', 'hideL3');
             this.sendToFrame('both', 'hideL3Dual');
+            this.sendToFrame('both', 'hideL3Triple');
             this.sendToFrame('both', 'hideTicker');
             this.sendToFrame('both', 'hideBug', { position: 'top-left' });
             this.sendToFrame('both', 'hideBug', { position: 'top-right' });
@@ -299,6 +287,21 @@ class ControlPanel {
         if (quickHideBugRight) {
             quickHideBugRight.addEventListener('click', () => {
                 this.sendToFrame('both', 'hideBug', { position: 'top-right' });
+            });
+        }
+        
+        const quickShowBugBottom = document.getElementById('quickShowBugBottom');
+        if (quickShowBugBottom) {
+            quickShowBugBottom.addEventListener('click', () => {
+                const bottomConfig = this.getBugConfig('bottom');
+                this.sendToFrame('transmit', 'showBug', { position: 'bottom-right', config: bottomConfig });
+            });
+        }
+        
+        const quickHideBugBottom = document.getElementById('quickHideBugBottom');
+        if (quickHideBugBottom) {
+            quickHideBugBottom.addEventListener('click', () => {
+                this.sendToFrame('both', 'hideBug', { position: 'bottom-right' });
             });
         }
         
@@ -666,7 +669,8 @@ class ControlPanel {
                      parseInt(document.getElementById('tickerCustomPos').value) : position,
             bg: bg,
             color: document.getElementById('tickerColor').value,
-            fontSize: parseInt(document.getElementById('tickerFontSize').value) || 28
+            fontSize: parseInt(document.getElementById('tickerFontSize').value) || 28,
+            mode: document.getElementById('tickerMode')?.value || 'loop'
         };
     }
     
@@ -679,9 +683,27 @@ class ControlPanel {
     
     // Dual L3 Controls
     setupDualL3Controls() {
+        // Mode toggle handler
+        document.getElementById('multiL3Mode')?.addEventListener('change', (e) => {
+            const isTriple = e.target.value === 'triple';
+            const centerGroup = document.getElementById('centerL3Group');
+            const titleEl = document.getElementById('multiL3ControlsTitle');
+            
+            if (centerGroup) {
+                centerGroup.style.display = isTriple ? 'block' : 'none';
+            }
+            if (titleEl) {
+                titleEl.textContent = isTriple ? 'Triple L3' : 'Dual L3';
+            }
+        });
+        
         // Update previews when slot selection changes
         document.getElementById('dualL3LeftSlot')?.addEventListener('change', () => {
             this.updateDualL3Preview('left');
+        });
+        
+        document.getElementById('dualL3CenterSlot')?.addEventListener('change', () => {
+            this.updateDualL3Preview('center');
         });
         
         document.getElementById('dualL3RightSlot')?.addEventListener('change', () => {
@@ -690,38 +712,50 @@ class ControlPanel {
         
         // Initial preview update
         this.updateDualL3Preview('left');
+        this.updateDualL3Preview('center');
         this.updateDualL3Preview('right');
         
         document.getElementById('btnShowDualL3Preview')?.addEventListener('click', () => {
-            const configLeft = this.getDualL3Config('left');
-            const configRight = this.getDualL3Config('right');
-            this.sendToFrame('preview', 'showL3Dual', { configLeft, configRight });
+            this.showMultiL3('preview');
         });
         
         document.getElementById('btnShowDualL3Transmit')?.addEventListener('click', () => {
-            const configLeft = this.getDualL3Config('left');
-            const configRight = this.getDualL3Config('right');
-            this.sendToFrame('transmit', 'showL3Dual', { configLeft, configRight });
+            this.showMultiL3('transmit');
         });
         
         document.getElementById('btnShowDualL3Both')?.addEventListener('click', () => {
-            const configLeft = this.getDualL3Config('left');
-            const configRight = this.getDualL3Config('right');
-            this.sendToFrame('both', 'showL3Dual', { configLeft, configRight });
+            this.showMultiL3('both');
         });
         
         document.getElementById('btnHideDualL3Both')?.addEventListener('click', () => {
             this.sendToFrame('both', 'hideL3Dual', {});
+            this.sendToFrame('both', 'hideL3Triple', {});
         });
     }
     
+    showMultiL3(target) {
+        const mode = document.getElementById('multiL3Mode')?.value || 'dual';
+        
+        if (mode === 'triple') {
+            const configLeft = this.getDualL3Config('left');
+            const configCenter = this.getDualL3Config('center');
+            const configRight = this.getDualL3Config('right');
+            this.sendToFrame(target, 'showL3Triple', { configLeft, configCenter, configRight });
+        } else {
+            const configLeft = this.getDualL3Config('left');
+            const configRight = this.getDualL3Config('right');
+            this.sendToFrame(target, 'showL3Dual', { configLeft, configRight });
+        }
+    }
+    
     updateDualL3Preview(side) {
-        const slotSelector = document.getElementById(`dualL3${side === 'left' ? 'Left' : 'Right'}Slot`);
+        const sideCapitalized = side === 'left' ? 'Left' : side === 'center' ? 'Center' : 'Right';
+        const slotSelector = document.getElementById(`dualL3${sideCapitalized}Slot`);
         const selectedSlot = parseInt(slotSelector?.value || '1');
         const slotConfig = this.l3Slots[selectedSlot];
         
-        const primaryEl = document.getElementById(`dualL3${side === 'left' ? 'Left' : 'Right'}PreviewPrimary`);
-        const secondaryEl = document.getElementById(`dualL3${side === 'left' ? 'Left' : 'Right'}PreviewSecondary`);
+        const primaryEl = document.getElementById(`dualL3${sideCapitalized}PreviewPrimary`);
+        const secondaryEl = document.getElementById(`dualL3${sideCapitalized}PreviewSecondary`);
         
         if (primaryEl && secondaryEl && slotConfig) {
             primaryEl.textContent = slotConfig.primaryText || '(No text set)';
@@ -730,9 +764,16 @@ class ControlPanel {
     }
     
     getDualL3Config(side) {
-        const slotSelector = document.getElementById(`dualL3${side === 'left' ? 'Left' : 'Right'}Slot`);
+        const sideCapitalized = side === 'left' ? 'Left' : side === 'center' ? 'Center' : 'Right';
+        const slotSelector = document.getElementById(`dualL3${sideCapitalized}Slot`);
         const selectedSlot = parseInt(slotSelector?.value || '1');
         const baseConfig = this.l3Slots[selectedSlot];
+        
+        // Center L3 doesn't get logo (as per user request)
+        if (side === 'center') {
+            return { ...baseConfig, showLogo: false };
+        }
+        
         const logoConfig = this.getL3LogoConfig(baseConfig);
         return { ...baseConfig, ...logoConfig };
     }
@@ -1470,7 +1511,14 @@ class ControlPanel {
     }
     
     updateOutputUrl() {
-        const fullUrl = window.location.href.replace('control.html', 'output.html');
+        // Handle both URLs with and without .html extension (for GitHub Pages)
+        let fullUrl = window.location.href;
+        if (fullUrl.includes('control.html')) {
+            fullUrl = fullUrl.replace('control.html', 'output.html');
+        } else if (fullUrl.includes('control')) {
+            fullUrl = fullUrl.replace(/\/control$/, '/output');
+        }
+        
         document.getElementById('outputUrl').value = fullUrl;
         
         // Also update the quick transmit URL display
@@ -1496,15 +1544,20 @@ class ControlPanel {
         
         if (btnQuickOpen) {
             btnQuickOpen.addEventListener('click', () => {
-                // Open output.html, not control.html
-                const outputUrl = fullUrl.replace('control.html', 'output.html');
-                window.open(outputUrl, '_blank');
+                // fullUrl already points to output.html/output
+                window.open(fullUrl, '_blank');
             });
         }
     }
     
     generateParameterUrl() {
-        const baseUrl = window.location.href.replace('control.html', 'output.html');
+        // Handle both URLs with and without .html extension (for GitHub Pages)
+        let baseUrl = window.location.href;
+        if (baseUrl.includes('control.html')) {
+            baseUrl = baseUrl.replace('control.html', 'output.html');
+        } else if (baseUrl.includes('control')) {
+            baseUrl = baseUrl.replace(/\/control$/, '/output');
+        }
         const l3Config = this.getLowerThirdConfig();
         const tickerConfig = this.getTickerConfig();
         

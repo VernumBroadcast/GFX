@@ -398,6 +398,17 @@ body.output-page {
     animation: slideOutRight 0.5s cubic-bezier(0.4, 0.0, 0.2, 1) forwards;
 }
 
+.lower-third-center {
+    left: 50% !important;
+    transform: translateX(-50%);
+    bottom: 150px !important;
+    animation: fadeIn 0.5s cubic-bezier(0.4, 0.0, 0.2, 1);
+}
+
+.lower-third-center.animating-out {
+    animation: fadeOut 0.5s cubic-bezier(0.4, 0.0, 0.2, 1) forwards;
+}
+
 /* Animations */
 @keyframes slideIn {
     from {

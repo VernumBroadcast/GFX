@@ -49,7 +49,7 @@
                 </div>
             </div>
             <div class="quick-action-group">
-                <h3>Dual L3s</h3>
+                <h3>Multi L3s</h3>
                 <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 5px; margin-bottom: 8px;">
                     <div style="font-size: 10px; color: rgba(255,255,255,0.6); text-align: center;">LEFT</div>
                     <div style="font-size: 10px; color: rgba(255,255,255,0.6); text-align: center;">RIGHT</div>
@@ -81,19 +81,19 @@
                 </div>
             </div>
             <div class="quick-action-group">
-                <h3>Corner Bugs + Timer</h3>
+                <h3>Corner Bugs</h3>
                 <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 5px; margin-bottom: 10px;">
                     <div style="text-align: center; font-size: 10px; color: rgba(255,255,255,0.7);">TOP LEFT</div>
                     <div style="text-align: center; font-size: 10px; color: rgba(255,255,255,0.7);">TOP RIGHT</div>
-                    <div style="text-align: center; font-size: 10px; color: rgba(255,255,255,0.7);">TIMER (BR)</div>
+                    <div style="text-align: center; font-size: 10px; color: rgba(255,255,255,0.7);">BOT RIGHT</div>
                     <button class="btn-live btn-success" id="quickShowBugLeft" style="font-size: 11px; padding: 6px 4px;">
                         <span class="icon">▶</span> SHOW
                     </button>
                     <button class="btn-live btn-success" id="quickShowBugRight" style="font-size: 11px; padding: 6px 4px;">
                         <span class="icon">▶</span> SHOW
                     </button>
-                    <button class="btn-live btn-success" id="quickStartTimer" style="font-size: 11px; padding: 6px 4px;">
-                        <span class="icon">▶</span> START
+                    <button class="btn-live btn-success" id="quickShowBugBottom" style="font-size: 11px; padding: 6px 4px;">
+                        <span class="icon">▶</span> SHOW
                     </button>
                     <button class="btn-off btn-danger" id="quickHideBugLeft" style="font-size: 11px; padding: 6px 4px;">
                         <span class="icon">■</span> OFF
@@ -101,9 +101,20 @@
                     <button class="btn-off btn-danger" id="quickHideBugRight" style="font-size: 11px; padding: 6px 4px;">
                         <span class="icon">■</span> OFF
                     </button>
-                    <button class="btn-off btn-danger" id="quickHideTimer" style="font-size: 11px; padding: 6px 4px;">
+                    <button class="btn-off btn-danger" id="quickHideBugBottom" style="font-size: 11px; padding: 6px 4px;">
                         <span class="icon">■</span> OFF
                     </button>
+                </div>
+                <div style="border-top: 1px solid rgba(255,255,255,0.2); padding-top: 8px; margin-top: 5px;">
+                    <div style="text-align: center; font-size: 10px; color: rgba(255,255,255,0.7); margin-bottom: 5px;">TIMER/CLOCK</div>
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 5px;">
+                        <button class="btn-live btn-success" id="quickStartTimer" style="font-size: 11px; padding: 6px 4px;">
+                            <span class="icon">⏰</span> START
+                        </button>
+                        <button class="btn-off btn-danger" id="quickHideTimer" style="font-size: 11px; padding: 6px 4px;">
+                            <span class="icon">■</span> OFF
+                        </button>
+                    </div>
                 </div>
             </div>
             <div class="quick-action-group">
@@ -123,10 +134,7 @@
             <div class="quick-action-group">
                 <h3>Master Control</h3>
                 <div class="button-group">
-                    <button class="btn-special btn-primary" id="quickPreviewToLive">
-                        <span class="icon">➤</span> PVW → LIVE
-                    </button>
-                    <button class="btn-off btn-danger" id="quickHideAll">
+                    <button class="btn-off btn-danger" id="quickHideAll" style="width: 100%; padding: 12px; font-size: 14px; font-weight: 700;">
                         <span class="icon">■</span> ALL OFF
                     </button>
                 </div>
@@ -163,7 +171,7 @@
             <!-- Tabs -->
             <div class="control-tabs">
                 <button class="tab-button active" data-tab="lower-third">Lower Third</button>
-                <button class="tab-button" data-tab="dual-l3">Dual L3s</button>
+                <button class="tab-button" data-tab="dual-l3">Multi L3s</button>
                 <button class="tab-button" data-tab="bugs">Corner Bugs</button>
                 <button class="tab-button" data-tab="ticker">Ticker</button>
                 <button class="tab-button" data-tab="data-sources">Data Sources</button>
@@ -294,11 +302,19 @@
                 </div>
             </div>
 
-            <!-- Dual L3s Tab -->
+            <!-- Multi L3s Tab (Dual or Triple) -->
             <div id="dual-l3" class="tab-content">
                 <div class="control-group">
-                    <h3>Dual Lower Thirds Setup</h3>
-                    <p class="info-text">Display two lower thirds simultaneously - one on the left, one on the right of the screen. Select which of your 5 prepared L3 slots to show on each side. Great for debates, interviews, or split-screen scenarios.</p>
+                    <h3>Multiple Lower Thirds Setup</h3>
+                    <p class="info-text">Display multiple lower thirds simultaneously. Choose Dual (2) or Triple (3) mode. Great for debates, interviews, panels, or split-screen scenarios.</p>
+                    
+                    <div class="form-row">
+                        <label for="multiL3Mode">L3 Mode:</label>
+                        <select id="multiL3Mode">
+                            <option value="dual" selected>Dual (2 L3s - Left & Right)</option>
+                            <option value="triple">Triple (3 L3s - Left, Center, Right)</option>
+                        </select>
+                    </div>
                 </div>
 
                 <div class="control-group">
@@ -320,6 +336,28 @@
                             <span id="dualL3LeftPreviewSecondary">-</span>
                         </div>
                     </div>
+                </div>
+
+                <div class="control-group" id="centerL3Group" style="display: none;">
+                    <h3>Center - Select L3 Slot</h3>
+                    <div class="form-row">
+                        <label for="dualL3CenterSlot">Show this slot in center:</label>
+                        <select id="dualL3CenterSlot">
+                            <option value="1">L3-1</option>
+                            <option value="2">L3-2</option>
+                            <option value="3" selected>L3-3</option>
+                            <option value="4">L3-4</option>
+                            <option value="5">L3-5</option>
+                        </select>
+                    </div>
+                    <div class="dual-l3-preview" id="dualL3CenterPreview">
+                        <div class="preview-label-mini">Preview of selected slot:</div>
+                        <div class="preview-text">
+                            <strong id="dualL3CenterPreviewPrimary">-</strong><br>
+                            <span id="dualL3CenterPreviewSecondary">-</span>
+                        </div>
+                    </div>
+                    <p class="info-text" style="margin-top: 10px; font-size: 12px; opacity: 0.8;">Note: Center L3 does not display logo (for cleaner look in triple mode)</p>
                 </div>
 
                 <div class="control-group">
@@ -344,14 +382,14 @@
                 </div>
 
                 <div class="control-group">
-                    <h3>Dual L3 Controls</h3>
+                    <h3><span id="multiL3ControlsTitle">Multi L3</span> Controls</h3>
                     <div class="button-group">
                         <button class="btn-info" id="btnShowDualL3Preview">👁 Show on Preview</button>
                         <button class="btn-success" id="btnShowDualL3Transmit">▶ Show on Transmit</button>
                         <button class="btn-success" id="btnShowDualL3Both">▶ Show on Both</button>
                     </div>
                     <div class="button-group">
-                        <button class="btn-danger" id="btnHideDualL3Both">■ Hide Both</button>
+                        <button class="btn-danger" id="btnHideDualL3Both">■ Hide All</button>
                     </div>
                 </div>
             </div>
@@ -521,6 +559,14 @@
                         <label for="tickerFontSize">Font Size (px):</label>
                         <input type="number" id="tickerFontSize" value="28" min="12" max="60">
                     </div>
+                    <div class="form-row">
+                        <label for="tickerMode">Animation Mode:</label>
+                        <select id="tickerMode">
+                            <option value="loop" selected>Loop Continuously</option>
+                            <option value="once">Play Once & Hide</option>
+                        </select>
+                    </div>
+                    <p class="info-text">Loop: Ticker scrolls endlessly. Play Once: Ticker animates once then disappears.</p>
                 </div>
 
                 <div class="control-group">

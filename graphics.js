@@ -23,6 +23,9 @@ class GraphicsEngine {
             l3RightSecondary: document.getElementById('l3RightSecondary'),
             l3LogoRight: document.getElementById('l3LogoRight'),
             l3LogoRightContainer: document.getElementById('l3LogoRightContainer'),
+            lowerThirdCenter: document.getElementById('lowerThirdCenter'),
+            l3CenterPrimary: document.getElementById('l3CenterPrimary'),
+            l3CenterSecondary: document.getElementById('l3CenterSecondary'),
             bugTopLeft: document.getElementById('bugTopLeft'),
             bugTopRight: document.getElementById('bugTopRight'),
             timerBottomRight: document.getElementById('timerBottomRight'),
@@ -37,6 +40,7 @@ class GraphicsEngine {
         this.state = {
             l3Visible: false,
             l3DualVisible: false,
+            l3TripleVisible: false,
             tickerVisible: false,
             // Track bugs by position and mode (text or timer)
             bugs: {
@@ -46,6 +50,7 @@ class GraphicsEngine {
             },
             l3Config: {},
             tickerConfig: {},
+            tickerTimeout: null,
             customFont: null,
             timerConfig: {},
             timerInterval: null,
@@ -61,7 +66,7 @@ class GraphicsEngine {
     updateStatusIndicator() {
         // Hide status indicator if any graphics are visible
         const anyBugVisible = Object.values(this.state.bugs).some(bug => bug.visible);
-        if (this.state.l3Visible || this.state.l3DualVisible || this.state.tickerVisible || anyBugVisible) {
+        if (this.state.l3Visible || this.state.l3DualVisible || this.state.l3TripleVisible || this.state.tickerVisible || anyBugVisible) {
             this.elements.statusIndicator.classList.add('hidden');
         } else {
             this.elements.statusIndicator.classList.remove('hidden');
@@ -227,6 +232,12 @@ class GraphicsEngine {
                     break;
                 case 'hideL3Dual':
                     this.hideDualLowerThirds();
+                    break;
+                case 'showL3Triple':
+                    this.showTripleL3s(data.configLeft, data.configCenter, data.configRight);
+                    break;
+                case 'hideL3Triple':
+                    this.hideTripleL3s();
                     break;
                 case 'showBug':
                     this.showBug(data.position, data.config);
@@ -479,9 +490,32 @@ class GraphicsEngine {
         this.elements.ticker.classList.add('visible');
         this.state.tickerVisible = true;
         this.updateStatusIndicator();
+        
+        // If mode is "once", hide ticker after animation completes
+        if (config.mode === 'once') {
+            const speed = config.speed || 20;
+            const duration = speed * 1000; // Convert to milliseconds
+            
+            // Clear any existing timeout
+            if (this.state.tickerTimeout) {
+                clearTimeout(this.state.tickerTimeout);
+            }
+            
+            // Hide ticker after one complete scroll
+            this.state.tickerTimeout = setTimeout(() => {
+                this.hideTicker();
+                this.state.tickerTimeout = null;
+            }, duration);
+        }
     }
     
     hideTicker() {
+        // Clear any "play once" timeout
+        if (this.state.tickerTimeout) {
+            clearTimeout(this.state.tickerTimeout);
+            this.state.tickerTimeout = null;
+        }
+        
         this.elements.ticker.classList.add('animating-out');
         this.state.tickerVisible = false;
         this.updateStatusIndicator();
@@ -660,6 +694,83 @@ class GraphicsEngine {
         
         setTimeout(() => {
             this.elements.lowerThirdLeft.classList.remove('visible', 'animating-out');
+            this.elements.lowerThirdRight.classList.remove('visible', 'animating-out');
+        }, 500);
+    }
+    
+    // Triple Lower Thirds Methods
+    showTripleL3s(configLeft, configCenter, configRight) {
+        // Update left side
+        if (configLeft) {
+            this.elements.l3LeftPrimary.textContent = configLeft.primaryText || '';
+            this.elements.l3LeftSecondary.textContent = configLeft.secondaryText || '';
+            this.applyL3Styling(this.elements.l3LeftPrimary, this.elements.l3LeftSecondary, configLeft);
+            
+            // Handle left logo
+            const showLogoLeft = configLeft.showLogo && configLeft.logoUrl;
+            if (showLogoLeft) {
+                this.elements.l3LogoLeft.src = configLeft.logoUrl;
+                if (configLeft.logoBg) {
+                    this.elements.l3LogoLeftContainer.style.background = configLeft.logoBg;
+                }
+                this.elements.l3LogoLeft.style.height = (configLeft.logoSize || 120) + 'px';
+                this.elements.l3LogoLeft.style.width = 'auto';
+                this.elements.l3LogoLeftContainer.style.display = 'flex';
+            } else {
+                this.elements.l3LogoLeftContainer.style.display = 'none';
+            }
+        }
+        
+        // Update center (NO LOGO)
+        if (configCenter) {
+            this.elements.l3CenterPrimary.textContent = configCenter.primaryText || '';
+            this.elements.l3CenterSecondary.textContent = configCenter.secondaryText || '';
+            this.applyL3Styling(this.elements.l3CenterPrimary, this.elements.l3CenterSecondary, configCenter);
+        }
+        
+        // Update right side
+        if (configRight) {
+            this.elements.l3RightPrimary.textContent = configRight.primaryText || '';
+            this.elements.l3RightSecondary.textContent = configRight.secondaryText || '';
+            this.applyL3Styling(this.elements.l3RightPrimary, this.elements.l3RightSecondary, configRight);
+            
+            // Handle right logo
+            const showLogoRight = configRight.showLogo && configRight.logoUrl;
+            if (showLogoRight) {
+                this.elements.l3LogoRight.src = configRight.logoUrl;
+                if (configRight.logoBg) {
+                    this.elements.l3LogoRightContainer.style.background = configRight.logoBg;
+                }
+                this.elements.l3LogoRight.style.height = (configRight.logoSize || 120) + 'px';
+                this.elements.l3LogoRight.style.width = 'auto';
+                this.elements.l3LogoRightContainer.style.display = 'flex';
+            } else {
+                this.elements.l3LogoRightContainer.style.display = 'none';
+            }
+        }
+        
+        // Show all three L3s with animation
+        this.elements.lowerThirdLeft.classList.remove('animating-out');
+        this.elements.lowerThirdLeft.classList.add('visible');
+        this.elements.lowerThirdCenter.classList.remove('animating-out');
+        this.elements.lowerThirdCenter.classList.add('visible');
+        this.elements.lowerThirdRight.classList.remove('animating-out');
+        this.elements.lowerThirdRight.classList.add('visible');
+        
+        this.state.l3TripleVisible = true;
+        this.updateStatusIndicator();
+    }
+    
+    hideTripleL3s() {
+        this.elements.lowerThirdLeft.classList.add('animating-out');
+        this.elements.lowerThirdCenter.classList.add('animating-out');
+        this.elements.lowerThirdRight.classList.add('animating-out');
+        this.state.l3TripleVisible = false;
+        this.updateStatusIndicator();
+        
+        setTimeout(() => {
+            this.elements.lowerThirdLeft.classList.remove('visible', 'animating-out');
+            this.elements.lowerThirdCenter.classList.remove('visible', 'animating-out');
             this.elements.lowerThirdRight.classList.remove('visible', 'animating-out');
         }, 500);
     }
