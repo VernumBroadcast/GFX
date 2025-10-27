@@ -470,12 +470,19 @@ class GraphicsEngine {
                     totalHeight += 10; // gap between boxes
                 }
                 
-                // Add some padding for visual balance (7px top + 7px bottom padding on container)
-                totalHeight += 0;  // No extra needed since padding is included
-                
                 console.log('Calculated L3 height:', totalHeight);
+                
+                // Set container height to match L3 boxes
                 this.elements.l3LogoContainer.style.height = totalHeight + 'px';
+                
+                // Set logo image height to fill container (minus padding)
+                const logoHeight = totalHeight - 14; // Subtract padding (7px top + 7px bottom)
+                this.elements.l3Logo.style.height = logoHeight + 'px';
+                this.elements.l3Logo.style.width = 'auto';
+                this.elements.l3Logo.style.maxHeight = logoHeight + 'px';
+                
                 this.elements.l3LogoContainer.classList.add('visible');
+                console.log(`Logo sized: container ${totalHeight}px, image ${logoHeight}px`);
             }, 50); // Small delay to ensure boxes are rendered
             
             console.log('Logo should be visible now');
@@ -672,10 +679,15 @@ class GraphicsEngine {
                         totalHeight += 10;
                     }
                     
-                    // No extra padding needed (7px top + 7px bottom is in container)
-                    totalHeight += 0;
-                    
+                    // Set container height to match L3 boxes
                     this.elements.l3LogoLeftContainer.style.height = totalHeight + 'px';
+                    
+                    // Set logo image height to fill container (minus padding)
+                    const logoHeight = totalHeight - 14; // Subtract padding (7px top + 7px bottom)
+                    this.elements.l3LogoLeft.style.height = logoHeight + 'px';
+                    this.elements.l3LogoLeft.style.width = 'auto';
+                    this.elements.l3LogoLeft.style.maxHeight = logoHeight + 'px';
+                    
                     this.elements.l3LogoLeftContainer.classList.add('visible');
                 }, 50);
             } else {
@@ -720,10 +732,15 @@ class GraphicsEngine {
                         totalHeight += 10;
                     }
                     
-                    // No extra padding needed (7px top + 7px bottom is in container)
-                    totalHeight += 0;
-                    
+                    // Set container height to match L3 boxes
                     this.elements.l3LogoRightContainer.style.height = totalHeight + 'px';
+                    
+                    // Set logo image height to fill container (minus padding)
+                    const logoHeight = totalHeight - 14; // Subtract padding (7px top + 7px bottom)
+                    this.elements.l3LogoRight.style.height = logoHeight + 'px';
+                    this.elements.l3LogoRight.style.width = 'auto';
+                    this.elements.l3LogoRight.style.maxHeight = logoHeight + 'px';
+                    
                     this.elements.l3LogoRightContainer.classList.add('visible');
                 }, 50);
             } else {
@@ -767,8 +784,30 @@ class GraphicsEngine {
                 if (configLeft.logoBg) {
                     this.elements.l3LogoLeftContainer.style.background = configLeft.logoBg;
                 }
-                this.elements.l3LogoLeft.style.height = (configLeft.logoSize || 120) + 'px';
-                this.elements.l3LogoLeft.style.width = 'auto';
+                
+                // Calculate total height to match L3 boxes
+                setTimeout(() => {
+                    let totalHeight = 0;
+                    if (configLeft.showPrimary !== false) {
+                        totalHeight += this.elements.l3LeftPrimary.offsetHeight;
+                    }
+                    if (configLeft.showSecondary !== false) {
+                        totalHeight += this.elements.l3LeftSecondary.offsetHeight;
+                    }
+                    if (configLeft.showPrimary !== false && configLeft.showSecondary !== false) {
+                        totalHeight += 10; // gap
+                    }
+                    
+                    // Set container height
+                    this.elements.l3LogoLeftContainer.style.height = totalHeight + 'px';
+                    
+                    // Set logo image height (minus padding)
+                    const logoHeight = totalHeight - 14;
+                    this.elements.l3LogoLeft.style.height = logoHeight + 'px';
+                    this.elements.l3LogoLeft.style.width = 'auto';
+                    this.elements.l3LogoLeft.style.maxHeight = logoHeight + 'px';
+                }, 50);
+                
                 this.elements.l3LogoLeftContainer.style.display = 'flex';
             } else {
                 this.elements.l3LogoLeftContainer.style.display = 'none';
@@ -795,8 +834,30 @@ class GraphicsEngine {
                 if (configRight.logoBg) {
                     this.elements.l3LogoRightContainer.style.background = configRight.logoBg;
                 }
-                this.elements.l3LogoRight.style.height = (configRight.logoSize || 120) + 'px';
-                this.elements.l3LogoRight.style.width = 'auto';
+                
+                // Calculate total height to match L3 boxes
+                setTimeout(() => {
+                    let totalHeight = 0;
+                    if (configRight.showPrimary !== false) {
+                        totalHeight += this.elements.l3RightPrimary.offsetHeight;
+                    }
+                    if (configRight.showSecondary !== false) {
+                        totalHeight += this.elements.l3RightSecondary.offsetHeight;
+                    }
+                    if (configRight.showPrimary !== false && configRight.showSecondary !== false) {
+                        totalHeight += 10; // gap
+                    }
+                    
+                    // Set container height
+                    this.elements.l3LogoRightContainer.style.height = totalHeight + 'px';
+                    
+                    // Set logo image height (minus padding)
+                    const logoHeight = totalHeight - 14;
+                    this.elements.l3LogoRight.style.height = logoHeight + 'px';
+                    this.elements.l3LogoRight.style.width = 'auto';
+                    this.elements.l3LogoRight.style.maxHeight = logoHeight + 'px';
+                }, 50);
+                
                 this.elements.l3LogoRightContainer.style.display = 'flex';
             } else {
                 this.elements.l3LogoRightContainer.style.display = 'none';

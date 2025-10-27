@@ -1829,46 +1829,78 @@ class ControlPanel {
     
     // Communication with iframes
     setupPreviewScaling() {
+        console.log('🔍 Setting up preview scaling...');
+        
         const scalePreview = () => {
-            const previewContainers = document.querySelectorAll('.preview-frame');
-            
-            if (previewContainers[0] && this.previewFrame) {
-                const containerWidth = previewContainers[0].offsetWidth;
-                const containerHeight = previewContainers[0].offsetHeight;
-                const scale = Math.min(containerWidth / 1920, containerHeight / 1080);
-                this.previewFrame.style.transform = `scale(${scale})`;
-                this.previewFrame.style.transformOrigin = 'top left';
-                console.log(`Preview scaled to ${scale.toFixed(3)}x (container: ${containerWidth}x${containerHeight})`);
-            }
-            
-            if (previewContainers[1] && this.transmitFrame) {
-                const containerWidth = previewContainers[1].offsetWidth;
-                const containerHeight = previewContainers[1].offsetHeight;
-                const scale = Math.min(containerWidth / 1920, containerHeight / 1080);
-                this.transmitFrame.style.transform = `scale(${scale})`;
-                this.transmitFrame.style.transformOrigin = 'top left';
-                console.log(`Transmit scaled to ${scale.toFixed(3)}x (container: ${containerWidth}x${containerHeight})`);
+            try {
+                const previewContainers = document.querySelectorAll('.preview-frame');
+                console.log(`Found ${previewContainers.length} preview containers`);
+                
+                if (previewContainers[0] && this.previewFrame) {
+                    const containerWidth = previewContainers[0].offsetWidth;
+                    const containerHeight = previewContainers[0].offsetHeight;
+                    const scale = Math.min(containerWidth / 1920, containerHeight / 1080);
+                    
+                    this.previewFrame.style.transform = `scale(${scale})`;
+                    this.previewFrame.style.transformOrigin = 'top left';
+                    this.previewFrame.style.width = '1920px';
+                    this.previewFrame.style.height = '1080px';
+                    
+                    console.log(`✅ Preview scaled to ${scale.toFixed(3)}x (container: ${containerWidth}x${containerHeight})`);
+                } else {
+                    console.warn('⚠️ Preview container or iframe not found');
+                }
+                
+                if (previewContainers[1] && this.transmitFrame) {
+                    const containerWidth = previewContainers[1].offsetWidth;
+                    const containerHeight = previewContainers[1].offsetHeight;
+                    const scale = Math.min(containerWidth / 1920, containerHeight / 1080);
+                    
+                    this.transmitFrame.style.transform = `scale(${scale})`;
+                    this.transmitFrame.style.transformOrigin = 'top left';
+                    this.transmitFrame.style.width = '1920px';
+                    this.transmitFrame.style.height = '1080px';
+                    
+                    console.log(`✅ Transmit scaled to ${scale.toFixed(3)}x (container: ${containerWidth}x${containerHeight})`);
+                } else {
+                    console.warn('⚠️ Transmit container or iframe not found');
+                }
+            } catch (error) {
+                console.error('❌ Error scaling previews:', error);
             }
         };
         
-        // Scale after a short delay to ensure containers are rendered
+        // Scale immediately
+        scalePreview();
+        
+        // Scale after delays to catch different load states
         setTimeout(scalePreview, 100);
         setTimeout(scalePreview, 500);
         setTimeout(scalePreview, 1000);
+        setTimeout(scalePreview, 2000);
         
         // Scale when iframes load
-        this.previewFrame.addEventListener('load', () => {
-            console.log('Preview iframe loaded, scaling...');
-            setTimeout(scalePreview, 100);
-        });
+        if (this.previewFrame) {
+            this.previewFrame.addEventListener('load', () => {
+                console.log('📺 Preview iframe loaded, scaling...');
+                setTimeout(scalePreview, 50);
+                setTimeout(scalePreview, 200);
+            });
+        }
         
-        this.transmitFrame.addEventListener('load', () => {
-            console.log('Transmit iframe loaded, scaling...');
-            setTimeout(scalePreview, 100);
-        });
+        if (this.transmitFrame) {
+            this.transmitFrame.addEventListener('load', () => {
+                console.log('📺 Transmit iframe loaded, scaling...');
+                setTimeout(scalePreview, 50);
+                setTimeout(scalePreview, 200);
+            });
+        }
         
         // Re-scale on window resize
-        window.addEventListener('resize', scalePreview);
+        window.addEventListener('resize', () => {
+            console.log('🔄 Window resized, re-scaling...');
+            scalePreview();
+        });
     }
     
     sendToFrame(target, action, data = {}) {
