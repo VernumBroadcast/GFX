@@ -114,11 +114,31 @@ class GraphicsEngine {
         // Parse URL parameters on load
         this.parseURLParams();
         
+        // Update Firebase status indicator
+        const updateFirebaseStatus = (status, color) => {
+            const indicator = document.getElementById('firebaseStatus');
+            if (indicator) {
+                indicator.textContent = status;
+                indicator.style.borderColor = color;
+                indicator.style.background = `rgba(${color === 'green' ? '0,128,0' : color === 'red' ? '255,0,0' : '255,165,0'}, 0.8)`;
+            }
+        };
+        
         // Listen for Firebase commands (GitHub Pages + VMix real-time control)
         if (window.ENABLE_FIREBASE && window.FIREBASE_CONFIG && window.firebaseBridge) {
+            updateFirebaseStatus('🔄 Initializing Firebase...', 'orange');
+            
             const firebaseInitialized = window.firebaseBridge.init(window.FIREBASE_CONFIG);
             if (firebaseInitialized) {
+                updateFirebaseStatus('🔥 Firebase Active - Listening...', 'green');
+                
                 window.firebaseBridge.listen((message) => {
+                    // Flash the indicator when command received
+                    updateFirebaseStatus('📥 Command: ' + message.action, 'lime');
+                    setTimeout(() => {
+                        updateFirebaseStatus('🔥 Firebase Active - Listening...', 'green');
+                    }, 1000);
+                    
                     if (this.debugMode) {
                         console.log('📥 Firebase command received:', message);
                         this.addDebugLog('🔥 Firebase: ' + message.action);
@@ -129,8 +149,11 @@ class GraphicsEngine {
                 if (this.debugMode) {
                     this.addDebugLog('🔥 Firebase listener active');
                 }
+            } else {
+                updateFirebaseStatus('❌ Firebase Init Failed', 'red');
             }
         } else {
+            updateFirebaseStatus('⚠️ Firebase Not Configured', 'orange');
             console.log('ℹ️  Firebase not configured - using postMessage/localStorage only');
         }
         
