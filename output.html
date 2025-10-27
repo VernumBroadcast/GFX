@@ -3,6 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=1920, height=1080">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="color-scheme" content="light dark">
     <title>VMix Graphics Output</title>
     <link rel="stylesheet" href="styles.css">
     <style id="custom-font-style"></style>
@@ -11,8 +13,16 @@
         html, body {
             margin: 0;
             padding: 0;
-            background: transparent;
+            background: transparent !important;
+            background-color: transparent !important;
             font-family: Arial, sans-serif;
+            overflow: hidden;
+        }
+        
+        /* Force transparency for VMix */
+        body.output-page {
+            background: transparent !important;
+            background-color: transparent !important;
         }
         .status-indicator {
             position: fixed;

@@ -66,6 +66,7 @@ class ControlPanel {
         this.setupDataSourceControls();
         this.setupGlobalColorControls();
         this.setupLogoControls();
+        this.setupTogglePreview();
         this.setupStylingControls();
         this.setupOutputControls();
         this.updateOutputUrl();
@@ -92,6 +93,20 @@ class ControlPanel {
         
         // Start header clock
         this.startHeaderClock();
+    }
+    
+    setupTogglePreview() {
+        const btn = document.getElementById('btnTogglePreview');
+        const container = document.getElementById('previewFrameContainer');
+        let hidden = false;
+        
+        if (btn && container) {
+            btn.addEventListener('click', () => {
+                hidden = !hidden;
+                container.style.display = hidden ? 'none' : 'block';
+                btn.textContent = hidden ? 'Show' : 'Hide';
+            });
+        }
     }
     
     startHeaderClock() {

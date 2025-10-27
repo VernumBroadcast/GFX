@@ -1,65 +1,130 @@
-# VMix HTML5 Graphics System
+# Vernum Media GFX Package
 
-A professional, browser-based graphics overlay system designed for VMix with transparent output, real-time control, and multiple data source integrations.
+A professional, broadcast-grade graphics overlay system designed for VMix with transparent output, real-time control, and comprehensive branding features.
 
-## Features
+**Made available by James Watson**
 
-- **Modern Lower Thirds** - Clean, rounded rectangle design with dual-box layout
-- **Scrolling Ticker** - Customizable news ticker with smooth animations
+## 🎬 Features
+
+- **Single & Dual Lower Thirds** - Display L3s on left, right, or both sides of screen
+- **5 L3 Slots** - Pre-configure up to 5 lower thirds for instant recall
+- **Corner Bugs** - Top-left and top-right corner bugs with auto-scaling text
+- **Live Timer/Clock** - Bottom-right timer with clock, countdown, stopwatch modes
+- **Scrolling Ticker** - Bottom-screen news ticker with smooth animations
+- **Logo Support** - Global and per-L3 logo integration with auto-sizing
 - **Real-time Control** - Side-by-side Preview and Transmit views
-- **Multiple Data Sources** - Google Sheets, Rundown Creator API, and JSON config files
+- **Multiple Data Sources** - Google Sheets, Rundown Creator API, and JSON config
 - **Transparent Output** - VMix-compatible alpha channel support
 - **Custom Fonts** - Upload your own fonts or use web-safe options
-- **Style Presets** - Quick styling for News, Sports, and Corporate themes
-- **URL Parameters** - Generate static URLs with embedded settings
-- **State Management** - Save and load your configurations
+- **Global Color Controls** - Batch change all colors across the entire project
+- **State Management** - Persistent memory of last used settings
+- **Vernum Media Branding** - Professional blue color scheme with brand logo
 
-## File Structure
+## 📁 File Structure
 
 ```
 TLWIG/
-├── control.html       # Main control panel with preview/transmit views
-├── output.html        # Graphics output page for VMix
-├── styles.css         # All styling and animations
-├── control.js         # Control panel logic
-├── graphics.js        # Graphics rendering engine
-├── config.json        # Example configuration file
-└── README.md          # This file
+├── control.html                      # Main control panel with preview/transmit views
+├── output.html                       # Graphics output page for VMix
+├── styles.css                        # All styling and animations
+├── control.js                        # Control panel logic
+├── graphics.js                       # Graphics rendering engine
+├── config.json                       # Example configuration file
+├── README.md                         # This file (overview)
+├── VMIX_SETUP.md                     # ⚠️ DETAILED VMix integration guide
+├── README_VMIX_TROUBLESHOOTING.md    # ⚠️ Quick fixes for black screen issues
+├── L3_TEMPLATE.csv                   # Google Sheets template for L3 data
+├── GOOGLE_SHEETS_SETUP.md            # Guide for Google Sheets integration
+└── ravelogo.png                      # Default logo (example)
 ```
 
-## Quick Start
+## 🚨 VMix Users: READ THIS FIRST
 
-### 1. Basic Setup
+**Having issues with black screen or blank output in VMix?**
 
-1. Open `control.html` in your web browser
-2. You'll see two preview windows (Preview and Transmit) and controls below
-3. The **Preview** window is for testing
-4. The **Transmit** window is what you'll use in VMix
+👉 **See `README_VMIX_TROUBLESHOOTING.md` for quick fixes**
 
-### 2. Add to VMix
+👉 **See `VMIX_SETUP.md` for complete setup guide**
 
-1. In VMix, click **Add Input → More → Web Browser**
-2. Copy the URL from the "Output URL for VMix" section in the control panel
-3. Paste it into VMix's URL field
-4. Make sure "Transparent Background" is enabled in VMix
-5. The graphics will now appear in VMix with transparency
+**Key requirement**: You MUST use an HTTP server (not file://) for VMix integration.
 
-### 3. Using the Control Panel
+## 🚀 Quick Start
 
-The control panel has 5 main tabs:
+### 1. Start HTTP Server (REQUIRED for VMix)
+
+**Mac/Linux:**
+```bash
+cd /Users/watson/TLWIG
+python3 -m http.server 8080
+```
+
+**Windows:**
+```bash
+cd C:\Path\To\TLWIG
+python -m http.server 8080
+```
+
+### 2. Open Control Panel
+
+Open your browser and go to:
+```
+http://localhost:8080/control.html
+```
+
+You'll see:
+- **Preview** window (left) - for testing graphics
+- **Transmit** window (right) - shows what VMix sees
+- **Quick Actions** - instant show/hide buttons
+- **Tabs** - L3s, Dual L3s, Corner Bugs, Ticker, Styling, Data Sources, Output
+
+### 3. Add to VMix
+
+1. In VMix, click **Add Input → Web Browser**
+2. Copy the URL from the "VMix URL" bar in the Transmit section
+3. Paste it into VMix: `http://localhost:8080/output.html`
+4. Set Width: **1920**, Height: **1080**
+5. ✅ Enable **"Transparent Background"**
+6. The graphics will now appear in VMix with transparency
+
+### 4. Test It!
+
+In `control.html`:
+1. Click **"SHOW L3"** in Quick Actions
+2. You should see the graphic appear in both Preview and Transmit windows
+3. If it appears in Transmit → it's working in VMix too! ✅
+
+### 5. Using the Control Panel
+
+The control panel has 7 main tabs:
 
 #### **Lower Third Tab**
-- Enter primary and secondary text
-- Adjust position (X/Y coordinates)
-- Customize colors, fonts, and sizes
-- Show/Hide graphics on Preview, Transmit, or Both
+- Configure up to 5 L3 slots
+- Enter primary (name) and secondary (title) text
+- Customize colors, fonts, and sizes for each slot
+- Add logos (global or per-L3 override)
+- Save slots for instant recall via Quick Actions
 - Real-time preview updates as you type
+
+#### **Dual L3s Tab**
+- Display two L3s simultaneously (left and right sides)
+- Select from any of your 5 saved L3 slots
+- Preview shows current content of selected slots
+- Perfect for split-screen interviews or debates
+
+#### **Corner Bugs Tab**
+- **Top-Left Bug** - Defaults to "LIVE"
+- **Top-Right Bug** - Defaults to "PREVIOUSLY"
+- **Bottom-Right Timer** - Clock, countdown, stopwatch, or custom timer
+- All bugs auto-scale to text length
+- Individual show/hide controls for each bug
+- Timer supports HH:MM, HH:MM:SS, and millisecond formats
 
 #### **Ticker Tab**
 - Enter ticker items separated by `|` (pipe character)
 - Example: `Breaking News | Weather Update | Sports Score`
 - Adjust speed, position, and styling
 - Show/Hide ticker independently
+- Animates from bottom with smooth scrolling
 
 #### **Data Sources Tab**
 Three ways to load data:
@@ -82,8 +147,10 @@ Three ways to load data:
 
 #### **Styling Tab**
 - Choose from web-safe fonts or upload custom fonts
-- Apply style presets (Default, News, Sports, Corporate)
+- **Global Color Controls** - Batch change all colors across all graphics
+- **Global Logo Settings** - Set default logo for all L3s
 - Custom font upload supports .ttf, .otf, .woff, .woff2
+- Fonts apply to L3s, bugs, ticker, and timer
 
 #### **Output Tab**
 - Copy URL for VMix
@@ -95,11 +162,13 @@ Three ways to load data:
 ### Example 1: Basic Lower Third
 
 1. Go to the **Lower Third** tab
-2. Enter:
-   - Primary Text: `Rich McDonald`
-   - Secondary Text: `Trade Live With IG`
-3. Click **"Show on Transmit"**
-4. The graphic appears in VMix with smooth animation
+2. Select **Slot 1** from the dropdown
+3. Enter:
+   - Primary Text: `John Smith`
+   - Secondary Text: `Sports Reporter`
+4. Click **"SAVE SLOT"**
+5. Click **"SHOW L3"** in Quick Actions
+6. The graphic appears in VMix with smooth slide-in animation
 
 ### Example 2: Ticker
 
@@ -111,17 +180,37 @@ Three ways to load data:
 3. Adjust speed to `20` seconds
 4. Click **"Show on Transmit"**
 
-### Example 3: Google Sheets Integration
+### Example 3: Dual Lower Thirds (Split Screen)
 
-1. Create a Google Sheet with columns: `Name`, `Title`
-2. Add rows with guest information
-3. Make the sheet public
+1. Set up two L3 slots (e.g., Slot 1 and Slot 2) with different names/titles
+2. Go to **Dual L3s** tab
+3. Select **Slot 1** for left side, **Slot 2** for right side
+4. Preview shows both L3s' content
+5. Click **"SHOW DUAL L3s"** in Quick Actions
+6. Both L3s appear on left and right sides of screen
+
+### Example 4: Live Clock
+
+1. Go to **Corner Bugs** tab, scroll to "Bottom Right Timer/Clock"
+2. Set **Timer Type**: "Clock (Time of Day)"
+3. Set **Format**: "HH:MM" (or "HH:MM:SS" for seconds)
+4. Set **Label**: "LIVE" (or leave blank)
+5. Click **"Start Timer"**
+6. Current time appears in bottom-right corner
+
+### Example 5: Google Sheets Integration
+
+1. Create a Google Sheet with columns: `Slot`, `Primary Text`, `Secondary Text`
+2. Add rows with L3 data (see `L3_TEMPLATE.csv` for format)
+3. Make the sheet public (Share → Anyone with link can view)
 4. In the control panel, go to **Data Sources** tab
 5. Paste your sheet URL
 6. Click **"Load from Google Sheets"**
-7. The first row's data loads into the lower third
+7. All 5 slots populate automatically
 
-### Example 4: URL Parameters (Static Setup)
+👉 **See `GOOGLE_SHEETS_SETUP.md` for detailed instructions**
+
+### Example 6: URL Parameters (Static Setup)
 
 1. Configure your graphics in the control panel
 2. Go to **Output** tab
@@ -238,27 +327,48 @@ Save your current control panel settings:
 
 Changes in the control panel update the Preview window in real-time as you type. This lets you fine-tune positioning and styling before pushing to Transmit (VMix).
 
-## Troubleshooting
+## 🐛 Troubleshooting
+
+### ⚠️ Black Screen in VMix
+**Most Common Issue!**
+- ❌ You're using `file://` protocol
+- ✅ **Solution**: Start an HTTP server and use `http://localhost:8080/output.html`
+- 👉 **See `README_VMIX_TROUBLESHOOTING.md` for step-by-step fixes**
 
 ### Graphics don't appear in VMix
 - Ensure "Transparent Background" is enabled in VMix's Web Browser input settings
-- Check that the output.html URL is correct
+- Check that the output.html URL is correct (`http://localhost:8080/output.html`)
 - Verify the graphics are visible in the control panel's Transmit window
+- Ensure control panel is open at `http://localhost:8080/control.html` (same origin)
+
+### Blank/Transparent Output
+- This is **normal** when no graphics are active
+- Graphics only appear when you click "SHOW" buttons in control panel
+- Test standalone by opening `output.html` and clicking "TEST: Show Sample L3" button
 
 ### Google Sheets not loading
 - Make sure the sheet is set to "Anyone with the link can view"
 - Verify the URL is the full Google Sheets URL
 - Check browser console (F12) for CORS errors
+- Use the CSV template in `L3_TEMPLATE.csv` as a starting point
 
 ### Custom font not working
 - Ensure font file format is supported (.ttf, .otf, .woff, .woff2)
 - Enter a font name without spaces
 - Apply font before showing graphics
+- Font changes apply to all graphics (L3s, bugs, ticker, timer)
 
 ### Ticker not scrolling
 - Make sure ticker items are separated by `|` (pipe character)
 - Check that speed is set (default: 20 seconds)
 - Verify ticker is shown (visible in control panel)
+- Ticker defaults to red background (#dc3545)
+
+### Timer/Clock not showing
+- Ensure you clicked "Start Timer" in the Corner Bugs tab
+- Check that timer format is set (default: HH:MM)
+- Use "Hide All" master control to hide all graphics including timer
+- Timer aligns with L3s and sits above ticker
 
 ## Browser Compatibility
 
@@ -309,24 +419,49 @@ Apply to elements:
 3. **Use solid colors** - Better performance than gradients
 4. **Close unused tabs** - Control panel can be closed after setup
 
-## Credits
+## 📚 Additional Documentation
 
-Built for professional broadcast graphics with VMix compatibility.
+- **`VMIX_SETUP.md`** - Complete VMix integration guide with troubleshooting
+- **`README_VMIX_TROUBLESHOOTING.md`** - Quick reference for black screen issues
+- **`GOOGLE_SHEETS_SETUP.md`** - Detailed Google Sheets integration guide
+- **`L3_TEMPLATE.csv`** - Template for importing L3 data into Google Sheets
+- **`QUICKSTART.md`** - Quick reference guide for operators
 
-## License
+## 🎨 Branding
 
-Free to use and modify for your productions.
+This package is branded as **Vernum Media GFX Package** with:
+- Primary brand color: Vernum Blue (#2c5aa0)
+- Accent colors: Green (Preview), Red (Transmit)
+- Default L3/Bug color: Vernum Red (#dc3545)
+- Logo: Vernum Media (customizable via Styling tab)
 
-## Support
+**Made available by James Watson**
+
+## 📞 Support
 
 For issues or questions:
-- Check the troubleshooting section above
-- Review the example configuration in `config.json`
-- Test in the control panel's Preview window before going live
+1. Check the troubleshooting section above
+2. Review `VMIX_SETUP.md` for VMix-specific issues
+3. Check `GOOGLE_SHEETS_SETUP.md` for data integration help
+4. Review the example configuration in `config.json`
+5. Test in the control panel's Preview window before going live
+6. Contact James Watson for additional assistance
+
+## 💡 Tips for Live Production
+
+- **Pre-configure all 5 L3 slots** before the show starts
+- **Use Quick Actions** for instant show/hide during live production
+- **Hide Preview** to reduce screen clutter during broadcast
+- **Test graphics** in Preview before showing on Transmit
+- **Use "Hide All"** as a panic button to clear all graphics instantly
+- **Set up Timer/Clock** early and leave running throughout show
+- **Dual L3s** are perfect for panel discussions or debates
+- **Corner Bugs** help brand segments (LIVE, BREAKING NEWS, etc.)
 
 ---
 
-**Version**: 1.0  
-**Last Updated**: October 23, 2025  
-**Compatible with**: VMix 24+, HTML5 browsers
+**Version**: 2.0 - Vernum Media Edition  
+**Last Updated**: October 27, 2025  
+**Compatible with**: VMix 24+, HTML5 browsers (Chrome, Edge, Firefox)  
+**Created by**: James Watson for Vernum Media
 

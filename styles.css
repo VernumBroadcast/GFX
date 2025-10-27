@@ -311,15 +311,15 @@ body.output-page {
 }
 
 .timer-label {
-    font-size: 14px;
+    font-size: 18px;
     text-transform: uppercase;
     letter-spacing: 1.5px;
     opacity: 0.9;
-    font-weight: 600;
+    font-weight: 700;
 }
 
 .timer-display {
-    font-size: 38px;
+    font-size: 48px;
     font-weight: 700;
     font-family: 'Courier New', monospace;
     letter-spacing: 2px;
