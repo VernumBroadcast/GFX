@@ -1232,11 +1232,11 @@ class ControlPanel {
                         
                         if (type === 'L3') {
                             // Update L3 slot (1-5)
-                            const slotIndex = parseInt(id) - 1;
-                            if (slotIndex >= 0 && slotIndex < 5) {
-                                this.l3Slots[slotIndex].primaryText = primaryText;
-                                this.l3Slots[slotIndex].secondaryText = secondaryText;
-                                this.l3Slots[slotIndex].secondaryBg = color;
+                            const slotNum = parseInt(id);
+                            if (slotNum >= 1 && slotNum <= 5 && this.l3Slots[slotNum]) {
+                                this.l3Slots[slotNum].primaryText = primaryText;
+                                this.l3Slots[slotNum].secondaryText = secondaryText;
+                                this.l3Slots[slotNum].secondaryBg = color;
                                 l3Count++;
                             }
                         } else if (type === 'Bug') {
