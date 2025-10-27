@@ -1197,16 +1197,20 @@ class ControlPanel {
         }
     }
     
-    async loadGoogleSheets() {
+    async loadGoogleSheets(silent = false) {
         const url = document.getElementById('gsheetUrl').value;
         const statusDiv = document.getElementById('gsheetStatus');
         
         if (!url) {
-            statusDiv.innerHTML = '<p style="color: #dc3545;">Please enter a Google Sheets URL</p>';
+            if (!silent) {
+                statusDiv.innerHTML = '<p style="color: #dc3545;">Please enter a Google Sheets URL</p>';
+            }
             return;
         }
         
-        statusDiv.innerHTML = '<p style="color: #ffc107;">Loading data...</p>';
+        if (!silent) {
+            statusDiv.innerHTML = '<p style="color: #ffc107;">Loading data...</p>';
+        }
         
         try {
             const csvUrl = this.convertToCSVUrl(url);
@@ -1270,18 +1274,30 @@ class ControlPanel {
                     this.updateL3DropdownLabels();
                     this.loadL3SlotToForm(this.currentL3Slot);
                     
-                    // Save all changes
-                    this.saveState();
+                    // Save all changes (silent if auto-update)
+                    this.saveState(!silent);
                     
-                    statusDiv.innerHTML = `<p style="color: #28a745;">✓ Loaded: ${l3Count} L3s, ${bugCount} Bugs, ${tickerCount} Ticker</p>`;
+                    if (!silent) {
+                        statusDiv.innerHTML = `<p style="color: #28a745;">✓ Loaded: ${l3Count} L3s, ${bugCount} Bugs, ${tickerCount} Ticker</p>`;
+                    } else {
+                        console.log(`🔄 Auto-updated: ${l3Count} L3s, ${bugCount} Bugs, ${tickerCount} Ticker`);
+                    }
                 } else {
-                    statusDiv.innerHTML = '<p style="color: #dc3545;">No data found in sheet</p>';
+                    if (!silent) {
+                        statusDiv.innerHTML = '<p style="color: #dc3545;">No data found in sheet</p>';
+                    }
                 }
             } else {
-                statusDiv.innerHTML = '<p style="color: #dc3545;">Failed to load. Make sure the sheet is public.</p>';
+                if (!silent) {
+                    statusDiv.innerHTML = '<p style="color: #dc3545;">Failed to load. Make sure the sheet is public.</p>';
+                }
             }
         } catch (error) {
-            statusDiv.innerHTML = `<p style="color: #dc3545;">Error: ${error.message}</p>`;
+            if (!silent) {
+                statusDiv.innerHTML = `<p style="color: #dc3545;">Error: ${error.message}</p>`;
+            } else {
+                console.error('❌ Auto-update error:', error);
+            }
         }
     }
     
@@ -1316,15 +1332,15 @@ class ControlPanel {
         const interval = parseInt(document.getElementById('gsheetAutoUpdateInterval')?.value || 5);
         const intervalMs = interval * 1000;
         
-        console.log(`Starting auto-update every ${interval} seconds`);
+        console.log(`🔄 Starting auto-update every ${interval} seconds`);
         
-        // Load immediately
-        this.loadGoogleSheets();
+        // Load immediately (not silent - show initial status)
+        this.loadGoogleSheets(false);
         
-        // Then set interval for future updates
+        // Then set interval for future updates (silent - no popups)
         this.autoUpdateTimer = setInterval(() => {
-            console.log('Auto-updating from Google Sheets...');
-            this.loadGoogleSheets();
+            console.log('🔄 Auto-updating from Google Sheets...');
+            this.loadGoogleSheets(true);  // Silent mode
         }, intervalMs);
     }
     
@@ -1699,7 +1715,7 @@ class ControlPanel {
         document.getElementById('generatedUrl').value = fullUrl;
     }
     
-    saveState() {
+    saveState(showAlert = true) {
         // Save current slot before saving state
         this.saveCurrentL3ToSlot();
         
@@ -1715,7 +1731,11 @@ class ControlPanel {
         };
         
         localStorage.setItem('vmixGraphicsState', JSON.stringify(state));
-        alert('State saved successfully! (All 5 L3 slots + colors saved)');
+        
+        // Only show alert if explicitly requested (not for auto-updates)
+        if (showAlert) {
+            alert('State saved successfully! (All 5 L3 slots + colors saved)');
+        }
     }
     
     loadSavedState() {
