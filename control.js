@@ -1528,22 +1528,7 @@ class ControlPanel {
             }
         });
         
-        // Style presets
-        document.getElementById('btnPresetDefault').addEventListener('click', () => {
-            this.applyPreset('default');
-        });
-        
-        document.getElementById('btnPresetNews').addEventListener('click', () => {
-            this.applyPreset('news');
-        });
-        
-        document.getElementById('btnPresetSports').addEventListener('click', () => {
-            this.applyPreset('sports');
-        });
-        
-        document.getElementById('btnPresetCorporate').addEventListener('click', () => {
-            this.applyPreset('corporate');
-        });
+        // Style presets removed - now using color presets in setupGlobalColorControls()
     }
     
     getCurrentFont() {
@@ -1597,45 +1582,7 @@ class ControlPanel {
         this.sendToFrame('both', 'updateTimerFont', { fontFamily: this.getCurrentFont() });
     }
     
-    applyPreset(preset) {
-        const presets = {
-            default: {
-                l3PrimaryBg: '#ffffff',
-                l3PrimaryColor: '#000000',
-                l3SecondaryBg: '#dc3545',
-                l3SecondaryColor: '#ffffff'
-            },
-            news: {
-                l3PrimaryBg: '#1a1a1a',
-                l3PrimaryColor: '#ffffff',
-                l3SecondaryBg: '#c0392b',
-                l3SecondaryColor: '#ffffff'
-            },
-            sports: {
-                l3PrimaryBg: '#2c3e50',
-                l3PrimaryColor: '#ffffff',
-                l3SecondaryBg: '#27ae60',
-                l3SecondaryColor: '#ffffff'
-            },
-            corporate: {
-                l3PrimaryBg: '#34495e',
-                l3PrimaryColor: '#ffffff',
-                l3SecondaryBg: '#3498db',
-                l3SecondaryColor: '#ffffff'
-            }
-        };
-        
-        const style = presets[preset];
-        if (style) {
-            document.getElementById('l3PrimaryBg').value = style.l3PrimaryBg;
-            document.getElementById('l3PrimaryColor').value = style.l3PrimaryColor;
-            document.getElementById('l3SecondaryBg').value = style.l3SecondaryBg;
-            document.getElementById('l3SecondaryColor').value = style.l3SecondaryColor;
-            
-            // Update preview
-            this.sendToFrame('preview', 'updateL3', this.getLowerThirdConfig());
-        }
-    }
+    // applyPreset() removed - now using color presets in setupGlobalColorControls()
     
     // Output Controls
     setupOutputControls() {
