@@ -96,6 +96,67 @@ class ControlPanel {
         
         // Start header clock
         this.startHeaderClock();
+        
+        // Setup state syncing with output page
+        this.setupStateSync();
+    }
+    
+    setupStateSync() {
+        // Listen for state updates from output iframe
+        window.addEventListener('message', (event) => {
+            if (event.data.action === 'stateUpdate') {
+                console.log('📥 Received state from output:', event.data.state);
+                this.syncControlPanelWithOutput(event.data.state);
+            }
+        });
+        
+        // Request current state from both iframes when they load
+        this.transmitFrame.addEventListener('load', () => {
+            console.log('✓ Transmit iframe loaded, requesting current state...');
+            setTimeout(() => {
+                this.sendToFrame('transmit', 'getState', {});
+            }, 500); // Small delay to ensure graphics engine is ready
+        });
+        
+        this.previewFrame.addEventListener('load', () => {
+            console.log('✓ Preview iframe loaded, requesting current state...');
+            setTimeout(() => {
+                this.sendToFrame('preview', 'getState', {});
+            }, 500);
+        });
+    }
+    
+    syncControlPanelWithOutput(state) {
+        console.log('🔄 Syncing control panel with output state...');
+        
+        // Update visual indicators (could add colored borders or badges)
+        // For now, just log what's currently visible
+        if (state.l3Visible) {
+            console.log('✓ Single L3 is currently visible');
+        }
+        if (state.l3DualVisible) {
+            console.log('✓ Dual L3s are currently visible');
+        }
+        if (state.l3TripleVisible) {
+            console.log('✓ Triple L3s are currently visible');
+        }
+        if (state.tickerVisible) {
+            console.log('✓ Ticker is currently visible');
+        }
+        if (state.timerVisible) {
+            console.log('✓ Timer is currently visible');
+        }
+        
+        // Check bugs
+        Object.entries(state.bugs).forEach(([position, visible]) => {
+            if (visible) {
+                console.log(`✓ Bug ${position} is currently visible`);
+            }
+        });
+        
+        // TODO: Add visual indicators to control panel
+        // For example: add a "LIVE" badge next to active graphics
+        // Or change button colors to indicate what's currently on screen
     }
     
     setupTogglePreview() {

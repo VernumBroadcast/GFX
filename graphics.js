@@ -243,6 +243,10 @@ class GraphicsEngine {
                 case 'hideL3Triple':
                     this.hideTripleL3s();
                     break;
+                case 'getState':
+                    // Return current graphics state to control panel
+                    this.sendStateToControl();
+                    break;
                 case 'showBug':
                     this.showBug(data.position, data.config);
                     break;
@@ -333,6 +337,32 @@ class GraphicsEngine {
                 position: params.get('ticker_position') || 'bottom'
             };
             this.showTicker(config);
+        }
+    }
+    
+    // Send current state back to control panel
+    sendStateToControl() {
+        const currentState = {
+            action: 'stateUpdate',
+            state: {
+                l3Visible: this.state.l3Visible,
+                l3DualVisible: this.state.l3DualVisible,
+                l3TripleVisible: this.state.l3TripleVisible,
+                tickerVisible: this.state.tickerVisible,
+                timerVisible: this.state.timerVisible,
+                bugs: {
+                    topLeft: this.state.bugs['top-left'],
+                    topRight: this.state.bugs['top-right'],
+                    bottomLeft: this.state.bugs['bottom-left'],
+                    bottomRight: this.state.bugs['bottom-right']
+                }
+            }
+        };
+        
+        // Send to parent window (control panel)
+        if (window.parent && window.parent !== window) {
+            window.parent.postMessage(currentState, '*');
+            console.log('📤 Sent current state to control panel:', currentState);
         }
     }
     
