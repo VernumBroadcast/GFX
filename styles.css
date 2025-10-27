@@ -618,11 +618,13 @@ body.control-page {
 .btn-live,
 .btn-off {
     flex: 1;
-    padding: 15px 20px;
-    font-size: 16px;
+    min-width: 70px;
+    max-width: 120px;
+    padding: 15px 10px;
+    font-size: 14px;
     font-weight: 700;
     text-transform: uppercase;
-    letter-spacing: 1px;
+    letter-spacing: 0.5px;
     border-radius: 8px;
     transition: all 0.2s ease;
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
@@ -648,11 +650,14 @@ body.control-page {
 
 .btn-preview {
     background: #17a2b8;
-    padding: 15px 20px;
-    font-size: 16px;
+    flex: 1;
+    min-width: 70px;
+    max-width: 120px;
+    padding: 15px 10px;
+    font-size: 14px;
     font-weight: 700;
     text-transform: uppercase;
-    letter-spacing: 1px;
+    letter-spacing: 0.5px;
     border-radius: 8px;
     transition: all 0.2s ease;
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
