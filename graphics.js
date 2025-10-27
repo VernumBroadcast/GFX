@@ -583,13 +583,18 @@ class GraphicsEngine {
         // Clear existing content
         this.elements.tickerContent.innerHTML = '';
         
-        // Create ticker items (duplicate for seamless loop)
+        // Create ticker items
         const itemsHTML = items.map(item => 
             `<span class="ticker-item">${item}</span>`
         ).join('');
         
-        // Double the content for seamless scrolling
-        this.elements.tickerContent.innerHTML = itemsHTML + itemsHTML;
+        // Double the content for seamless scrolling ONLY in loop mode
+        // In "once" mode, show content only once
+        if (config.mode === 'once') {
+            this.elements.tickerContent.innerHTML = itemsHTML;
+        } else {
+            this.elements.tickerContent.innerHTML = itemsHTML + itemsHTML;
+        }
         
         // Update styling
         this.elements.ticker.style.backgroundColor = bg;

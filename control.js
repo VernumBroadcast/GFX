@@ -305,6 +305,36 @@ class ControlPanel {
             });
         }
         
+        const quickShowBugBottomLeft = document.getElementById('quickShowBugBottomLeft');
+        if (quickShowBugBottomLeft) {
+            quickShowBugBottomLeft.addEventListener('click', () => {
+                const bottomLeftConfig = this.getBugConfig('bottomLeft');
+                this.sendToFrame('transmit', 'showBug', { position: 'bottom-left', config: bottomLeftConfig });
+            });
+        }
+        
+        const quickHideBugBottomLeft = document.getElementById('quickHideBugBottomLeft');
+        if (quickHideBugBottomLeft) {
+            quickHideBugBottomLeft.addEventListener('click', () => {
+                this.sendToFrame('both', 'hideBug', { position: 'bottom-left' });
+            });
+        }
+        
+        // Quick Multi L3 Mode selector - sync with main mode selector
+        const quickMultiL3Mode = document.getElementById('quickMultiL3Mode');
+        const multiL3Mode = document.getElementById('multiL3Mode');
+        if (quickMultiL3Mode && multiL3Mode) {
+            // Sync quick selector to main selector
+            quickMultiL3Mode.addEventListener('change', () => {
+                multiL3Mode.value = quickMultiL3Mode.value;
+                multiL3Mode.dispatchEvent(new Event('change'));
+            });
+            // Sync main selector to quick selector
+            multiL3Mode.addEventListener('change', () => {
+                quickMultiL3Mode.value = multiL3Mode.value;
+            });
+        }
+        
         // Timer Quick Actions
         const quickStartTimer = document.getElementById('quickStartTimer');
         if (quickStartTimer) {

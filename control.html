@@ -50,6 +50,11 @@
             </div>
             <div class="quick-action-group">
                 <h3>Multi L3s</h3>
+                <!-- Mode selector: 2 or 3 L3s -->
+                <select id="quickMultiL3Mode" style="width: 100%; padding: 6px; margin-bottom: 8px; border-radius: 5px; background: rgba(255,255,255,0.1); color: white; border: 1px solid rgba(255,255,255,0.3); font-size: 12px; font-weight: 600;">
+                    <option value="dual" selected>2 L3s (Dual)</option>
+                    <option value="triple">3 L3s (Triple)</option>
+                </select>
                 <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 5px; margin-bottom: 8px;">
                     <div style="font-size: 10px; color: rgba(255,255,255,0.6); text-align: center;">LEFT</div>
                     <div style="font-size: 10px; color: rgba(255,255,255,0.6); text-align: center;">RIGHT</div>
@@ -82,14 +87,18 @@
             </div>
             <div class="quick-action-group">
                 <h3>Corner Bugs</h3>
-                <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 5px; margin-bottom: 10px;">
+                <div style="display: grid; grid-template-columns: 1fr 1fr 1fr 1fr; gap: 5px; margin-bottom: 10px;">
                     <div style="text-align: center; font-size: 10px; color: rgba(255,255,255,0.7);">TOP LEFT</div>
                     <div style="text-align: center; font-size: 10px; color: rgba(255,255,255,0.7);">TOP RIGHT</div>
+                    <div style="text-align: center; font-size: 10px; color: rgba(255,255,255,0.7);">BOT LEFT</div>
                     <div style="text-align: center; font-size: 10px; color: rgba(255,255,255,0.7);">BOT RIGHT</div>
                     <button class="btn-live btn-success" id="quickShowBugLeft" style="font-size: 11px; padding: 6px 4px;">
                         <span class="icon">▶</span> SHOW
                     </button>
                     <button class="btn-live btn-success" id="quickShowBugRight" style="font-size: 11px; padding: 6px 4px;">
+                        <span class="icon">▶</span> SHOW
+                    </button>
+                    <button class="btn-live btn-success" id="quickShowBugBottomLeft" style="font-size: 11px; padding: 6px 4px;">
                         <span class="icon">▶</span> SHOW
                     </button>
                     <button class="btn-live btn-success" id="quickShowBugBottom" style="font-size: 11px; padding: 6px 4px;">
@@ -99,6 +108,9 @@
                         <span class="icon">■</span> OFF
                     </button>
                     <button class="btn-off btn-danger" id="quickHideBugRight" style="font-size: 11px; padding: 6px 4px;">
+                        <span class="icon">■</span> OFF
+                    </button>
+                    <button class="btn-off btn-danger" id="quickHideBugBottomLeft" style="font-size: 11px; padding: 6px 4px;">
                         <span class="icon">■</span> OFF
                     </button>
                     <button class="btn-off btn-danger" id="quickHideBugBottom" style="font-size: 11px; padding: 6px 4px;">
