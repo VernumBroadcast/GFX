@@ -1,0 +1,363 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>VMix URL Generator - Vernum Media</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif;
+            background: linear-gradient(135deg, #1e3c72 0%, #2c5aa0 100%);
+            padding: 20px;
+            min-height: 100vh;
+        }
+        
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.3);
+            overflow: hidden;
+        }
+        
+        .header {
+            background: #2c5aa0;
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+        
+        .header h1 {
+            font-size: 28px;
+            margin-bottom: 8px;
+        }
+        
+        .header p {
+            opacity: 0.9;
+            font-size: 14px;
+        }
+        
+        .content {
+            padding: 30px;
+        }
+        
+        .section {
+            margin-bottom: 30px;
+            padding: 20px;
+            background: #f8f9fa;
+            border-radius: 8px;
+            border-left: 4px solid #2c5aa0;
+        }
+        
+        .section h2 {
+            color: #2c5aa0;
+            margin-bottom: 15px;
+            font-size: 18px;
+        }
+        
+        .form-group {
+            margin-bottom: 15px;
+        }
+        
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: 600;
+            color: #333;
+            font-size: 13px;
+        }
+        
+        .form-group input,
+        .form-group select {
+            width: 100%;
+            padding: 10px;
+            border: 2px solid #ddd;
+            border-radius: 5px;
+            font-size: 14px;
+            transition: border-color 0.3s;
+        }
+        
+        .form-group input:focus,
+        .form-group select:focus {
+            outline: none;
+            border-color: #2c5aa0;
+        }
+        
+        .url-output {
+            background: #1a1a1a;
+            color: #00ff00;
+            padding: 15px;
+            border-radius: 5px;
+            font-family: 'Courier New', monospace;
+            font-size: 12px;
+            word-break: break-all;
+            margin-top: 15px;
+            cursor: pointer;
+            position: relative;
+        }
+        
+        .url-output:hover {
+            background: #2a2a2a;
+        }
+        
+        .btn {
+            padding: 12px 24px;
+            background: #2c5aa0;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 600;
+            transition: background 0.3s;
+            margin-right: 10px;
+        }
+        
+        .btn:hover {
+            background: #1e3c72;
+        }
+        
+        .btn-success {
+            background: #28a745;
+        }
+        
+        .btn-success:hover {
+            background: #218838;
+        }
+        
+        .btn-danger {
+            background: #dc3545;
+        }
+        
+        .btn-danger:hover {
+            background: #c82333;
+        }
+        
+        .alert {
+            padding: 12px;
+            border-radius: 5px;
+            margin-top: 15px;
+            font-size: 13px;
+        }
+        
+        .alert-info {
+            background: #d1ecf1;
+            color: #0c5460;
+            border: 1px solid #bee5eb;
+        }
+        
+        .alert-success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        
+        .presets {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 10px;
+            margin-top: 15px;
+        }
+        
+        .preset-btn {
+            padding: 10px;
+            background: #e9ecef;
+            border: 2px solid #dee2e6;
+            border-radius: 5px;
+            cursor: pointer;
+            text-align: center;
+            font-size: 13px;
+            font-weight: 600;
+            transition: all 0.3s;
+        }
+        
+        .preset-btn:hover {
+            background: #2c5aa0;
+            color: white;
+            border-color: #2c5aa0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🎬 Vernum Media VMix URL Generator</h1>
+            <p>Generate static URLs for VMix Web Browser inputs</p>
+        </div>
+        
+        <div class="content">
+            <div class="alert alert-info">
+                <strong>📌 For GitHub Pages Deployment:</strong> This tool generates URLs with embedded parameters that work directly in VMix without needing the control panel open.
+            </div>
+            
+            <div class="section">
+                <h2>🌐 Base URL Configuration</h2>
+                <div class="form-group">
+                    <label>Base URL (GitHub Pages or HTTP Server):</label>
+                    <input type="text" id="baseUrl" value="https://vernumbroadcast.github.io/GFX/output.html" placeholder="https://yoursite.github.io/output.html">
+                </div>
+            </div>
+            
+            <div class="section">
+                <h2>📝 Lower Third Configuration</h2>
+                <div class="form-group">
+                    <label>Action:</label>
+                    <select id="action">
+                        <option value="none">No L3 (Blank)</option>
+                        <option value="showL3" selected>Show Lower Third</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Primary Text (Name):</label>
+                    <input type="text" id="primaryText" value="Your Name Here" placeholder="John Smith">
+                </div>
+                <div class="form-group">
+                    <label>Secondary Text (Title):</label>
+                    <input type="text" id="secondaryText" value="Your Title Here" placeholder="Sports Reporter">
+                </div>
+                <div class="form-group">
+                    <label>Primary Background Color:</label>
+                    <input type="color" id="primaryBg" value="#ffffff">
+                </div>
+                <div class="form-group">
+                    <label>Secondary Background Color:</label>
+                    <input type="color" id="secondaryBg" value="#dc3545">
+                </div>
+            </div>
+            
+            <div class="section">
+                <h2>🎨 Quick Presets</h2>
+                <div class="presets">
+                    <div class="preset-btn" onclick="applyPreset('live')">🔴 LIVE</div>
+                    <div class="preset-btn" onclick="applyPreset('breaking')">⚡ BREAKING</div>
+                    <div class="preset-btn" onclick="applyPreset('guest')">👤 GUEST</div>
+                    <div class="preset-btn" onclick="applyPreset('blank')">⬜ BLANK</div>
+                </div>
+            </div>
+            
+            <div class="section">
+                <h2>🔗 Generated VMix URL</h2>
+                <button class="btn" onclick="generateUrl()">Generate URL</button>
+                <button class="btn btn-success" onclick="copyUrl()">Copy URL</button>
+                <button class="btn btn-danger" onclick="testUrl()">Test in New Tab</button>
+                
+                <div class="url-output" id="urlOutput" onclick="copyUrl()">
+                    Click "Generate URL" to create your VMix URL
+                </div>
+                
+                <div class="alert alert-success" id="copyAlert" style="display: none;">
+                    ✅ URL copied to clipboard! Paste it into VMix Web Browser input.
+                </div>
+            </div>
+            
+            <div class="section">
+                <h2>📋 How to Use in VMix</h2>
+                <ol style="line-height: 1.8; padding-left: 20px;">
+                    <li>Configure your graphic settings above</li>
+                    <li>Click <strong>"Generate URL"</strong></li>
+                    <li>Click <strong>"Copy URL"</strong></li>
+                    <li>In VMix, add <strong>Input → Web Browser</strong></li>
+                    <li>Paste the URL</li>
+                    <li>Set Width: <strong>1920</strong>, Height: <strong>1080</strong></li>
+                    <li>Enable <strong>"Transparent Background"</strong></li>
+                    <li>The graphic will appear automatically! ✨</li>
+                </ol>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        function generateUrl() {
+            const baseUrl = document.getElementById('baseUrl').value;
+            const action = document.getElementById('action').value;
+            
+            if (action === 'none') {
+                document.getElementById('urlOutput').textContent = baseUrl;
+                return;
+            }
+            
+            const primaryText = document.getElementById('primaryText').value;
+            const secondaryText = document.getElementById('secondaryText').value;
+            const primaryBg = document.getElementById('primaryBg').value;
+            const secondaryBg = document.getElementById('secondaryBg').value;
+            
+            const params = new URLSearchParams({
+                l3_show: 'true',
+                l3_primary: primaryText,
+                l3_secondary: secondaryText,
+                l3_primary_bg: primaryBg,
+                l3_primary_color: '#000000',
+                l3_secondary_bg: secondaryBg,
+                l3_secondary_color: '#ffffff',
+                l3_x: '80',
+                l3_y: '850'
+            });
+            
+            const url = `${baseUrl}?${params.toString()}`;
+            document.getElementById('urlOutput').textContent = url;
+        }
+        
+        function copyUrl() {
+            const urlText = document.getElementById('urlOutput').textContent;
+            if (urlText === 'Click "Generate URL" to create your VMix URL') {
+                alert('Please generate a URL first!');
+                return;
+            }
+            
+            navigator.clipboard.writeText(urlText).then(() => {
+                const alert = document.getElementById('copyAlert');
+                alert.style.display = 'block';
+                setTimeout(() => {
+                    alert.style.display = 'none';
+                }, 3000);
+            });
+        }
+        
+        function testUrl() {
+            const urlText = document.getElementById('urlOutput').textContent;
+            if (urlText === 'Click "Generate URL" to create your VMix URL') {
+                alert('Please generate a URL first!');
+                return;
+            }
+            window.open(urlText, '_blank');
+        }
+        
+        function applyPreset(preset) {
+            switch(preset) {
+                case 'live':
+                    document.getElementById('primaryText').value = 'LIVE';
+                    document.getElementById('secondaryText').value = 'On Air Now';
+                    document.getElementById('secondaryBg').value = '#dc3545';
+                    break;
+                case 'breaking':
+                    document.getElementById('primaryText').value = 'BREAKING NEWS';
+                    document.getElementById('secondaryText').value = 'Live Coverage';
+                    document.getElementById('secondaryBg').value = '#fd7e14';
+                    break;
+                case 'guest':
+                    document.getElementById('primaryText').value = 'Guest Speaker';
+                    document.getElementById('secondaryText').value = 'Special Guest';
+                    document.getElementById('secondaryBg').value = '#2c5aa0';
+                    break;
+                case 'blank':
+                    document.getElementById('action').value = 'none';
+                    break;
+            }
+            generateUrl();
+        }
+        
+        // Auto-generate on page load
+        window.onload = () => {
+            generateUrl();
+        };
+    </script>
+</body>
+</html>
+

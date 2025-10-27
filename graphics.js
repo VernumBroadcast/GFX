@@ -114,6 +114,26 @@ class GraphicsEngine {
         // Parse URL parameters on load
         this.parseURLParams();
         
+        // Listen for Firebase commands (GitHub Pages + VMix real-time control)
+        if (window.ENABLE_FIREBASE && window.FIREBASE_CONFIG && window.firebaseBridge) {
+            const firebaseInitialized = window.firebaseBridge.init(window.FIREBASE_CONFIG);
+            if (firebaseInitialized) {
+                window.firebaseBridge.listen((message) => {
+                    if (this.debugMode) {
+                        console.log('📥 Firebase command received:', message);
+                        this.addDebugLog('🔥 Firebase: ' + message.action);
+                    }
+                    this.handleMessage(message);
+                });
+                console.log('🔥 Firebase bridge active - real-time control enabled!');
+                if (this.debugMode) {
+                    this.addDebugLog('🔥 Firebase listener active');
+                }
+            }
+        } else {
+            console.log('ℹ️  Firebase not configured - using postMessage/localStorage only');
+        }
+        
         // Config monitoring disabled to avoid CORS errors with file:// protocol
         // Use postMessage from control panel instead
         // this.startConfigMonitoring();

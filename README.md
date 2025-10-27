@@ -42,11 +42,15 @@ TLWIG/
 
 **Having issues with black screen or blank output in VMix?**
 
-👉 **See `README_VMIX_TROUBLESHOOTING.md` for quick fixes**
+### Local Setup (Files on your computer):
+👉 **See `README_VMIX_TROUBLESHOOTING.md` for quick fixes**  
+👉 **See `VMIX_SETUP.md` for complete setup guide**  
+**Key requirement**: You MUST use an HTTP server (not file://)
 
-👉 **See `VMIX_SETUP.md` for complete setup guide**
-
-**Key requirement**: You MUST use an HTTP server (not file://) for VMix integration.
+### GitHub Pages Setup (Online hosting):
+👉 **See `FIX_GITHUB_VMIX.md` for 2-minute fix**  
+👉 **See `GITHUB_PAGES_SETUP.md` for complete guide**  
+**Key requirement**: You MUST use URL parameters (not control panel)
 
 ## 🚀 Quick Start
 

@@ -1562,6 +1562,12 @@ class ControlPanel {
                 timestamp: Date.now(),
                 message: message
             }));
+            
+            // ALSO send via Firebase for GitHub Pages + VMix real-time control
+            if (window.firebaseBridge && window.firebaseBridge.enabled) {
+                window.firebaseBridge.sendCommand(action, data);
+                console.log('🔥 Sent via Firebase:', action);
+            }
         }
     }
 }
