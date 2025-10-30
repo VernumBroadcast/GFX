@@ -17,7 +17,9 @@ class ControlPanel {
         };
         
         // Store custom positions for draggable elements
-        this.customPositions = {
+        // Load from localStorage if available
+        const savedPositions = localStorage.getItem('customPositions');
+        this.customPositions = savedPositions ? JSON.parse(savedPositions) : {
             timer: null
         };
         
@@ -117,6 +119,9 @@ class ControlPanel {
                 console.log('📍 Position update:', event.data.elementType, event.data.position);
                 this.customPositions[event.data.elementType] = event.data.position;
                 
+                // Save to localStorage for persistence
+                localStorage.setItem('customPositions', JSON.stringify(this.customPositions));
+                
                 // Apply to transmit window
                 this.applyCustomPosition(event.data.elementType, event.data.position);
             }
@@ -141,6 +146,14 @@ class ControlPanel {
     syncControlPanelWithOutput(state) {
         console.log('🔄 Syncing control panel with output state...');
         
+        // Sync custom positions from output
+        if (state.customPositions) {
+            this.customPositions = state.customPositions;
+            // Also save to localStorage for persistence
+            localStorage.setItem('customPositions', JSON.stringify(this.customPositions));
+            console.log('📍 Synced custom positions:', this.customPositions);
+        }
+        
         // Update visual indicators (could add colored borders or badges)
         // For now, just log what's currently visible
         if (state.l3Visible) {
@@ -157,6 +170,9 @@ class ControlPanel {
         }
         if (state.timerVisible) {
             console.log('✓ Timer is currently visible');
+            if (state.timerConfig) {
+                console.log('  Timer config:', state.timerConfig);
+            }
         }
         
         // Check bugs
@@ -454,6 +470,8 @@ class ControlPanel {
             quickPreviewTimer.addEventListener('click', () => {
                 const config = this.getTimerConfig();
                 if (config.type !== 'none') {
+                    // Add custom position if available
+                    config.customPosition = this.customPositions.timer;
                     this.sendToFrame('preview', 'startTimer', { config });
                 } else {
                     alert('Please select a timer type in the Timer tab first');
@@ -466,6 +484,8 @@ class ControlPanel {
             quickStartTimer.addEventListener('click', () => {
                 const config = this.getTimerConfig();
                 if (config.type !== 'none') {
+                    // Add custom position if available
+                    config.customPosition = this.customPositions.timer;
                     this.sendToFrame('both', 'startTimer', { config });
                 } else {
                     alert('Please select a timer type in the Timer tab first');
@@ -946,6 +966,8 @@ class ControlPanel {
         document.getElementById('btnStartTimer').addEventListener('click', () => {
             const config = this.getTimerConfig();
             if (config.type !== 'none') {
+                // Add custom position if available
+                config.customPosition = this.customPositions.timer;
                 this.sendToFrame('both', 'startTimer', { config });
             }
         });

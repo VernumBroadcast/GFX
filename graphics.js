@@ -69,6 +69,12 @@ class GraphicsEngine {
         this.isPreviewWindow = window.location.href.includes('preview') || 
                                (window.parent && window.parent !== window);
         
+        // Load custom positions from localStorage
+        const savedPositions = localStorage.getItem('customPositions');
+        this.customPositions = savedPositions ? JSON.parse(savedPositions) : {
+            timer: null
+        };
+        
         this.init();
     }
     
@@ -358,6 +364,8 @@ class GraphicsEngine {
                 l3TripleVisible: this.state.l3TripleVisible,
                 tickerVisible: this.state.tickerVisible,
                 timerVisible: this.state.timerVisible,
+                timerConfig: this.state.timerConfig,
+                customPositions: this.customPositions,
                 bugs: {
                     topLeft: this.state.bugs['top-left'],
                     topRight: this.state.bugs['top-right'],
@@ -1083,9 +1091,15 @@ class GraphicsEngine {
         timerContainer.style.backgroundColor = config.bg || '#dc3545';
         timerContainer.style.color = config.color || '#ffffff';
         
-        // Set position
-        const position = config.position || 'bottom-right';
-        this.setTimerPosition(position);
+        // Set position - check for custom position first
+        if (config.customPosition) {
+            // Apply custom dragged position
+            this.applyCustomPosition('timer', config.customPosition);
+        } else {
+            // Apply default position
+            const position = config.position || 'bottom-right';
+            this.setTimerPosition(position);
+        }
         
         // Only initialize timer interval if not resuming a persisted timer
         if (!isResuming) {
@@ -1198,6 +1212,10 @@ class GraphicsEngine {
                 x: currentX || parseInt(element.style.left),
                 y: currentY || parseInt(element.style.top)
             };
+            
+            // Save to localStorage for persistence
+            this.customPositions[elementType] = position;
+            localStorage.setItem('customPositions', JSON.stringify(this.customPositions));
             
             // Send position to parent (control panel) to sync with transmit
             if (window.parent && window.parent !== window) {
