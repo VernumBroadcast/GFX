@@ -192,7 +192,6 @@
             <!-- Tabs -->
             <div class="control-tabs">
                 <button class="tab-button active" data-tab="lower-third">Lower Third</button>
-                <button class="tab-button" data-tab="dual-l3">Multi L3s</button>
                 <button class="tab-button" data-tab="bugs">Corner Bugs</button>
                 <button class="tab-button" data-tab="timer">Timer</button>
                 <button class="tab-button" data-tab="ticker">Ticker</button>
@@ -320,98 +319,6 @@
                         <button class="btn-danger" id="btnHideL3Preview">Hide Preview</button>
                         <button class="btn-danger" id="btnHideL3Transmit">Hide Transmit</button>
                         <button class="btn-danger" id="btnHideL3Both">Hide Both</button>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Multi L3s Tab (Dual or Triple) -->
-            <div id="dual-l3" class="tab-content">
-                <div class="control-group">
-                    <h3>Multiple Lower Thirds Setup</h3>
-                    <p class="info-text">Display multiple lower thirds simultaneously. Choose Dual (2) or Triple (3) mode. Great for debates, interviews, panels, or split-screen scenarios.</p>
-                    
-                    <div class="form-row">
-                        <label for="multiL3Mode">L3 Mode:</label>
-                        <select id="multiL3Mode">
-                            <option value="dual" selected>Dual (2 L3s - Left & Right)</option>
-                            <option value="triple">Triple (3 L3s - Left, Center, Right)</option>
-                        </select>
-                    </div>
-                </div>
-
-                <div class="control-group">
-                    <h3>Left Side - Select L3 Slot</h3>
-                    <div class="form-row">
-                        <label for="dualL3LeftSlot">Show this slot on left:</label>
-                        <select id="dualL3LeftSlot">
-                            <option value="1">L3-1</option>
-                            <option value="2">L3-2</option>
-                            <option value="3">L3-3</option>
-                            <option value="4">L3-4</option>
-                            <option value="5">L3-5</option>
-                        </select>
-                    </div>
-                    <div class="dual-l3-preview" id="dualL3LeftPreview">
-                        <div class="preview-label-mini">Preview of selected slot:</div>
-                        <div class="preview-text">
-                            <strong id="dualL3LeftPreviewPrimary">-</strong><br>
-                            <span id="dualL3LeftPreviewSecondary">-</span>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="control-group" id="centerL3Group" style="display: none;">
-                    <h3>Center - Select L3 Slot</h3>
-                    <div class="form-row">
-                        <label for="dualL3CenterSlot">Show this slot in center:</label>
-                        <select id="dualL3CenterSlot">
-                            <option value="1">L3-1</option>
-                            <option value="2">L3-2</option>
-                            <option value="3" selected>L3-3</option>
-                            <option value="4">L3-4</option>
-                            <option value="5">L3-5</option>
-                        </select>
-                    </div>
-                    <div class="dual-l3-preview" id="dualL3CenterPreview">
-                        <div class="preview-label-mini">Preview of selected slot:</div>
-                        <div class="preview-text">
-                            <strong id="dualL3CenterPreviewPrimary">-</strong><br>
-                            <span id="dualL3CenterPreviewSecondary">-</span>
-                        </div>
-                    </div>
-                    <p class="info-text" style="margin-top: 10px; font-size: 12px; opacity: 0.8;">Note: Center L3 does not display logo (for cleaner look in triple mode)</p>
-                </div>
-
-                <div class="control-group">
-                    <h3>Right Side - Select L3 Slot</h3>
-                    <div class="form-row">
-                        <label for="dualL3RightSlot">Show this slot on right:</label>
-                        <select id="dualL3RightSlot">
-                            <option value="1">L3-1</option>
-                            <option value="2" selected>L3-2</option>
-                            <option value="3">L3-3</option>
-                            <option value="4">L3-4</option>
-                            <option value="5">L3-5</option>
-                        </select>
-                    </div>
-                    <div class="dual-l3-preview" id="dualL3RightPreview">
-                        <div class="preview-label-mini">Preview of selected slot:</div>
-                        <div class="preview-text">
-                            <strong id="dualL3RightPreviewPrimary">-</strong><br>
-                            <span id="dualL3RightPreviewSecondary">-</span>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="control-group">
-                    <h3><span id="multiL3ControlsTitle">Multi L3</span> Controls</h3>
-                    <div class="button-group">
-                        <button class="btn-info" id="btnShowDualL3Preview">👁 Show on Preview</button>
-                        <button class="btn-success" id="btnShowDualL3Transmit">▶ Show on Transmit</button>
-                        <button class="btn-success" id="btnShowDualL3Both">▶ Show on Both</button>
-                    </div>
-                    <div class="button-group">
-                        <button class="btn-danger" id="btnHideDualL3Both">■ Hide All</button>
                     </div>
                 </div>
             </div>

@@ -282,47 +282,15 @@ class ControlPanel {
             this.previewState.ticker = false;
         });
         
-        // Dual L3 Quick Actions
-        // Sync quick selectors with main dual L3 dropdowns
-        const quickDualL3Left = document.getElementById('quickDualL3Left');
-        const quickDualL3Right = document.getElementById('quickDualL3Right');
-        const quickDualL3Center = document.getElementById('quickDualL3Center');
-        
-        if (quickDualL3Left) {
-            quickDualL3Left.addEventListener('change', () => {
-                const mainDropdown = document.getElementById('dualL3LeftSlot');
-                if (mainDropdown) {
-                    mainDropdown.value = quickDualL3Left.value;
-                    mainDropdown.dispatchEvent(new Event('change'));
-                }
-            });
-        }
-        
-        if (quickDualL3Center) {
-            quickDualL3Center.addEventListener('change', () => {
-                const mainDropdown = document.getElementById('dualL3CenterSlot');
-                if (mainDropdown) {
-                    mainDropdown.value = quickDualL3Center.value;
-                    mainDropdown.dispatchEvent(new Event('change'));
-                }
-            });
-        }
-        
-        if (quickDualL3Right) {
-            quickDualL3Right.addEventListener('change', () => {
-                const mainDropdown = document.getElementById('dualL3RightSlot');
-                if (mainDropdown) {
-                    mainDropdown.value = quickDualL3Right.value;
-                    mainDropdown.dispatchEvent(new Event('change'));
-                }
-            });
-        }
+        // Dual L3 Quick Actions (no longer need to sync with main tab since it's removed)
         
         document.getElementById('quickPreviewDualL3').addEventListener('click', () => {
+            console.log('Multi L3 Preview button clicked - sending to preview only');
             this.showMultiL3('preview');
         });
         
         document.getElementById('quickShowDualL3').addEventListener('click', () => {
+            console.log('Multi L3 LIVE button clicked - sending to transmit');
             this.showMultiL3('transmit');
         });
         
@@ -392,10 +360,9 @@ class ControlPanel {
             });
         }
         
-        // Quick Multi L3 Mode selector - sync with main mode selector
+        // Quick Multi L3 Mode selector (no main tab to sync with anymore)
         const quickMultiL3Mode = document.getElementById('quickMultiL3Mode');
-        const multiL3Mode = document.getElementById('multiL3Mode');
-        if (quickMultiL3Mode && multiL3Mode) {
+        if (quickMultiL3Mode) {
             // Function to update quick action grid layout based on mode
             const updateQuickMultiL3Layout = (mode) => {
                 const grid = document.getElementById('quickMultiL3Grid');
@@ -415,17 +382,9 @@ class ControlPanel {
                 }
             };
             
-            // Sync quick selector to main selector
+            // Update layout when mode changes
             quickMultiL3Mode.addEventListener('change', () => {
-                multiL3Mode.value = quickMultiL3Mode.value;
-                multiL3Mode.dispatchEvent(new Event('change'));
                 updateQuickMultiL3Layout(quickMultiL3Mode.value);
-            });
-            
-            // Sync main selector to quick selector
-            multiL3Mode.addEventListener('change', () => {
-                quickMultiL3Mode.value = multiL3Mode.value;
-                updateQuickMultiL3Layout(multiL3Mode.value);
             });
             
             // Initialize layout on page load
@@ -705,16 +664,8 @@ class ControlPanel {
     }
     
     updateDualL3PreviewIfSelected(slotNum) {
-        // Check if this slot is selected for left or right dual L3
-        const leftSlot = document.getElementById('dualL3LeftSlot');
-        const rightSlot = document.getElementById('dualL3RightSlot');
-        
-        if (leftSlot && parseInt(leftSlot.value) === slotNum) {
-            this.updateDualL3Preview('left');
-        }
-        if (rightSlot && parseInt(rightSlot.value) === slotNum) {
-            this.updateDualL3Preview('right');
-        }
+        // Multi L3 tab removed - no previews to update
+        // Quick actions display directly on output
     }
     
     getLowerThirdConfig() {
@@ -819,60 +770,14 @@ class ControlPanel {
         return `rgba(${r}, ${g}, ${b}, ${alpha})`;
     }
     
-    // Dual L3 Controls
+    // Dual L3 Controls (now handled entirely by quick actions)
     setupDualL3Controls() {
-        // Mode toggle handler
-        document.getElementById('multiL3Mode')?.addEventListener('change', (e) => {
-            const isTriple = e.target.value === 'triple';
-            const centerGroup = document.getElementById('centerL3Group');
-            const titleEl = document.getElementById('multiL3ControlsTitle');
-            
-            if (centerGroup) {
-                centerGroup.style.display = isTriple ? 'block' : 'none';
-            }
-            if (titleEl) {
-                titleEl.textContent = isTriple ? 'Triple L3' : 'Dual L3';
-            }
-        });
-        
-        // Update previews when slot selection changes
-        document.getElementById('dualL3LeftSlot')?.addEventListener('change', () => {
-            this.updateDualL3Preview('left');
-        });
-        
-        document.getElementById('dualL3CenterSlot')?.addEventListener('change', () => {
-            this.updateDualL3Preview('center');
-        });
-        
-        document.getElementById('dualL3RightSlot')?.addEventListener('change', () => {
-            this.updateDualL3Preview('right');
-        });
-        
-        // Initial preview update
-        this.updateDualL3Preview('left');
-        this.updateDualL3Preview('center');
-        this.updateDualL3Preview('right');
-        
-        document.getElementById('btnShowDualL3Preview')?.addEventListener('click', () => {
-            this.showMultiL3('preview');
-        });
-        
-        document.getElementById('btnShowDualL3Transmit')?.addEventListener('click', () => {
-            this.showMultiL3('transmit');
-        });
-        
-        document.getElementById('btnShowDualL3Both')?.addEventListener('click', () => {
-            this.showMultiL3('both');
-        });
-        
-        document.getElementById('btnHideDualL3Both')?.addEventListener('click', () => {
-            this.sendToFrame('both', 'hideL3Dual', {});
-            this.sendToFrame('both', 'hideL3Triple', {});
-        });
+        // Multi L3 tab removed - all controls now in quick actions bar
+        // No need for separate controls
     }
     
     showMultiL3(target) {
-        const mode = document.getElementById('multiL3Mode')?.value || 'dual';
+        const mode = document.getElementById('quickMultiL3Mode')?.value || 'dual';
         
         if (mode === 'triple') {
             const configLeft = this.getDualL3Config('left');
@@ -887,23 +792,16 @@ class ControlPanel {
     }
     
     updateDualL3Preview(side) {
-        const sideCapitalized = side === 'left' ? 'Left' : side === 'center' ? 'Center' : 'Right';
-        const slotSelector = document.getElementById(`dualL3${sideCapitalized}Slot`);
-        const selectedSlot = parseInt(slotSelector?.value || '1');
-        const slotConfig = this.l3Slots[selectedSlot];
-        
-        const primaryEl = document.getElementById(`dualL3${sideCapitalized}PreviewPrimary`);
-        const secondaryEl = document.getElementById(`dualL3${sideCapitalized}PreviewSecondary`);
-        
-        if (primaryEl && secondaryEl && slotConfig) {
-            primaryEl.textContent = slotConfig.primaryText || '(No text set)';
-            secondaryEl.textContent = slotConfig.secondaryText || '(No text set)';
-        }
+        // Multi L3 tab removed - previews no longer needed
+        // Quick actions use direct display instead
     }
     
     getDualL3Config(side) {
-        const sideCapitalized = side === 'left' ? 'Left' : side === 'center' ? 'Center' : 'Right';
-        const slotSelector = document.getElementById(`dualL3${sideCapitalized}Slot`);
+        // Use quick action dropdowns (with 'quick' prefix)
+        const prefix = side === 'left' ? 'quickDualL3Left' : 
+                       side === 'center' ? 'quickDualL3Center' : 
+                       'quickDualL3Right';
+        const slotSelector = document.getElementById(prefix);
         const selectedSlot = parseInt(slotSelector?.value || '1');
         const baseConfig = this.l3Slots[selectedSlot];
         
@@ -1984,13 +1882,15 @@ class ControlPanel {
         // Need to spread data into the message properly
         const message = { action, ...data };
         
-        console.log('Sending to', target, ':', message);
+        console.log('📤 sendToFrame called - target:', target, 'action:', action);
         
         if (target === 'preview' || target === 'both') {
+            console.log('  → Sending to PREVIEW frame');
             this.previewFrame.contentWindow.postMessage(message, '*');
         }
         
         if (target === 'transmit' || target === 'both') {
+            console.log('  → Sending to TRANSMIT frame + localStorage + Firebase');
             this.transmitFrame.contentWindow.postMessage(message, '*');
             
             // ALSO broadcast to localStorage for VMix and other standalone windows
