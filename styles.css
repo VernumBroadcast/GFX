@@ -591,7 +591,7 @@ body.control-page {
 .quick-actions {
     grid-column: 1 / -1;
     display: grid;
-    grid-template-columns: repeat(5, 1fr);
+    grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
     gap: 15px;
     padding: 20px;
     background: var(--vernum-gray);
@@ -606,6 +606,12 @@ body.control-page {
     background: var(--vernum-gray-light);
     border-radius: 8px;
     border: 1px solid #333;
+}
+
+.quick-action-group.quick-action-compact {
+    padding: 10px;
+    min-width: auto;
+    max-width: 100px;
 }
 
 .quick-action-group h3 {
