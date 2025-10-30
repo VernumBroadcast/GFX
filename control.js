@@ -324,11 +324,28 @@ class ControlPanel {
         });
         
         // Bug Quick Actions - Individual buttons
+        // Preview buttons
+        const quickPreviewBugLeft = document.getElementById('quickPreviewBugLeft');
+        if (quickPreviewBugLeft) {
+            quickPreviewBugLeft.addEventListener('click', () => {
+                const leftConfig = this.getBugConfig('left');
+                this.sendToFrame('preview', 'showBug', { position: 'top-left', config: leftConfig });
+            });
+        }
+        
         const quickShowBugLeft = document.getElementById('quickShowBugLeft');
         if (quickShowBugLeft) {
             quickShowBugLeft.addEventListener('click', () => {
                 const leftConfig = this.getBugConfig('left');
                 this.sendToFrame('transmit', 'showBug', { position: 'top-left', config: leftConfig });
+            });
+        }
+        
+        const quickPreviewBugRight = document.getElementById('quickPreviewBugRight');
+        if (quickPreviewBugRight) {
+            quickPreviewBugRight.addEventListener('click', () => {
+                const rightConfig = this.getBugConfig('right');
+                this.sendToFrame('preview', 'showBug', { position: 'top-right', config: rightConfig });
             });
         }
         
@@ -354,6 +371,14 @@ class ControlPanel {
             });
         }
         
+        const quickPreviewBugBottom = document.getElementById('quickPreviewBugBottom');
+        if (quickPreviewBugBottom) {
+            quickPreviewBugBottom.addEventListener('click', () => {
+                const bottomConfig = this.getBugConfig('bottom');
+                this.sendToFrame('preview', 'showBug', { position: 'bottom-right', config: bottomConfig });
+            });
+        }
+        
         const quickShowBugBottom = document.getElementById('quickShowBugBottom');
         if (quickShowBugBottom) {
             quickShowBugBottom.addEventListener('click', () => {
@@ -366,6 +391,14 @@ class ControlPanel {
         if (quickHideBugBottom) {
             quickHideBugBottom.addEventListener('click', () => {
                 this.sendToFrame('both', 'hideBug', { position: 'bottom-right' });
+            });
+        }
+        
+        const quickPreviewBugBottomLeft = document.getElementById('quickPreviewBugBottomLeft');
+        if (quickPreviewBugBottomLeft) {
+            quickPreviewBugBottomLeft.addEventListener('click', () => {
+                const bottomLeftConfig = this.getBugConfig('bottomLeft');
+                this.sendToFrame('preview', 'showBug', { position: 'bottom-left', config: bottomLeftConfig });
             });
         }
         
@@ -416,6 +449,18 @@ class ControlPanel {
         }
         
         // Timer Quick Actions
+        const quickPreviewTimer = document.getElementById('quickPreviewTimer');
+        if (quickPreviewTimer) {
+            quickPreviewTimer.addEventListener('click', () => {
+                const config = this.getTimerConfig();
+                if (config.type !== 'none') {
+                    this.sendToFrame('preview', 'startTimer', { config });
+                } else {
+                    alert('Please select a timer type in the Timer tab first');
+                }
+            });
+        }
+        
         const quickStartTimer = document.getElementById('quickStartTimer');
         if (quickStartTimer) {
             quickStartTimer.addEventListener('click', () => {
@@ -423,7 +468,7 @@ class ControlPanel {
                 if (config.type !== 'none') {
                     this.sendToFrame('both', 'startTimer', { config });
                 } else {
-                    alert('Please select a timer type in the Corner Bugs tab first');
+                    alert('Please select a timer type in the Timer tab first');
                 }
             });
         }
