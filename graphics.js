@@ -29,9 +29,10 @@ class GraphicsEngine {
             bugTopLeft: document.getElementById('bugTopLeft'),
             bugTopRight: document.getElementById('bugTopRight'),
             bugBottomLeft: document.getElementById('bugBottomLeft'),
-            timerBottomRight: document.getElementById('timerBottomRight'),
-            timerLabel: document.getElementById('timerLabel'),
+            bugBottomRight: document.getElementById('bugBottomRight'),
             timerDisplay: document.getElementById('timerDisplay'),
+            timerLabel: document.getElementById('timerLabel'),
+            timerTime: document.getElementById('timerTime'),
             ticker: document.getElementById('ticker'),
             tickerContent: document.getElementById('tickerContent'),
             customGraphics: document.getElementById('customGraphics'),
@@ -43,12 +44,13 @@ class GraphicsEngine {
             l3DualVisible: false,
             l3TripleVisible: false,
             tickerVisible: false,
-            // Track bugs by position and mode (text or timer)
+            timerVisible: false,
+            // Track bugs by position (now only text, no timer mode)
             bugs: {
-                'top-left': { visible: false, mode: 'text', config: {} },
-                'top-right': { visible: false, mode: 'text', config: {} },
-                'bottom-left': { visible: false, mode: 'text', config: {} },
-                'bottom-right': { visible: false, mode: 'text', config: {} }
+                'top-left': { visible: false, config: {} },
+                'top-right': { visible: false, config: {} },
+                'bottom-left': { visible: false, config: {} },
+                'bottom-right': { visible: false, config: {} }
             },
             l3Config: {},
             tickerConfig: {},
@@ -60,8 +62,7 @@ class GraphicsEngine {
             timerInterval: null,
             timerPaused: false,
             timerElapsed: 0,
-            timerStartTime: null,
-            activeTimerPosition: null  // Which position has the active timer
+            timerStartTime: null
         };
         
         this.init();
@@ -945,19 +946,11 @@ class GraphicsEngine {
         // This ensures dual L3s match single L3 styling
     }
     
-    // Bug Methods (flexible - supports text OR timer on any position)
+    // Bug Methods (text-only badges)
     showBug(position, config) {
         // Get the correct bug element based on position
         const bugElement = this.getBugElement(position);
         if (!bugElement) return;
-        
-        // Hide timer content if this bug was showing a timer
-        const timerLabel = bugElement.querySelector('.timer-label');
-        const timerDisplay = bugElement.querySelector('.timer-display');
-        if (timerLabel && timerDisplay) {
-            timerLabel.style.display = 'none';
-            timerDisplay.style.display = 'none';
-        }
         
         // Show as text bug
         const { text = '', fontSize = 24, bg = '#dc3545', color = '#ffffff' } = config;
@@ -985,7 +978,6 @@ class GraphicsEngine {
         
         // Update state
         this.state.bugs[position].visible = true;
-        this.state.bugs[position].mode = 'text';
         this.state.bugs[position].config = config;
         
         this.updateStatusIndicator();
@@ -994,14 +986,6 @@ class GraphicsEngine {
     hideBug(position) {
         const bugElement = this.getBugElement(position);
         if (!bugElement) return;
-        
-        // Stop timer if this bug has an active timer AND persist mode is disabled
-        if (this.state.activeTimerPosition === position) {
-            const shouldPersist = this.state.timerConfig && this.state.timerConfig.persist;
-            if (!shouldPersist) {
-                this.stopTimerAtPosition(position);
-            }
-        }
         
         bugElement.classList.add('animating-out');
         
@@ -1024,39 +1008,35 @@ class GraphicsEngine {
             case 'bottom-left':
                 return this.elements.bugBottomLeft;
             case 'bottom-right':
-                return this.elements.timerBottomRight;
+                return this.elements.bugBottomRight;
             default:
                 console.error('Unknown bug position:', position);
                 return null;
         }
     }
     
-    // Timer Methods (flexible positioning)
+    // Timer Methods (independent element)
     startTimer(config) {
-        const position = config.position || 'bottom-right';
-        const bugElement = this.getBugElement(position);
-        if (!bugElement) return;
+        const timerContainer = this.elements.timerDisplay;
+        const timerLabel = this.elements.timerLabel;
+        const timerTime = this.elements.timerTime;
         
-        // Check if we're resuming a persisted timer at the same position with interval still running
+        if (!timerContainer) return;
+        
+        // Check if we're resuming a persisted timer
         const isResuming = this.state.timerConfig && 
                           this.state.timerConfig.persist && 
-                          this.state.activeTimerPosition === position &&
+                          this.state.timerVisible &&
                           this.state.timerInterval !== null;
         
-        console.log('startTimer called:', { position, isResuming, hasInterval: !!this.state.timerInterval, persist: config.persist });
+        console.log('startTimer called:', { isResuming, hasInterval: !!this.state.timerInterval, persist: config.persist });
         
-        // If not resuming, stop any existing timer first
-        if (!isResuming && this.state.activeTimerPosition && this.state.activeTimerPosition !== position) {
-            this.stopTimerAtPosition(this.state.activeTimerPosition);
-        }
-        
-        // Save timer config and position (but preserve timing state if resuming)
+        // Save timer config (but preserve timing state if resuming)
         const preservedElapsed = isResuming ? this.state.timerElapsed : 0;
         const preservedStartTime = isResuming ? this.state.timerStartTime : null;
         
         this.state.timerConfig = config;
         this.state.timerPaused = false;
-        this.state.activeTimerPosition = position;
         
         // Restore timing state if resuming
         if (isResuming) {
@@ -1064,24 +1044,19 @@ class GraphicsEngine {
             this.state.timerStartTime = preservedStartTime;
         }
         
-        // Clear bug text content and set up timer structure
-        bugElement.innerHTML = '';
-        
-        // Create timer elements if they don't exist
-        let timerLabel = document.createElement('div');
-        timerLabel.className = 'timer-label';
-        timerLabel.textContent = config.label || '';
-        timerLabel.style.display = config.label ? 'block' : 'none';
-        
-        let timerDisplay = document.createElement('div');
-        timerDisplay.className = 'timer-display';
-        
-        bugElement.appendChild(timerLabel);
-        bugElement.appendChild(timerDisplay);
+        // Update label
+        if (timerLabel) {
+            timerLabel.textContent = config.label || '';
+            timerLabel.style.display = config.label ? 'block' : 'none';
+        }
         
         // Apply styling
-        bugElement.style.backgroundColor = config.bg || '#dc3545';
-        bugElement.style.color = config.color || '#ffffff';
+        timerContainer.style.backgroundColor = config.bg || '#dc3545';
+        timerContainer.style.color = config.color || '#ffffff';
+        
+        // Set position
+        const position = config.position || 'bottom-right';
+        this.setTimerPosition(position);
         
         // Only initialize timer interval if not resuming a persisted timer
         if (!isResuming) {
@@ -1117,15 +1092,44 @@ class GraphicsEngine {
         }
         
         // Show timer
-        bugElement.classList.remove('animating-out');
-        bugElement.classList.add('visible');
+        timerContainer.classList.remove('animating-out');
+        timerContainer.classList.add('visible');
         
         // Update state
-        this.state.bugs[position].visible = true;
-        this.state.bugs[position].mode = 'timer';
-        this.state.bugs[position].config = config;
-        
+        this.state.timerVisible = true;
         this.updateStatusIndicator();
+    }
+    
+    setTimerPosition(position) {
+        const timerContainer = this.elements.timerDisplay;
+        if (!timerContainer) return;
+        
+        // Reset all position styles
+        timerContainer.style.top = '';
+        timerContainer.style.right = '';
+        timerContainer.style.bottom = '';
+        timerContainer.style.left = '';
+        
+        // Apply position
+        switch (position) {
+            case 'top-left':
+                timerContainer.style.top = '60px';
+                timerContainer.style.left = '80px';
+                break;
+            case 'top-right':
+                timerContainer.style.top = '60px';
+                timerContainer.style.right = '80px';
+                break;
+            case 'bottom-left':
+                timerContainer.style.bottom = '60px';
+                timerContainer.style.left = '80px';
+                break;
+            case 'bottom-right':
+            default:
+                timerContainer.style.bottom = '60px';
+                timerContainer.style.right = '80px';
+                break;
+        }
     }
     
     pauseTimer() {
@@ -1153,27 +1157,27 @@ class GraphicsEngine {
     }
     
     hideTimer() {
-        if (this.state.activeTimerPosition) {
-            const position = this.state.activeTimerPosition;
-            const shouldPersist = this.state.timerConfig && this.state.timerConfig.persist;
-            
-            // Only stop the timer if persist mode is disabled
-            if (!shouldPersist) {
-                this.stopTimerAtPosition(position);
-                this.state.activeTimerPosition = null;
+        const timerContainer = this.elements.timerDisplay;
+        if (!timerContainer) return;
+        
+        const shouldPersist = this.state.timerConfig && this.state.timerConfig.persist;
+        
+        // Only stop the timer if persist mode is disabled
+        if (!shouldPersist) {
+            if (this.state.timerInterval) {
+                clearInterval(this.state.timerInterval);
+                this.state.timerInterval = null;
             }
-            
-            // Hide the bug visually (but timer keeps running in background if persist is enabled)
-            this.hideBug(position);
         }
-    }
-    
-    stopTimerAtPosition(position) {
-        if (this.state.timerInterval) {
-            clearInterval(this.state.timerInterval);
-            this.state.timerInterval = null;
-        }
-        this.state.bugs[position].mode = 'text';
+        
+        // Hide the timer visually (but timer keeps running in background if persist is enabled)
+        timerContainer.classList.add('animating-out');
+        this.state.timerVisible = false;
+        this.updateStatusIndicator();
+        
+        setTimeout(() => {
+            timerContainer.classList.remove('visible', 'animating-out');
+        }, 400);
     }
     
     updateTimerDisplay() {
@@ -1208,15 +1212,9 @@ class GraphicsEngine {
         // Format the display based on selected format
         const displayText = this.formatTime(timeInMs, format);
         
-        // Update timer display in the active position
-        if (this.state.activeTimerPosition) {
-            const bugElement = this.getBugElement(this.state.activeTimerPosition);
-            if (bugElement) {
-                const timerDisplay = bugElement.querySelector('.timer-display');
-                if (timerDisplay) {
-                    timerDisplay.textContent = displayText;
-                }
-            }
+        // Update timer display
+        if (this.elements.timerTime) {
+            this.elements.timerTime.textContent = displayText;
         }
         
         // Stop timer if countdown reached zero
@@ -1276,18 +1274,21 @@ class GraphicsEngine {
             const bugElement = this.getBugElement(position);
             if (bugElement) {
                 bugElement.style.fontFamily = fontFamily;
-                // Also update timer elements if present
-                const timerLabel = bugElement.querySelector('.timer-label');
-                const timerDisplay = bugElement.querySelector('.timer-display');
-                if (timerLabel) timerLabel.style.fontFamily = fontFamily;
-                if (timerDisplay) timerDisplay.style.fontFamily = fontFamily;
             }
         });
     }
     
-    // Update timer font (alias for updateBugFont for backwards compatibility)
+    // Update timer font
     updateTimerFont(fontFamily) {
-        this.updateBugFont(fontFamily);
+        if (!fontFamily) return;
+        
+        // Update timer elements
+        if (this.elements.timerLabel) {
+            this.elements.timerLabel.style.fontFamily = fontFamily;
+        }
+        if (this.elements.timerTime) {
+            this.elements.timerTime.style.fontFamily = fontFamily;
+        }
     }
     
     // Custom Font Management

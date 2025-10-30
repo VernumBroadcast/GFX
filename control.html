@@ -24,7 +24,7 @@
         </div>
 
         <!-- Quick Action Bar -->
-        <div class="quick-actions" style="grid-template-columns: repeat(5, 1fr);">
+        <div class="quick-actions" style="grid-template-columns: repeat(6, 1fr);">
             <div class="quick-action-group quick-l3-group">
                 <h3>Lower Thirds (L3)</h3>
                 <div class="l3-selector">
@@ -55,13 +55,21 @@
                     <option value="dual" selected>2 L3s (Dual)</option>
                     <option value="triple">3 L3s (Triple)</option>
                 </select>
-                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 5px; margin-bottom: 8px; align-items: end;">
+                <div id="quickMultiL3Grid" style="display: grid; grid-template-columns: 1fr 1fr; gap: 5px; margin-bottom: 8px; align-items: end;">
                     <div style="font-size: 10px; color: rgba(255,255,255,0.6); text-align: center; margin-bottom: 3px;">LEFT</div>
+                    <div id="quickMultiL3CenterLabel" style="font-size: 10px; color: rgba(255,255,255,0.6); text-align: center; margin-bottom: 3px; display: none;">CENTER</div>
                     <div style="font-size: 10px; color: rgba(255,255,255,0.6); text-align: center; margin-bottom: 3px;">RIGHT</div>
                     <select id="quickDualL3Left" style="padding: 6px 4px; border-radius: 4px; background: rgba(255,255,255,0.1); color: white; border: 1px solid rgba(255,255,255,0.3); font-size: 11px; height: 28px;">
                         <option value="1">L3-1: Your Name Here</option>
                         <option value="2">L3-2: Your Name Here</option>
                         <option value="3">L3-3: Your Name Here</option>
+                        <option value="4">L3-4: Your Name Here</option>
+                        <option value="5">L3-5: Your Name Here</option>
+                    </select>
+                    <select id="quickDualL3Center" style="padding: 6px 4px; border-radius: 4px; background: rgba(255,255,255,0.1); color: white; border: 1px solid rgba(255,255,255,0.3); font-size: 11px; height: 28px; display: none;">
+                        <option value="1">L3-1: Your Name Here</option>
+                        <option value="2">L3-2: Your Name Here</option>
+                        <option value="3" selected>L3-3: Your Name Here</option>
                         <option value="4">L3-4: Your Name Here</option>
                         <option value="5">L3-5: Your Name Here</option>
                     </select>
@@ -117,16 +125,17 @@
                         <span class="icon">■</span> OFF
                     </button>
                 </div>
-                <div style="border-top: 1px solid rgba(255,255,255,0.2); padding-top: 8px; margin-top: 5px;">
-                    <div style="text-align: center; font-size: 10px; color: rgba(255,255,255,0.7); margin-bottom: 5px;">TIMER/CLOCK</div>
-                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 5px;">
-                        <button class="btn-live btn-success" id="quickStartTimer" style="font-size: 11px; padding: 6px 4px;">
-                            <span class="icon">⏰</span> START
-                        </button>
-                        <button class="btn-off btn-danger" id="quickHideTimer" style="font-size: 11px; padding: 6px 4px;">
-                            <span class="icon">■</span> OFF
-                        </button>
-                    </div>
+            </div>
+            <div class="quick-action-group">
+                <h3>Timer/Clock</h3>
+                <p style="font-size: 11px; opacity: 0.7; margin: 0 0 10px 0;">Independent display (doesn't use bug slots)</p>
+                <div class="button-group">
+                    <button class="btn-live btn-success" id="quickStartTimer">
+                        <span class="icon">⏰</span> START
+                    </button>
+                    <button class="btn-off btn-danger" id="quickHideTimer">
+                        <span class="icon">■</span> OFF
+                    </button>
                 </div>
             </div>
             <div class="quick-action-group">
@@ -185,6 +194,7 @@
                 <button class="tab-button active" data-tab="lower-third">Lower Third</button>
                 <button class="tab-button" data-tab="dual-l3">Multi L3s</button>
                 <button class="tab-button" data-tab="bugs">Corner Bugs</button>
+                <button class="tab-button" data-tab="timer">Timer</button>
                 <button class="tab-button" data-tab="ticker">Ticker</button>
                 <button class="tab-button" data-tab="data-sources">Data Sources</button>
                 <button class="tab-button" data-tab="styling">Styling</button>
@@ -477,24 +487,33 @@
                     </div>
                 </div>
 
-                <div class="control-group" style="border-top: 2px solid #2E7CFF; margin-top: 30px; padding-top: 20px;">
-                    <h3>⏰ Timer/Clock Control</h3>
-                    <p class="info-text">Show a live clock, countdown, or stopwatch on any corner bug. Select position, configure timer, then click Start.</p>
-                    
+            </div>
+
+            <!-- Timer Tab -->
+            <div id="timer" class="tab-content">
+                <div class="control-group">
+                    <h3>⏰ Timer/Clock Display</h3>
+                    <p class="info-text">Show a live clock, countdown, or stopwatch as an independent graphic element (doesn't use a bug slot!)</p>
+                </div>
+                
+                <div class="control-group">
+                    <h3>Position</h3>
                     <div class="form-row">
-                        <label for="timerPosition">Timer Position:</label>
+                        <label for="timerPosition">Screen Position:</label>
                         <select id="timerPosition">
-                            <option value="top-left">Top Left Bug</option>
-                            <option value="top-right">Top Right Bug</option>
-                            <option value="bottom-left">Bottom Left Bug</option>
-                            <option value="bottom-right" selected>Bottom Right Bug</option>
+                            <option value="top-left">Top Left Corner</option>
+                            <option value="top-right">Top Right Corner</option>
+                            <option value="bottom-left">Bottom Left Corner</option>
+                            <option value="bottom-right" selected>Bottom Right Corner</option>
                         </select>
                     </div>
-                    
+                </div>
+                
+                <div class="control-group">
+                    <h3>Timer Configuration</h3>
                     <div class="form-row">
                         <label for="timerType">Timer Type:</label>
                         <select id="timerType">
-                            <option value="none">None (Text Mode)</option>
                             <option value="clock" selected>Live Clock (Time of Day)</option>
                             <option value="countdownTo">Countdown to Time</option>
                             <option value="stopwatch">Stopwatch (Count Up)</option>
@@ -528,12 +547,18 @@
                         <label for="timerLabel">Label (optional):</label>
                         <input type="text" id="timerLabel" placeholder="e.g., TIME REMAINING, LIVE TIME">
                     </div>
-                    
+                </div>
+                
+                <div class="control-group">
+                    <h3>Styling</h3>
                     <div class="form-row">
                         <label for="timerBg">Background Color:</label>
                         <input type="color" id="timerBg" value="#dc3545">
                     </div>
-                    
+                </div>
+                
+                <div class="control-group">
+                    <h3>Behavior</h3>
                     <div class="form-row">
                         <label for="timerPersist" style="display: flex; align-items: center; gap: 10px; cursor: pointer;">
                             <input type="checkbox" id="timerPersist" style="width: 20px; height: 20px; cursor: pointer;">
@@ -544,7 +569,10 @@
                         ✓ Checked: Timer continues counting in background when hidden<br>
                         ✗ Unchecked: Timer resets to zero when hidden
                     </p>
-                    
+                </div>
+                
+                <div class="control-group">
+                    <h3>Controls</h3>
                     <div class="button-group">
                         <button class="btn-success" id="btnStartTimer">Start Timer</button>
                         <button class="btn-warning" id="btnPauseTimer">Pause</button>

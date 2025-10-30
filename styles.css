@@ -285,8 +285,8 @@ body.output-page {
     left: 80px;
 }
 
-/* Timer/Clock Bug (Bottom Right) */
-.timer-bug {
+/* Timer/Clock Display (Independent element, not a bug) */
+.timer-display-container {
     position: fixed;
     bottom: 60px;
     right: 80px;
@@ -306,12 +306,12 @@ body.output-page {
     width: auto;
 }
 
-.timer-bug.visible {
+.timer-display-container.visible {
     display: flex;
     animation: bugIn 0.4s var(--animation-easing);
 }
 
-.timer-bug.animating-out {
+.timer-display-container.animating-out {
     animation: bugOut 0.4s var(--animation-easing) forwards;
 }
 
@@ -323,7 +323,7 @@ body.output-page {
     font-weight: 700;
 }
 
-.timer-display {
+.timer-time {
     font-size: 48px;
     font-weight: 700;
     font-family: 'Courier New', monospace;

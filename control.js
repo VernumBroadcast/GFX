@@ -286,12 +286,23 @@ class ControlPanel {
         // Sync quick selectors with main dual L3 dropdowns
         const quickDualL3Left = document.getElementById('quickDualL3Left');
         const quickDualL3Right = document.getElementById('quickDualL3Right');
+        const quickDualL3Center = document.getElementById('quickDualL3Center');
         
         if (quickDualL3Left) {
             quickDualL3Left.addEventListener('change', () => {
                 const mainDropdown = document.getElementById('dualL3LeftSlot');
                 if (mainDropdown) {
                     mainDropdown.value = quickDualL3Left.value;
+                    mainDropdown.dispatchEvent(new Event('change'));
+                }
+            });
+        }
+        
+        if (quickDualL3Center) {
+            quickDualL3Center.addEventListener('change', () => {
+                const mainDropdown = document.getElementById('dualL3CenterSlot');
+                if (mainDropdown) {
+                    mainDropdown.value = quickDualL3Center.value;
                     mainDropdown.dispatchEvent(new Event('change'));
                 }
             });
@@ -385,15 +396,40 @@ class ControlPanel {
         const quickMultiL3Mode = document.getElementById('quickMultiL3Mode');
         const multiL3Mode = document.getElementById('multiL3Mode');
         if (quickMultiL3Mode && multiL3Mode) {
+            // Function to update quick action grid layout based on mode
+            const updateQuickMultiL3Layout = (mode) => {
+                const grid = document.getElementById('quickMultiL3Grid');
+                const centerLabel = document.getElementById('quickMultiL3CenterLabel');
+                const centerDropdown = document.getElementById('quickDualL3Center');
+                
+                if (mode === 'triple') {
+                    // Show 3 columns for triple mode
+                    grid.style.gridTemplateColumns = '1fr 1fr 1fr';
+                    centerLabel.style.display = 'block';
+                    centerDropdown.style.display = 'block';
+                } else {
+                    // Show 2 columns for dual mode
+                    grid.style.gridTemplateColumns = '1fr 1fr';
+                    centerLabel.style.display = 'none';
+                    centerDropdown.style.display = 'none';
+                }
+            };
+            
             // Sync quick selector to main selector
             quickMultiL3Mode.addEventListener('change', () => {
                 multiL3Mode.value = quickMultiL3Mode.value;
                 multiL3Mode.dispatchEvent(new Event('change'));
+                updateQuickMultiL3Layout(quickMultiL3Mode.value);
             });
+            
             // Sync main selector to quick selector
             multiL3Mode.addEventListener('change', () => {
                 quickMultiL3Mode.value = multiL3Mode.value;
+                updateQuickMultiL3Layout(multiL3Mode.value);
             });
+            
+            // Initialize layout on page load
+            updateQuickMultiL3Layout(quickMultiL3Mode.value);
         }
         
         // Timer Quick Actions
@@ -464,6 +500,7 @@ class ControlPanel {
     updateL3DropdownLabels() {
         const quickL3Selector = document.getElementById('quickL3Selector');
         const quickDualL3Left = document.getElementById('quickDualL3Left');
+        const quickDualL3Center = document.getElementById('quickDualL3Center');
         const quickDualL3Right = document.getElementById('quickDualL3Right');
         
         // Update each option with the current content
@@ -483,6 +520,12 @@ class ControlPanel {
             // Update dual L3 left selector
             if (quickDualL3Left) {
                 const option = quickDualL3Left.querySelector(`option[value="${i}"]`);
+                if (option) option.textContent = label;
+            }
+            
+            // Update dual L3 center selector
+            if (quickDualL3Center) {
+                const option = quickDualL3Center.querySelector(`option[value="${i}"]`);
                 if (option) option.textContent = label;
             }
             
