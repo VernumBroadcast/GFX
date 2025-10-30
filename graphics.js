@@ -995,9 +995,12 @@ class GraphicsEngine {
         const bugElement = this.getBugElement(position);
         if (!bugElement) return;
         
-        // Stop timer if this bug has an active timer
+        // Stop timer if this bug has an active timer AND persist mode is disabled
         if (this.state.activeTimerPosition === position) {
-            this.stopTimerAtPosition(position);
+            const shouldPersist = this.state.timerConfig && this.state.timerConfig.persist;
+            if (!shouldPersist) {
+                this.stopTimerAtPosition(position);
+            }
         }
         
         bugElement.classList.add('animating-out');
@@ -1034,15 +1037,32 @@ class GraphicsEngine {
         const bugElement = this.getBugElement(position);
         if (!bugElement) return;
         
-        // Stop any existing timer first
-        if (this.state.activeTimerPosition) {
+        // Check if we're resuming a persisted timer at the same position with interval still running
+        const isResuming = this.state.timerConfig && 
+                          this.state.timerConfig.persist && 
+                          this.state.activeTimerPosition === position &&
+                          this.state.timerInterval !== null;
+        
+        console.log('startTimer called:', { position, isResuming, hasInterval: !!this.state.timerInterval, persist: config.persist });
+        
+        // If not resuming, stop any existing timer first
+        if (!isResuming && this.state.activeTimerPosition && this.state.activeTimerPosition !== position) {
             this.stopTimerAtPosition(this.state.activeTimerPosition);
         }
         
-        // Save timer config and position
+        // Save timer config and position (but preserve timing state if resuming)
+        const preservedElapsed = isResuming ? this.state.timerElapsed : 0;
+        const preservedStartTime = isResuming ? this.state.timerStartTime : null;
+        
         this.state.timerConfig = config;
         this.state.timerPaused = false;
         this.state.activeTimerPosition = position;
+        
+        // Restore timing state if resuming
+        if (isResuming) {
+            this.state.timerElapsed = preservedElapsed;
+            this.state.timerStartTime = preservedStartTime;
+        }
         
         // Clear bug text content and set up timer structure
         bugElement.innerHTML = '';
@@ -1063,34 +1083,37 @@ class GraphicsEngine {
         bugElement.style.backgroundColor = config.bg || '#dc3545';
         bugElement.style.color = config.color || '#ffffff';
         
-        // Clear any existing interval
-        if (this.state.timerInterval) {
-            clearInterval(this.state.timerInterval);
-        }
-        
-        // Determine update interval based on format (faster for milliseconds)
-        const format = config.format || 'hms';
-        const needsMs = format.includes('ms') && format !== 'hms' && format !== 'ms';
-        const updateInterval = needsMs ? 10 : (config.type === 'clock' ? 1000 : 100);
-        
-        // Initialize timer based on type
-        if (config.type === 'clock') {
-            this.updateTimerDisplay();
-            this.state.timerInterval = setInterval(() => this.updateTimerDisplay(), updateInterval);
-        } else if (config.type === 'countdownTo') {
-            this.state.timerStartTime = Date.now();
-            this.updateTimerDisplay();
-            this.state.timerInterval = setInterval(() => this.updateTimerDisplay(), updateInterval);
-        } else if (config.type === 'stopwatch') {
-            this.state.timerElapsed = 0;
-            this.state.timerStartTime = Date.now();
-            this.updateTimerDisplay();
-            this.state.timerInterval = setInterval(() => this.updateTimerDisplay(), updateInterval);
-        } else if (config.type === 'countdownFrom') {
-            this.state.timerElapsed = 0;
-            this.state.timerStartTime = Date.now();
-            this.updateTimerDisplay();
-            this.state.timerInterval = setInterval(() => this.updateTimerDisplay(), updateInterval);
+        // Only initialize timer interval if not resuming a persisted timer
+        if (!isResuming) {
+            // Clear any existing interval
+            if (this.state.timerInterval) {
+                clearInterval(this.state.timerInterval);
+            }
+            
+            // Determine update interval based on format (faster for milliseconds)
+            const format = config.format || 'hms';
+            const needsMs = format.includes('ms') && format !== 'hms' && format !== 'ms';
+            const updateInterval = needsMs ? 10 : (config.type === 'clock' ? 1000 : 100);
+            
+            // Initialize timer based on type
+            if (config.type === 'clock') {
+                this.updateTimerDisplay();
+                this.state.timerInterval = setInterval(() => this.updateTimerDisplay(), updateInterval);
+            } else if (config.type === 'countdownTo') {
+                this.state.timerStartTime = Date.now();
+                this.updateTimerDisplay();
+                this.state.timerInterval = setInterval(() => this.updateTimerDisplay(), updateInterval);
+            } else if (config.type === 'stopwatch') {
+                this.state.timerElapsed = 0;
+                this.state.timerStartTime = Date.now();
+                this.updateTimerDisplay();
+                this.state.timerInterval = setInterval(() => this.updateTimerDisplay(), updateInterval);
+            } else if (config.type === 'countdownFrom') {
+                this.state.timerElapsed = 0;
+                this.state.timerStartTime = Date.now();
+                this.updateTimerDisplay();
+                this.state.timerInterval = setInterval(() => this.updateTimerDisplay(), updateInterval);
+            }
         }
         
         // Show timer
@@ -1131,9 +1154,17 @@ class GraphicsEngine {
     
     hideTimer() {
         if (this.state.activeTimerPosition) {
-            this.stopTimerAtPosition(this.state.activeTimerPosition);
-            this.hideBug(this.state.activeTimerPosition);
-            this.state.activeTimerPosition = null;
+            const position = this.state.activeTimerPosition;
+            const shouldPersist = this.state.timerConfig && this.state.timerConfig.persist;
+            
+            // Only stop the timer if persist mode is disabled
+            if (!shouldPersist) {
+                this.stopTimerAtPosition(position);
+                this.state.activeTimerPosition = null;
+            }
+            
+            // Hide the bug visually (but timer keeps running in background if persist is enabled)
+            this.hideBug(position);
         }
     }
     

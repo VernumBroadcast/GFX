@@ -534,6 +534,17 @@
                         <input type="color" id="timerBg" value="#dc3545">
                     </div>
                     
+                    <div class="form-row">
+                        <label for="timerPersist" style="display: flex; align-items: center; gap: 10px; cursor: pointer;">
+                            <input type="checkbox" id="timerPersist" style="width: 20px; height: 20px; cursor: pointer;">
+                            <span>Keep timer running when hidden (persist on reanimate)</span>
+                        </label>
+                    </div>
+                    <p class="info-text" style="margin-top: 5px; font-size: 12px; opacity: 0.8;">
+                        ✓ Checked: Timer continues counting in background when hidden<br>
+                        ✗ Unchecked: Timer resets to zero when hidden
+                    </p>
+                    
                     <div class="button-group">
                         <button class="btn-success" id="btnStartTimer">Start Timer</button>
                         <button class="btn-warning" id="btnPauseTimer">Pause</button>

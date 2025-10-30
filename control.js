@@ -966,7 +966,8 @@ class ControlPanel {
             format: document.getElementById('timerFormat').value || 'hms',
             label: document.getElementById('timerLabel').value || '',
             bg: document.getElementById('timerBg').value || '#dc3545',
-            color: '#ffffff'
+            color: '#ffffff',
+            persist: document.getElementById('timerPersist')?.checked || false
         };
         
         if (timerType === 'countdownTo') {
