@@ -285,6 +285,11 @@ body.output-page {
     left: 80px;
 }
 
+.bug-bottom-right {
+    bottom: 60px;
+    right: 80px;
+}
+
 /* Timer/Clock Display (Independent element, not a bug) */
 .timer-display-container {
     position: fixed;
