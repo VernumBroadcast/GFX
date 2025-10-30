@@ -65,6 +65,10 @@ class GraphicsEngine {
             timerStartTime: null
         };
         
+        // Track if this is preview window (for dragging)
+        this.isPreviewWindow = window.location.href.includes('preview') || 
+                               (window.parent && window.parent !== window);
+        
         this.init();
     }
     
@@ -248,6 +252,9 @@ class GraphicsEngine {
                     // Return current graphics state to control panel
                     this.sendStateToControl();
                     break;
+                case 'setCustomPosition':
+                    this.applyCustomPosition(data.elementType, data.position);
+                    break;
                 case 'showBug':
                     this.showBug(data.position, data.config);
                     break;
@@ -365,6 +372,28 @@ class GraphicsEngine {
             window.parent.postMessage(currentState, '*');
             console.log('📤 Sent current state to control panel:', currentState);
         }
+    }
+    
+    // Apply custom position to an element
+    applyCustomPosition(elementType, position) {
+        let element = null;
+        
+        // Get the element based on type
+        if (elementType === 'timer') {
+            element = this.elements.timerDisplay;
+        }
+        // Add more element types here as needed (bugs, L3s, etc.)
+        
+        if (!element || !position) return;
+        
+        // Apply the custom position
+        element.style.position = 'fixed';
+        element.style.left = position.left || (position.x + 'px');
+        element.style.top = position.top || (position.y + 'px');
+        element.style.right = 'auto';
+        element.style.bottom = 'auto';
+        
+        console.log(`📍 Applied custom position to ${elementType}:`, position);
     }
     
     // Lower Third Methods
@@ -1098,6 +1127,99 @@ class GraphicsEngine {
         // Update state
         this.state.timerVisible = true;
         this.updateStatusIndicator();
+        
+        // Enable dragging in preview window only
+        if (this.isPreviewWindow) {
+            this.makeDraggable(timerContainer, 'timer');
+        }
+    }
+    
+    makeDraggable(element, elementType) {
+        // Add visual indicator for draggable elements in preview
+        element.style.cursor = 'move';
+        element.title = 'Drag to reposition (Preview only)';
+        
+        let isDragging = false;
+        let currentX;
+        let currentY;
+        let initialX;
+        let initialY;
+        
+        const dragStart = (e) => {
+            if (e.type === 'touchstart') {
+                initialX = e.touches[0].clientX - element.offsetLeft;
+                initialY = e.touches[0].clientY - element.offsetTop;
+            } else {
+                initialX = e.clientX - element.offsetLeft;
+                initialY = e.clientY - element.offsetTop;
+            }
+            
+            isDragging = true;
+            element.style.opacity = '0.8';
+        };
+        
+        const drag = (e) => {
+            if (!isDragging) return;
+            
+            e.preventDefault();
+            
+            if (e.type === 'touchmove') {
+                currentX = e.touches[0].clientX - initialX;
+                currentY = e.touches[0].clientY - initialY;
+            } else {
+                currentX = e.clientX - initialX;
+                currentY = e.clientY - initialY;
+            }
+            
+            // Keep within viewport bounds
+            const maxX = window.innerWidth - element.offsetWidth;
+            const maxY = window.innerHeight - element.offsetHeight;
+            
+            currentX = Math.max(0, Math.min(currentX, maxX));
+            currentY = Math.max(0, Math.min(currentY, maxY));
+            
+            // Update position
+            element.style.left = currentX + 'px';
+            element.style.top = currentY + 'px';
+            element.style.right = 'auto';
+            element.style.bottom = 'auto';
+        };
+        
+        const dragEnd = () => {
+            if (!isDragging) return;
+            
+            isDragging = false;
+            element.style.opacity = '1';
+            
+            // Save position for this element type
+            const position = {
+                left: element.style.left,
+                top: element.style.top,
+                x: currentX || parseInt(element.style.left),
+                y: currentY || parseInt(element.style.top)
+            };
+            
+            // Send position to parent (control panel) to sync with transmit
+            if (window.parent && window.parent !== window) {
+                window.parent.postMessage({
+                    action: 'updatePosition',
+                    elementType: elementType,
+                    position: position
+                }, '*');
+            }
+            
+            console.log(`${elementType} repositioned to:`, position);
+        };
+        
+        // Mouse events
+        element.addEventListener('mousedown', dragStart);
+        document.addEventListener('mousemove', drag);
+        document.addEventListener('mouseup', dragEnd);
+        
+        // Touch events for mobile
+        element.addEventListener('touchstart', dragStart, { passive: false });
+        document.addEventListener('touchmove', drag, { passive: false });
+        document.addEventListener('touchend', dragEnd);
     }
     
     setTimerPosition(position) {

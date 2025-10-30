@@ -16,6 +16,11 @@ class ControlPanel {
             enabled: true
         };
         
+        // Store custom positions for draggable elements
+        this.customPositions = {
+            timer: null
+        };
+        
         // L3 Slot Management
         this.currentL3Slot = 1;
         this.l3Slots = {
@@ -107,6 +112,13 @@ class ControlPanel {
             if (event.data.action === 'stateUpdate') {
                 console.log('📥 Received state from output:', event.data.state);
                 this.syncControlPanelWithOutput(event.data.state);
+            } else if (event.data.action === 'updatePosition') {
+                // Save custom position from preview dragging
+                console.log('📍 Position update:', event.data.elementType, event.data.position);
+                this.customPositions[event.data.elementType] = event.data.position;
+                
+                // Apply to transmit window
+                this.applyCustomPosition(event.data.elementType, event.data.position);
             }
         });
         
@@ -157,6 +169,18 @@ class ControlPanel {
         // TODO: Add visual indicators to control panel
         // For example: add a "LIVE" badge next to active graphics
         // Or change button colors to indicate what's currently on screen
+    }
+    
+    applyCustomPosition(elementType, position) {
+        // Apply custom position to transmit window
+        const message = {
+            action: 'setCustomPosition',
+            elementType: elementType,
+            position: position
+        };
+        
+        this.transmitFrame.contentWindow.postMessage(message, '*');
+        console.log('📍 Applied custom position to transmit:', elementType, position);
     }
     
     setupTogglePreview() {
