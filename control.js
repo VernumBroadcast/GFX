@@ -1037,11 +1037,17 @@ class ControlPanel {
             document.getElementById('l3SecondaryBg').value = secondaryBg;
             document.getElementById('l3SecondaryColor').value = secondaryText;
             
-            // Update all bugs
+            // Update all bugs (background and glow)
             document.getElementById('bugLeftBg').value = secondaryBg;
             document.getElementById('bugRightBg').value = secondaryBg;
             document.getElementById('bugBottomLeftBg').value = secondaryBg;
             document.getElementById('bugBottomBg').value = secondaryBg;
+            
+            // Update bug glow colors to match secondary background
+            document.getElementById('bugLeftGlow').value = secondaryBg;
+            document.getElementById('bugRightGlow').value = secondaryBg;
+            document.getElementById('bugBottomLeftGlow').value = secondaryBg;
+            document.getElementById('bugBottomGlow').value = secondaryBg;
             
             // Update ticker
             document.getElementById('tickerBg').value = secondaryBg;
