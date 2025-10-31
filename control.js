@@ -946,6 +946,7 @@ class ControlPanel {
         return {
             text: document.getElementById(`${prefix}Text`)?.value || '',
             bg: document.getElementById(`${prefix}Bg`)?.value || '#dc3545',
+            glow: document.getElementById(`${prefix}Glow`)?.value || '#dc3545',
             color: '#ffffff'
         };
     }

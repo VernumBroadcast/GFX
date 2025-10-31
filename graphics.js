@@ -990,12 +990,19 @@ class GraphicsEngine {
         if (!bugElement) return;
         
         // Show as text bug
-        const { text = '', fontSize = 24, bg = '#dc3545', color = '#ffffff' } = config;
+        const { text = '', fontSize = 24, bg = '#dc3545', color = '#ffffff', glow = '#dc3545' } = config;
         
         bugElement.textContent = text;
         bugElement.style.fontSize = fontSize + 'px';
         bugElement.style.backgroundColor = bg;
         bugElement.style.color = color;
+        
+        // Apply glow color to box shadow
+        // Extract RGB from hex for the glow effect
+        const glowRgb = this.hexToRgb(glow);
+        if (glowRgb) {
+            bugElement.style.boxShadow = `0 4px 20px rgba(${glowRgb.r}, ${glowRgb.g}, ${glowRgb.b}, 0.4)`;
+        }
         
         // Auto-scale based on text length
         const textLength = text.length;
@@ -1446,6 +1453,12 @@ class GraphicsEngine {
         `;
         
         this.state.customFont = name;
+        
+        // Apply font to timer and ticker immediately
+        this.updateTimerFont(name);
+        if (this.elements.tickerContent) {
+            this.elements.tickerContent.style.fontFamily = name;
+        }
     }
     
     // Style Updates
@@ -1499,6 +1512,20 @@ class GraphicsEngine {
         if (config.customFont) {
             this.setCustomFont(config.customFont);
         }
+    }
+    
+    // Helper function to convert hex color to RGB
+    hexToRgb(hex) {
+        // Remove the hash if present
+        hex = hex.replace(/^#/, '');
+        
+        // Parse the hex values
+        const bigint = parseInt(hex, 16);
+        const r = (bigint >> 16) & 255;
+        const g = (bigint >> 8) & 255;
+        const b = bigint & 255;
+        
+        return { r, g, b };
     }
 }
 
