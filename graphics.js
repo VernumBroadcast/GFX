@@ -356,6 +356,20 @@ class GraphicsEngine {
     
     // Send current state back to control panel
     sendStateToControl() {
+        // Calculate current elapsed time if timer is running
+        let currentElapsedTime = 0;
+        if (this.state.timerConfig && this.state.timerVisible && 
+            (this.state.timerConfig.type === 'stopwatch' || this.state.timerConfig.type === 'countdownFrom') &&
+            this.state.timerStartTime) {
+            const now = Date.now();
+            const elapsed = (now - this.state.timerStartTime) / 1000;
+            currentElapsedTime = elapsed;
+        } else if (this.state.timerConfig && this.state.timerConfig.persist && 
+                   (this.state.timerConfig.type === 'stopwatch' || this.state.timerConfig.type === 'countdownFrom')) {
+            // Even if hidden, include elapsed time if persist is enabled
+            currentElapsedTime = this.state.timerElapsed || 0;
+        }
+        
         const currentState = {
             action: 'stateUpdate',
             state: {
@@ -365,6 +379,7 @@ class GraphicsEngine {
                 tickerVisible: this.state.tickerVisible,
                 timerVisible: this.state.timerVisible,
                 timerConfig: this.state.timerConfig,
+                timerElapsed: currentElapsedTime,
                 customPositions: this.customPositions,
                 bugs: {
                     topLeft: this.state.bugs['top-left'],
@@ -1068,16 +1083,27 @@ class GraphicsEngine {
         if (!timerContainer) return;
         
         // Check if we're resuming a persisted timer
-        const isResuming = this.state.timerConfig && 
-                          this.state.timerConfig.persist && 
-                          this.state.timerVisible &&
-                          this.state.timerInterval !== null;
+        // Note: Don't check timerVisible because timer might be hidden but still running
+        const hasExistingTimer = this.state.timerConfig && 
+                                 this.state.timerConfig.type === config.type &&
+                                 this.state.timerConfig.persist;
+        const isResuming = hasExistingTimer && 
+                          (this.state.timerInterval !== null || 
+                           (this.state.timerElapsed > 0 && this.state.timerStartTime !== null));
         
-        console.log('startTimer called:', { isResuming, hasInterval: !!this.state.timerInterval, persist: config.persist });
+        console.log('startTimer called:', { 
+            isResuming, 
+            hasInterval: !!this.state.timerInterval, 
+            persist: config.persist,
+            elapsed: this.state.timerElapsed,
+            hasExisting: hasExistingTimer
+        });
         
         // Save timer config (but preserve timing state if resuming)
-        const preservedElapsed = isResuming ? this.state.timerElapsed : 0;
-        const preservedStartTime = isResuming ? this.state.timerStartTime : null;
+        // Priority: 1) Resuming existing timer, 2) Explicit elapsedTime from config, 3) Zero
+        const preservedElapsed = isResuming ? this.state.timerElapsed : (config.elapsedTime || 0);
+        const preservedStartTime = isResuming ? this.state.timerStartTime : 
+                                  (config.referenceStartTime ? new Date(config.referenceStartTime).getTime() : null);
         
         this.state.timerConfig = config;
         this.state.timerPaused = false;
@@ -1085,7 +1111,19 @@ class GraphicsEngine {
         // Restore timing state if resuming
         if (isResuming) {
             this.state.timerElapsed = preservedElapsed;
-            this.state.timerStartTime = preservedStartTime;
+            // For stopwatch/countdownFrom, recalculate start time based on elapsed time to ensure sync
+            if ((config.type === 'stopwatch' || config.type === 'countdownFrom') && preservedElapsed > 0) {
+                // If referenceStartTime is provided, use it to sync multiple frames
+                // This ensures preview and transmit stay in sync even when preview was already running
+                if (config.referenceStartTime) {
+                    this.state.timerStartTime = new Date(config.referenceStartTime).getTime() - (preservedElapsed * 1000);
+                    console.log('🔄 Resuming timer synced: elapsed', preservedElapsed, 'startTime calculated from reference');
+                } else {
+                    this.state.timerStartTime = Date.now() - (preservedElapsed * 1000);
+                }
+            } else {
+                this.state.timerStartTime = preservedStartTime;
+            }
         }
         
         // Update label
@@ -1108,8 +1146,11 @@ class GraphicsEngine {
             this.setTimerPosition(position);
         }
         
-        // Only initialize timer interval if not resuming a persisted timer
-        if (!isResuming) {
+        // Initialize or restart timer interval
+        // If resuming, we might still need to restart the interval if it was cleared (e.g., timer was hidden)
+        const needsNewInterval = !isResuming || !this.state.timerInterval;
+        
+        if (needsNewInterval) {
             // Clear any existing interval
             if (this.state.timerInterval) {
                 clearInterval(this.state.timerInterval);
@@ -1125,20 +1166,52 @@ class GraphicsEngine {
                 this.updateTimerDisplay();
                 this.state.timerInterval = setInterval(() => this.updateTimerDisplay(), updateInterval);
             } else if (config.type === 'countdownTo') {
-                this.state.timerStartTime = Date.now();
+                // For countdownTo, always use current time (unless resuming with referenceStartTime)
+                if (!isResuming || !preservedStartTime) {
+                    this.state.timerStartTime = Date.now();
+                }
                 this.updateTimerDisplay();
                 this.state.timerInterval = setInterval(() => this.updateTimerDisplay(), updateInterval);
             } else if (config.type === 'stopwatch') {
-                this.state.timerElapsed = 0;
-                this.state.timerStartTime = Date.now();
+                // For stopwatch, if not resuming, check if we need to sync from elapsedTime
+                if (!isResuming) {
+                    // If elapsedTime was provided (from preview), use it to sync
+                    if (config.elapsedTime > 0 && config.referenceStartTime) {
+                        this.state.timerElapsed = config.elapsedTime;
+                        this.state.timerStartTime = new Date(config.referenceStartTime).getTime() - (config.elapsedTime * 1000);
+                        console.log('🔄 Starting stopwatch synced to', config.elapsedTime, 'seconds');
+                    } else {
+                        this.state.timerElapsed = 0;
+                        // Use referenceStartTime if provided (for syncing multiple frames), otherwise use current time
+                        this.state.timerStartTime = config.referenceStartTime ? 
+                            new Date(config.referenceStartTime).getTime() : Date.now();
+                    }
+                }
+                // Otherwise, start time was already calculated above based on elapsed time
                 this.updateTimerDisplay();
                 this.state.timerInterval = setInterval(() => this.updateTimerDisplay(), updateInterval);
             } else if (config.type === 'countdownFrom') {
-                this.state.timerElapsed = 0;
-                this.state.timerStartTime = Date.now();
+                // For countdownFrom, if not resuming, check if we need to sync from elapsedTime
+                if (!isResuming) {
+                    // If elapsedTime was provided (from preview), use it to sync
+                    if (config.elapsedTime > 0 && config.referenceStartTime) {
+                        this.state.timerElapsed = config.elapsedTime;
+                        this.state.timerStartTime = new Date(config.referenceStartTime).getTime() - (config.elapsedTime * 1000);
+                        console.log('🔄 Starting countdown synced to', config.elapsedTime, 'seconds');
+                    } else {
+                        this.state.timerElapsed = 0;
+                        // Use referenceStartTime if provided (for syncing multiple frames), otherwise use current time
+                        this.state.timerStartTime = config.referenceStartTime ? 
+                            new Date(config.referenceStartTime).getTime() : Date.now();
+                    }
+                }
+                // Otherwise, start time was already calculated above based on elapsed time
                 this.updateTimerDisplay();
                 this.state.timerInterval = setInterval(() => this.updateTimerDisplay(), updateInterval);
             }
+        } else {
+            // Timer interval already running, just update the display
+            this.updateTimerDisplay();
         }
         
         // Show timer

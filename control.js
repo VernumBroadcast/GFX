@@ -36,7 +36,11 @@ class ControlPanel {
         // Track what's on preview vs transmit
         this.previewState = {
             l3: null,
-            ticker: false
+            ticker: false,
+            timer: {
+                visible: false,
+                elapsed: 0
+            }
         };
         
         this.init();
@@ -172,6 +176,18 @@ class ControlPanel {
             console.log('✓ Timer is currently visible');
             if (state.timerConfig) {
                 console.log('  Timer config:', state.timerConfig);
+            }
+            // Store timer state from preview frame
+            if (state.timerElapsed !== undefined) {
+                this.previewState.timer.visible = true;
+                this.previewState.timer.elapsed = state.timerElapsed;
+                console.log('  Timer elapsed time:', state.timerElapsed, 'seconds');
+            }
+        } else {
+            this.previewState.timer.visible = false;
+            // Still keep elapsed time if persist is enabled
+            if (state.timerConfig && state.timerConfig.persist && state.timerElapsed !== undefined) {
+                this.previewState.timer.elapsed = state.timerElapsed;
             }
         }
         
@@ -486,6 +502,17 @@ class ControlPanel {
                 if (config.type !== 'none') {
                     // Add custom position if available
                     config.customPosition = this.customPositions.timer;
+                    // For stopwatch/countdownFrom, sync both frames using reference timestamp
+                    // If preview already has elapsed time, use it to sync transmit
+                    if (config.type === 'stopwatch' || config.type === 'countdownFrom') {
+                        const referenceTime = Date.now();
+                        config.referenceStartTime = referenceTime;
+                        // If preview has elapsed time (running or persisted), pass it to sync both frames
+                        if (this.previewState.timer.elapsed > 0) {
+                            config.elapsedTime = this.previewState.timer.elapsed;
+                            console.log('🔄 Syncing timer: preview has', config.elapsedTime, 'seconds elapsed');
+                        }
+                    }
                     this.sendToFrame('both', 'startTimer', { config });
                 } else {
                     alert('Please select a timer type in the Timer tab first');
@@ -969,6 +996,17 @@ class ControlPanel {
             if (config.type !== 'none') {
                 // Add custom position if available
                 config.customPosition = this.customPositions.timer;
+                // For stopwatch/countdownFrom, sync both frames using reference timestamp
+                // If preview already has elapsed time, use it to sync transmit
+                if (config.type === 'stopwatch' || config.type === 'countdownFrom') {
+                    const referenceTime = Date.now();
+                    config.referenceStartTime = referenceTime;
+                    // If preview has elapsed time (running or persisted), pass it to sync both frames
+                    if (this.previewState.timer.elapsed > 0) {
+                        config.elapsedTime = this.previewState.timer.elapsed;
+                        console.log('🔄 Syncing timer: preview has', config.elapsedTime, 'seconds elapsed');
+                    }
+                }
                 this.sendToFrame('both', 'startTimer', { config });
             }
         });
