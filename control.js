@@ -137,13 +137,27 @@ class ControlPanel {
             console.log('✓ Transmit iframe loaded, requesting current state...');
             setTimeout(() => {
                 this.sendToFrame('transmit', 'getState', {});
-            }, 500); // Small delay to ensure graphics engine is ready
+                const mode = document.getElementById('outputBgMode');
+                const colorEl = document.getElementById('outputBgColor');
+                if (mode) {
+                    const transparent = mode.value === 'transparent';
+                    const color = (colorEl && colorEl.value) ? colorEl.value : '#00ff00';
+                    this.sendToFrame('transmit', 'setOutputBackground', { transparent, color });
+                }
+            }, 500);
         });
-        
+
         this.previewFrame.addEventListener('load', () => {
             console.log('✓ Preview iframe loaded, requesting current state...');
             setTimeout(() => {
                 this.sendToFrame('preview', 'getState', {});
+                const mode = document.getElementById('outputBgMode');
+                const colorEl = document.getElementById('outputBgColor');
+                if (mode) {
+                    const transparent = mode.value === 'transparent';
+                    const color = (colorEl && colorEl.value) ? colorEl.value : '#00ff00';
+                    this.sendToFrame('preview', 'setOutputBackground', { transparent, color });
+                }
             }, 500);
         });
     }
@@ -324,6 +338,32 @@ class ControlPanel {
             this.previewState.ticker = false;
         });
         
+        // Question Bar Quick Actions
+        document.getElementById('quickPreviewQuestionBar').addEventListener('click', () => {
+            this.sendToFrame('preview', 'showQuestionBar', { config: this.getQuestionBarConfig() });
+            this.previewState.questionBar = true;
+        });
+        document.getElementById('quickShowQuestionBar').addEventListener('click', () => {
+            this.sendToFrame('transmit', 'showQuestionBar', { config: this.getQuestionBarConfig() });
+        });
+        document.getElementById('quickHideQuestionBar').addEventListener('click', () => {
+            this.sendToFrame('both', 'hideQuestionBar', {});
+            this.previewState.questionBar = false;
+        });
+        
+        // Poll Results (Pie Chart) Quick Actions
+        document.getElementById('quickPreviewPieChart').addEventListener('click', () => {
+            this.sendToFrame('preview', 'showPieChart', { config: this.getPieChartConfig() });
+            this.previewState.pieChart = true;
+        });
+        document.getElementById('quickShowPieChart').addEventListener('click', () => {
+            this.sendToFrame('transmit', 'showPieChart', { config: this.getPieChartConfig() });
+        });
+        document.getElementById('quickHidePieChart').addEventListener('click', () => {
+            this.sendToFrame('both', 'hidePieChart', {});
+            this.previewState.pieChart = false;
+        });
+        
         // Master Control Actions
         document.getElementById('quickHideAll').addEventListener('click', () => {
             this.sendToFrame('both', 'hideL3');
@@ -333,12 +373,11 @@ class ControlPanel {
             this.sendToFrame('both', 'hideQuestionBar');
             this.sendToFrame('both', 'hidePieChart');
             this.sendToFrame('both', 'hideBug', { position: 'top-left' });
-            this.sendToFrame('both', 'hideBug', { position: 'top-right' });
-            this.sendToFrame('both', 'hideBug', { position: 'bottom-left' });
-            this.sendToFrame('both', 'hideBug', { position: 'bottom-right' });
             this.sendToFrame('both', 'hideTimer');
             this.previewState.l3 = null;
             this.previewState.ticker = false;
+            this.previewState.questionBar = false;
+            this.previewState.pieChart = false;
         });
         
         // Dual L3 Quick Actions (no longer need to sync with main tab since it's removed)
@@ -376,79 +415,10 @@ class ControlPanel {
             });
         }
         
-        const quickPreviewBugRight = document.getElementById('quickPreviewBugRight');
-        if (quickPreviewBugRight) {
-            quickPreviewBugRight.addEventListener('click', () => {
-                const rightConfig = this.getBugConfig('right');
-                this.sendToFrame('preview', 'showBug', { position: 'top-right', config: rightConfig });
-            });
-        }
-        
-        const quickShowBugRight = document.getElementById('quickShowBugRight');
-        if (quickShowBugRight) {
-            quickShowBugRight.addEventListener('click', () => {
-                const rightConfig = this.getBugConfig('right');
-                this.sendToFrame('transmit', 'showBug', { position: 'top-right', config: rightConfig });
-            });
-        }
-        
         const quickHideBugLeft = document.getElementById('quickHideBugLeft');
         if (quickHideBugLeft) {
             quickHideBugLeft.addEventListener('click', () => {
                 this.sendToFrame('both', 'hideBug', { position: 'top-left' });
-            });
-        }
-        
-        const quickHideBugRight = document.getElementById('quickHideBugRight');
-        if (quickHideBugRight) {
-            quickHideBugRight.addEventListener('click', () => {
-                this.sendToFrame('both', 'hideBug', { position: 'top-right' });
-            });
-        }
-        
-        const quickPreviewBugBottom = document.getElementById('quickPreviewBugBottom');
-        if (quickPreviewBugBottom) {
-            quickPreviewBugBottom.addEventListener('click', () => {
-                const bottomConfig = this.getBugConfig('bottom');
-                this.sendToFrame('preview', 'showBug', { position: 'bottom-right', config: bottomConfig });
-            });
-        }
-        
-        const quickShowBugBottom = document.getElementById('quickShowBugBottom');
-        if (quickShowBugBottom) {
-            quickShowBugBottom.addEventListener('click', () => {
-                const bottomConfig = this.getBugConfig('bottom');
-                this.sendToFrame('transmit', 'showBug', { position: 'bottom-right', config: bottomConfig });
-            });
-        }
-        
-        const quickHideBugBottom = document.getElementById('quickHideBugBottom');
-        if (quickHideBugBottom) {
-            quickHideBugBottom.addEventListener('click', () => {
-                this.sendToFrame('both', 'hideBug', { position: 'bottom-right' });
-            });
-        }
-        
-        const quickPreviewBugBottomLeft = document.getElementById('quickPreviewBugBottomLeft');
-        if (quickPreviewBugBottomLeft) {
-            quickPreviewBugBottomLeft.addEventListener('click', () => {
-                const bottomLeftConfig = this.getBugConfig('bottomLeft');
-                this.sendToFrame('preview', 'showBug', { position: 'bottom-left', config: bottomLeftConfig });
-            });
-        }
-        
-        const quickShowBugBottomLeft = document.getElementById('quickShowBugBottomLeft');
-        if (quickShowBugBottomLeft) {
-            quickShowBugBottomLeft.addEventListener('click', () => {
-                const bottomLeftConfig = this.getBugConfig('bottomLeft');
-                this.sendToFrame('transmit', 'showBug', { position: 'bottom-left', config: bottomLeftConfig });
-            });
-        }
-        
-        const quickHideBugBottomLeft = document.getElementById('quickHideBugBottomLeft');
-        if (quickHideBugBottomLeft) {
-            quickHideBugBottomLeft.addEventListener('click', () => {
-                this.sendToFrame('both', 'hideBug', { position: 'bottom-left' });
             });
         }
         
@@ -498,6 +468,17 @@ class ControlPanel {
             });
         }
         
+        // Clock: one-tap live clock (time of day)
+        const quickClockTimer = document.getElementById('quickClockTimer');
+        if (quickClockTimer) {
+            quickClockTimer.addEventListener('click', () => {
+                const config = this.getTimerConfig();
+                config.type = 'clock';
+                config.customPosition = this.customPositions.timer;
+                this.sendToFrame('both', 'startTimer', { config });
+            });
+        }
+        
         const quickStartTimer = document.getElementById('quickStartTimer');
         if (quickStartTimer) {
             quickStartTimer.addEventListener('click', () => {
@@ -523,9 +504,9 @@ class ControlPanel {
             });
         }
         
-        const quickHideTimer = document.getElementById('quickHideTimer');
-        if (quickHideTimer) {
-            quickHideTimer.addEventListener('click', () => {
+        const quickStopTimer = document.getElementById('quickStopTimer');
+        if (quickStopTimer) {
+            quickStopTimer.addEventListener('click', () => {
                 this.sendToFrame('both', 'hideTimer', {});
             });
         }
@@ -535,9 +516,7 @@ class ControlPanel {
         if (quickShowBugs) {
             quickShowBugs.addEventListener('click', () => {
                 const leftConfig = this.getBugConfig('left');
-                const rightConfig = this.getBugConfig('right');
                 this.sendToFrame('transmit', 'showBug', { position: 'top-left', config: leftConfig });
-                this.sendToFrame('transmit', 'showBug', { position: 'top-right', config: rightConfig });
             });
         }
         
@@ -545,7 +524,6 @@ class ControlPanel {
         if (quickHideBugs) {
             quickHideBugs.addEventListener('click', () => {
                 this.sendToFrame('both', 'hideBug', { position: 'top-left' });
-                this.sendToFrame('both', 'hideBug', { position: 'top-right' });
             });
         }
     }
@@ -882,6 +860,25 @@ class ControlPanel {
         };
     }
     
+    getQuestionBarConfig() {
+        return {
+            text: document.getElementById('questionBarText')?.value || '',
+            bg: document.getElementById('questionBarBg')?.value || '#1a1a1a',
+            color: document.getElementById('questionBarColor')?.value || '#ffffff'
+        };
+    }
+    
+    getPieChartConfig() {
+        return {
+            title: document.getElementById('pieChartTitle')?.value || 'Live poll',
+            labelA: document.getElementById('pieLabelA')?.value || 'Yes',
+            labelB: document.getElementById('pieLabelB')?.value || 'No',
+            targetPct: parseInt(document.getElementById('pieTargetPct')?.value, 10) || 65,
+            colorA: document.getElementById('pieColorA')?.value || '#28a745',
+            colorB: document.getElementById('pieColorB')?.value || '#dc3545'
+        };
+    }
+    
     hexToRgba(hex, alpha) {
         const r = parseInt(hex.slice(1, 3), 16);
         const g = parseInt(hex.slice(3, 5), 16);
@@ -1078,24 +1075,25 @@ class ControlPanel {
             document.getElementById('l3SecondaryBg').value = secondaryBg;
             document.getElementById('l3SecondaryColor').value = secondaryText;
             
-            // Update all bugs (background and glow)
+            // Update Live bug (top-left only)
             document.getElementById('bugLeftBg').value = secondaryBg;
-            document.getElementById('bugRightBg').value = secondaryBg;
-            document.getElementById('bugBottomLeftBg').value = secondaryBg;
-            document.getElementById('bugBottomBg').value = secondaryBg;
-            
-            // Update bug glow colors to match secondary background
             document.getElementById('bugLeftGlow').value = secondaryBg;
-            document.getElementById('bugRightGlow').value = secondaryBg;
-            document.getElementById('bugBottomLeftGlow').value = secondaryBg;
-            document.getElementById('bugBottomGlow').value = secondaryBg;
             
             // Update ticker
-            document.getElementById('tickerBg').value = secondaryBg;
-            document.getElementById('tickerColor').value = secondaryText;
+            const tickerBgEl = document.getElementById('tickerBg');
+            const tickerColorEl = document.getElementById('tickerColor');
+            if (tickerBgEl) tickerBgEl.value = secondaryBg;
+            if (tickerColorEl) tickerColorEl.value = secondaryText;
             
             // Update timer
-            document.getElementById('timerBg').value = secondaryBg;
+            const timerBgEl = document.getElementById('timerBg');
+            if (timerBgEl) timerBgEl.value = secondaryBg;
+            
+            // Update question bar (house branding)
+            const qBarBg = document.getElementById('questionBarBg');
+            const qBarColor = document.getElementById('questionBarColor');
+            if (qBarBg) qBarBg.value = secondaryBg;
+            if (qBarColor) qBarColor.value = secondaryText;
             
             // Update color picker inputs to reflect preset
             document.getElementById('globalPrimaryBg').value = primaryBg;
@@ -1418,24 +1416,12 @@ class ControlPanel {
                                 l3Count++;
                             }
                         } else if (type === 'Bug') {
-                            // Update bug (TopLeft, TopRight, BottomLeft, BottomRight)
-                            if (id === 'TopLeft') {
-                                document.getElementById('bugLeftText').value = primaryText;
-                                document.getElementById('bugLeftBg').value = color;
-                                bugCount++;
-                            } else if (id === 'TopRight') {
-                                document.getElementById('bugRightText').value = primaryText;
-                                document.getElementById('bugRightBg').value = color;
-                                bugCount++;
-                            } else if (id === 'BottomLeft') {
-                                document.getElementById('bugBottomLeftText').value = primaryText;
-                                document.getElementById('bugBottomLeftBg').value = color;
-                                bugCount++;
-                            } else if (id === 'BottomRight') {
-                                document.getElementById('bugBottomText').value = primaryText;
-                                document.getElementById('timerBg').value = color;
-                                bugCount++;
-                            }
+                            // Only Live bug (top-left) exists now; map any Bug row to it
+                            const bugLeftText = document.getElementById('bugLeftText');
+                            const bugLeftBg = document.getElementById('bugLeftBg');
+                            if (bugLeftText) bugLeftText.value = primaryText;
+                            if (bugLeftBg) bugLeftBg.value = color;
+                            bugCount++;
                         } else if (type === 'Ticker') {
                             // Update ticker
                             document.getElementById('tickerText').value = primaryText;
@@ -1809,6 +1795,25 @@ class ControlPanel {
             localStorage.removeItem('vmixGraphicsState');
             alert('Saved state cleared!');
         });
+        
+        // Output background (chroma key)
+        const outputBgMode = document.getElementById('outputBgMode');
+        const outputBgColorRow = document.getElementById('outputBgColorRow');
+        const outputBgColor = document.getElementById('outputBgColor');
+        const applyOutputBackground = () => {
+            const transparent = outputBgMode.value === 'transparent';
+            const color = outputBgColor.value || '#00ff00';
+            this.sendToFrame('both', 'setOutputBackground', { transparent, color });
+        };
+        outputBgMode.addEventListener('change', () => {
+            outputBgColorRow.style.display = outputBgMode.value === 'solid' ? 'grid' : 'none';
+            applyOutputBackground();
+        });
+        if (outputBgColor) {
+            outputBgColor.addEventListener('input', () => {
+                if (outputBgMode.value === 'solid') applyOutputBackground();
+            });
+        }
     }
     
     updateOutputUrl() {

@@ -341,7 +341,7 @@ body.output-page {
     text-align: center;
 }
 
-/* Full-width Question Bar (podcast style) */
+/* Full-width Question Bar (podcast style) - left-aligned so question stays visible when poll is up */
 .question-bar {
     position: fixed;
     left: 0;
@@ -349,7 +349,7 @@ body.output-page {
     bottom: 180px;
     display: none;
     align-items: center;
-    justify-content: center;
+    justify-content: flex-start;
     padding: 24px 80px;
     background: rgba(0, 0, 0, 0.85);
     z-index: 98;
@@ -368,7 +368,7 @@ body.output-page {
     font-size: 36px;
     font-weight: 700;
     color: #ffffff;
-    text-align: center;
+    text-align: left;
     max-width: 100%;
     line-height: 1.3;
 }
@@ -376,9 +376,8 @@ body.output-page {
 /* Live Pie Chart */
 .pie-chart-container {
     position: fixed;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
+    bottom: 60px;
+    right: 80px;
     display: none;
     flex-direction: column;
     align-items: center;
@@ -399,7 +398,7 @@ body.output-page {
 }
 
 .pie-chart-title {
-    font-size: 24px;
+    font-size: 32px;
     font-weight: 700;
     color: #fff;
     margin-bottom: 16px;
@@ -448,7 +447,7 @@ body.output-page {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    font-size: 20px;
+    font-size: 28px;
     color: #fff;
 }
 
@@ -727,6 +726,30 @@ body.control-page {
     background: var(--vernum-gray-light);
     border-radius: 8px;
     border: 1px solid #333;
+}
+
+.quick-actions-condensed {
+    gap: 6px;
+    padding: 10px 14px;
+}
+
+.quick-actions-condensed .quick-action-group {
+    padding: 8px 6px;
+}
+
+.quick-actions-condensed .quick-action-group.quick-action-compact {
+    padding: 6px 4px;
+    max-width: none;
+}
+
+.quick-actions-condensed .quick-action-group h3 {
+    margin-bottom: 6px;
+    font-size: 11px;
+}
+
+/* Center button stacks in each panel (like Master Control) */
+.quick-actions-condensed .quick-action-group .button-group {
+    align-items: center;
 }
 
 .quick-action-group.quick-action-compact {

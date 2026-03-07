@@ -55,6 +55,8 @@ TLWIG/
 ### 💻 Local Setup (Files on your computer):
 👉 **See `README_VMIX_TROUBLESHOOTING.md` for quick fixes**  
 👉 **See `VMIX_SETUP.md` for complete setup guide**  
+**Runs locally on the VMix machine**: Use a small HTTP server on the same PC (e.g. `python3 -m http.server 8080`). No separate server or internet required; control and output talk over the same origin. Google Sheets and Firebase are optional for remote/cloud use.
+
 **Key requirement**: You MUST use an HTTP server (not file://)
 
 ## 🚀 Quick Start

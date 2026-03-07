@@ -59,6 +59,7 @@ class GraphicsEngine {
             questionBarVisible: false,
             pieChartVisible: false,
             pieChartInterval: null,
+            pieChartHideTimeout: null,
             // Track bugs by position (now only text, no timer mode)
             bugs: {
                 'top-left': { visible: false, config: {} },
@@ -338,6 +339,9 @@ class GraphicsEngine {
                     break;
                 case 'updateStyles':
                     this.updateStyles(data.styles);
+                    break;
+                case 'setOutputBackground':
+                    this.setOutputBackground(data.transparent !== false ? true : false, data.color);
                     break;
                 default:
                     this.addDebugLog('WARN: Unknown action - ' + data.action);
@@ -776,7 +780,15 @@ class GraphicsEngine {
         const container = this.elements.pieChartContainer;
         if (!container) return;
         
-        this.hidePieChart();
+        // Cancel any pending hide so it doesn't remove 'visible' after we show
+        if (this.state.pieChartHideTimeout) {
+            clearTimeout(this.state.pieChartHideTimeout);
+            this.state.pieChartHideTimeout = null;
+        }
+        if (this.state.pieChartInterval) {
+            clearInterval(this.state.pieChartInterval);
+            this.state.pieChartInterval = null;
+        }
         
         const title = (config && config.title && config.title.trim()) ? config.title.trim() : 'Live poll';
         const labelA = (config && config.labelA && config.labelA.trim()) ? config.labelA.trim() : 'Yes';
@@ -790,10 +802,16 @@ class GraphicsEngine {
         if (this.elements.pieChartTitle) this.elements.pieChartTitle.textContent = title;
         if (this.elements.pieLabelA) this.elements.pieLabelA.textContent = labelA;
         if (this.elements.pieLabelB) this.elements.pieLabelB.textContent = labelB;
-        if (this.elements.pieChartBg) this.elements.pieChartBg.setAttribute('stroke', colorB);
-        if (this.elements.pieChartSegment) this.elements.pieChartSegment.setAttribute('stroke', colorA);
         
         const circumference = 2 * Math.PI * 45;
+        if (this.elements.pieChartBg) {
+            this.elements.pieChartBg.setAttribute('stroke', colorB);
+            this.elements.pieChartBg.setAttribute('stroke-dasharray', circumference);
+        }
+        if (this.elements.pieChartSegment) {
+            this.elements.pieChartSegment.setAttribute('stroke', colorA);
+        }
+        
         const updatePie = () => {
             const variation = (Math.random() - 0.5) * 8;
             const pctA = Math.min(98, Math.max(2, targetPct + variation));
@@ -811,6 +829,7 @@ class GraphicsEngine {
         
         container.classList.remove('animating-out');
         container.classList.add('visible');
+        container.style.display = 'flex';
         this.state.pieChartVisible = true;
         this.updateStatusIndicator();
     }
@@ -825,7 +844,12 @@ class GraphicsEngine {
         container.classList.add('animating-out');
         this.state.pieChartVisible = false;
         this.updateStatusIndicator();
-        setTimeout(() => container.classList.remove('visible', 'animating-out'), 400);
+        if (this.state.pieChartHideTimeout) clearTimeout(this.state.pieChartHideTimeout);
+        this.state.pieChartHideTimeout = setTimeout(() => {
+            container.classList.remove('visible', 'animating-out');
+            container.style.display = 'none';
+            this.state.pieChartHideTimeout = null;
+        }, 400);
     }
     
     // Dual Lower Thirds Methods
@@ -1641,14 +1665,32 @@ class GraphicsEngine {
     // Style Updates
     updateStyles(styles) {
         if (!styles) return;
-        
+
         const root = document.documentElement;
-        
+
         for (const [key, value] of Object.entries(styles)) {
             root.style.setProperty(`--${key}`, value);
         }
     }
-    
+
+    setOutputBackground(transparent, color) {
+        const html = document.documentElement;
+        const body = document.body;
+        const priority = 'important';
+        if (transparent) {
+            html.style.setProperty('background', 'transparent', priority);
+            html.style.setProperty('background-color', 'transparent', priority);
+            body.style.setProperty('background', 'transparent', priority);
+            body.style.setProperty('background-color', 'transparent', priority);
+        } else {
+            const bg = color || '#00ff00';
+            html.style.setProperty('background', bg, priority);
+            html.style.setProperty('background-color', bg, priority);
+            body.style.setProperty('background', bg, priority);
+            body.style.setProperty('background-color', bg, priority);
+        }
+    }
+
     // Config File Monitoring
     startConfigMonitoring() {
         setInterval(() => {
