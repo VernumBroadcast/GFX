@@ -209,6 +209,7 @@
                 <button class="tab-button" data-tab="bugs">Corner Bugs</button>
                 <button class="tab-button" data-tab="timer">Timer</button>
                 <button class="tab-button" data-tab="ticker">Ticker</button>
+                <button class="tab-button" data-tab="question-poll">Question & Poll</button>
                 <button class="tab-button" data-tab="data-sources">Data Sources</button>
                 <button class="tab-button" data-tab="styling">Styling</button>
                 <button class="tab-button" data-tab="output">Output</button>
@@ -585,6 +586,63 @@
                         <button class="btn-danger" id="btnHideTickerPreview">Hide Preview</button>
                         <button class="btn-danger" id="btnHideTickerTransmit">Hide Transmit</button>
                         <button class="btn-danger" id="btnHideTickerBoth">Hide Both</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Question & Poll Tab -->
+            <div id="question-poll" class="tab-content">
+                <div class="control-group">
+                    <h3>📋 Full-Width Question Bar</h3>
+                    <p class="info-text">A bar that runs across the screen with your question (e.g. podcast / audience Q&amp;A).</p>
+                    <div class="form-row">
+                        <label for="questionBarText">Question text:</label>
+                        <input type="text" id="questionBarText" placeholder="e.g., What's your favourite colour?" value="">
+                    </div>
+                    <div class="form-row">
+                        <label for="questionBarBg">Background:</label>
+                        <input type="color" id="questionBarBg" value="#1a1a1a">
+                    </div>
+                    <div class="form-row">
+                        <label for="questionBarColor">Text color:</label>
+                        <input type="color" id="questionBarColor" value="#ffffff">
+                    </div>
+                    <div class="button-group">
+                        <button class="btn-success" id="btnShowQuestionBar">Show Question Bar</button>
+                        <button class="btn-danger" id="btnHideQuestionBar">Hide Question Bar</button>
+                    </div>
+                </div>
+                <div class="control-group">
+                    <h3>🥧 Live Pie Chart (fake poll)</h3>
+                    <p class="info-text">A pie chart that fake-generates responses; percentages hover around the target you set.</p>
+                    <div class="form-row">
+                        <label for="pieChartTitle">Chart title:</label>
+                        <input type="text" id="pieChartTitle" placeholder="e.g., Live poll" value="Live poll">
+                    </div>
+                    <div class="form-row">
+                        <label for="pieLabelA">Option A label:</label>
+                        <input type="text" id="pieLabelA" placeholder="e.g., Yes" value="Yes">
+                    </div>
+                    <div class="form-row">
+                        <label for="pieLabelB">Option B label:</label>
+                        <input type="text" id="pieLabelB" placeholder="e.g., No" value="No">
+                    </div>
+                    <div class="form-row">
+                        <label for="pieTargetPct">Target % for Option A (0–100):</label>
+                        <input type="number" id="pieTargetPct" value="65" min="0" max="100" step="1">
+                    </div>
+                    <p class="info-text">Percentages will fluctuate around this value (e.g. 63%, 66%, 64%).</p>
+                    <div class="form-row">
+                        <label for="pieColorA">Option A color:</label>
+                        <input type="color" id="pieColorA" value="#28a745">
+                    </div>
+                    <div class="form-row">
+                        <label for="pieColorB">Option B color:</label>
+                        <input type="color" id="pieColorB" value="#dc3545">
+                    </div>
+                    <div class="button-group">
+                        <button class="btn-success" id="btnShowPieChart">Show Pie Chart</button>
+                        <button class="btn-danger" id="btnHidePieChart">Hide Pie Chart</button>
                     </div>
                 </div>
             </div>

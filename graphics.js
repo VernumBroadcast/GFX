@@ -35,6 +35,17 @@ class GraphicsEngine {
             timerTime: document.getElementById('timerTime'),
             ticker: document.getElementById('ticker'),
             tickerContent: document.getElementById('tickerContent'),
+            questionBar: document.getElementById('questionBar'),
+            questionBarText: document.getElementById('questionBarText'),
+            pieChartContainer: document.getElementById('pieChartContainer'),
+            pieChartTitle: document.getElementById('pieChartTitle'),
+            pieChartSvg: document.getElementById('pieChartSvg'),
+            pieChartBg: document.getElementById('pieChartBg'),
+            pieChartSegment: document.getElementById('pieChartSegment'),
+            pieLabelA: document.getElementById('pieLabelA'),
+            pieLabelB: document.getElementById('pieLabelB'),
+            piePctA: document.getElementById('piePctA'),
+            piePctB: document.getElementById('piePctB'),
             customGraphics: document.getElementById('customGraphics'),
             statusIndicator: document.getElementById('statusIndicator')
         };
@@ -45,6 +56,9 @@ class GraphicsEngine {
             l3TripleVisible: false,
             tickerVisible: false,
             timerVisible: false,
+            questionBarVisible: false,
+            pieChartVisible: false,
+            pieChartInterval: null,
             // Track bugs by position (now only text, no timer mode)
             bugs: {
                 'top-left': { visible: false, config: {} },
@@ -81,7 +95,7 @@ class GraphicsEngine {
     updateStatusIndicator() {
         // Hide status indicator if any graphics are visible
         const anyBugVisible = Object.values(this.state.bugs).some(bug => bug.visible);
-        if (this.state.l3Visible || this.state.l3DualVisible || this.state.l3TripleVisible || this.state.tickerVisible || anyBugVisible) {
+        if (this.state.l3Visible || this.state.l3DualVisible || this.state.l3TripleVisible || this.state.tickerVisible || anyBugVisible || this.state.questionBarVisible || this.state.pieChartVisible || this.state.timerVisible) {
             this.elements.statusIndicator.classList.add('hidden');
         } else {
             this.elements.statusIndicator.classList.remove('hidden');
@@ -307,6 +321,18 @@ class GraphicsEngine {
                 case 'updateTicker':
                     this.updateTicker(data.config);
                     break;
+                case 'showQuestionBar':
+                    this.showQuestionBar(data.config);
+                    break;
+                case 'hideQuestionBar':
+                    this.hideQuestionBar();
+                    break;
+                case 'showPieChart':
+                    this.showPieChart(data.config);
+                    break;
+                case 'hidePieChart':
+                    this.hidePieChart();
+                    break;
                 case 'setFont':
                     this.setCustomFont(data.font);
                     break;
@@ -472,10 +498,8 @@ class GraphicsEngine {
             showLogo = false
         } = config;
         
-        // Update primary box
-        if (primaryText) {
-            this.elements.l3Primary.textContent = primaryText;
-        }
+        // Update primary box (default to "Name" if empty)
+        this.elements.l3Primary.textContent = (primaryText && primaryText.trim()) ? primaryText.trim() : 'Name';
         if (primaryBg) {
             this.elements.l3Primary.style.backgroundColor = primaryBg;
         }
@@ -486,10 +510,8 @@ class GraphicsEngine {
             this.elements.l3Primary.style.fontSize = fontSize1 + 'px';
         }
         
-        // Update secondary box
-        if (secondaryText) {
-            this.elements.l3Secondary.textContent = secondaryText;
-        }
+        // Update secondary box (default to "Title" if empty)
+        this.elements.l3Secondary.textContent = (secondaryText && secondaryText.trim()) ? secondaryText.trim() : 'Title';
         if (secondaryBg) {
             this.elements.l3Secondary.style.backgroundColor = secondaryBg;
         }
@@ -724,12 +746,94 @@ class GraphicsEngine {
         }
     }
     
+    // Question Bar (full-width podcast style)
+    showQuestionBar(config) {
+        const el = this.elements.questionBar;
+        const textEl = this.elements.questionBarText;
+        if (!el || !textEl) return;
+        const text = (config && config.text && config.text.trim()) ? config.text.trim() : 'Your question here';
+        textEl.textContent = text;
+        el.style.backgroundColor = (config && config.bg) ? config.bg : '#1a1a1a';
+        textEl.style.color = (config && config.color) ? config.color : '#ffffff';
+        if (config && config.fontSize) textEl.style.fontSize = config.fontSize + 'px';
+        el.classList.remove('animating-out');
+        el.classList.add('visible');
+        this.state.questionBarVisible = true;
+        this.updateStatusIndicator();
+    }
+    
+    hideQuestionBar() {
+        const el = this.elements.questionBar;
+        if (!el) return;
+        el.classList.add('animating-out');
+        this.state.questionBarVisible = false;
+        this.updateStatusIndicator();
+        setTimeout(() => el.classList.remove('visible', 'animating-out'), 500);
+    }
+    
+    // Live Pie Chart (fake poll - percentages hover around target)
+    showPieChart(config) {
+        const container = this.elements.pieChartContainer;
+        if (!container) return;
+        
+        this.hidePieChart();
+        
+        const title = (config && config.title && config.title.trim()) ? config.title.trim() : 'Live poll';
+        const labelA = (config && config.labelA && config.labelA.trim()) ? config.labelA.trim() : 'Yes';
+        const labelB = (config && config.labelB && config.labelB.trim()) ? config.labelB.trim() : 'No';
+        const targetPct = Math.min(100, Math.max(0, (config && config.targetPct != null) ? Number(config.targetPct) : 65));
+        const colorA = (config && config.colorA) ? config.colorA : '#28a745';
+        const colorB = (config && config.colorB) ? config.colorB : '#dc3545';
+        
+        this.state.pieChartConfig = { title, labelA, labelB, targetPct, colorA, colorB };
+        
+        if (this.elements.pieChartTitle) this.elements.pieChartTitle.textContent = title;
+        if (this.elements.pieLabelA) this.elements.pieLabelA.textContent = labelA;
+        if (this.elements.pieLabelB) this.elements.pieLabelB.textContent = labelB;
+        if (this.elements.pieChartBg) this.elements.pieChartBg.setAttribute('stroke', colorB);
+        if (this.elements.pieChartSegment) this.elements.pieChartSegment.setAttribute('stroke', colorA);
+        
+        const circumference = 2 * Math.PI * 45;
+        const updatePie = () => {
+            const variation = (Math.random() - 0.5) * 8;
+            const pctA = Math.min(98, Math.max(2, targetPct + variation));
+            const pctB = 100 - pctA;
+            const dash = (pctA / 100) * circumference;
+            if (this.elements.pieChartSegment) {
+                this.elements.pieChartSegment.setAttribute('stroke-dasharray', dash + ' ' + (circumference - dash));
+            }
+            if (this.elements.piePctA) this.elements.piePctA.textContent = Math.round(pctA) + '%';
+            if (this.elements.piePctB) this.elements.piePctB.textContent = Math.round(pctB) + '%';
+        };
+        
+        updatePie();
+        this.state.pieChartInterval = setInterval(updatePie, 1800);
+        
+        container.classList.remove('animating-out');
+        container.classList.add('visible');
+        this.state.pieChartVisible = true;
+        this.updateStatusIndicator();
+    }
+    
+    hidePieChart() {
+        const container = this.elements.pieChartContainer;
+        if (this.state.pieChartInterval) {
+            clearInterval(this.state.pieChartInterval);
+            this.state.pieChartInterval = null;
+        }
+        if (!container) return;
+        container.classList.add('animating-out');
+        this.state.pieChartVisible = false;
+        this.updateStatusIndicator();
+        setTimeout(() => container.classList.remove('visible', 'animating-out'), 400);
+    }
+    
     // Dual Lower Thirds Methods
     showDualLowerThirds(configLeft, configRight) {
-        // Update left side
+        // Update left side (default "Name" / "Title" if empty)
         if (configLeft) {
-            this.elements.l3LeftPrimary.textContent = configLeft.primaryText || '';
-            this.elements.l3LeftSecondary.textContent = configLeft.secondaryText || '';
+            this.elements.l3LeftPrimary.textContent = (configLeft.primaryText && configLeft.primaryText.trim()) ? configLeft.primaryText.trim() : 'Name';
+            this.elements.l3LeftSecondary.textContent = (configLeft.secondaryText && configLeft.secondaryText.trim()) ? configLeft.secondaryText.trim() : 'Title';
             this.applyL3Styling(this.elements.l3LeftPrimary, this.elements.l3LeftSecondary, configLeft);
             
             // Apply container styling
@@ -779,10 +883,10 @@ class GraphicsEngine {
             }
         }
         
-        // Update right side
+        // Update right side (default "Name" / "Title" if empty)
         if (configRight) {
-            this.elements.l3RightPrimary.textContent = configRight.primaryText || '';
-            this.elements.l3RightSecondary.textContent = configRight.secondaryText || '';
+            this.elements.l3RightPrimary.textContent = (configRight.primaryText && configRight.primaryText.trim()) ? configRight.primaryText.trim() : 'Name';
+            this.elements.l3RightSecondary.textContent = (configRight.secondaryText && configRight.secondaryText.trim()) ? configRight.secondaryText.trim() : 'Title';
             this.applyL3Styling(this.elements.l3RightPrimary, this.elements.l3RightSecondary, configRight);
             
             // Apply container styling
@@ -855,10 +959,10 @@ class GraphicsEngine {
     
     // Triple Lower Thirds Methods
     showTripleL3s(configLeft, configCenter, configRight) {
-        // Update left side
+        // Update left side (default "Name" / "Title" if empty)
         if (configLeft) {
-            this.elements.l3LeftPrimary.textContent = configLeft.primaryText || '';
-            this.elements.l3LeftSecondary.textContent = configLeft.secondaryText || '';
+            this.elements.l3LeftPrimary.textContent = (configLeft.primaryText && configLeft.primaryText.trim()) ? configLeft.primaryText.trim() : 'Name';
+            this.elements.l3LeftSecondary.textContent = (configLeft.secondaryText && configLeft.secondaryText.trim()) ? configLeft.secondaryText.trim() : 'Title';
             this.applyL3Styling(this.elements.l3LeftPrimary, this.elements.l3LeftSecondary, configLeft);
             
             // Handle left logo
@@ -900,17 +1004,17 @@ class GraphicsEngine {
             }
         }
         
-        // Update center (NO LOGO)
+        // Update center (NO LOGO) (default "Name" / "Title" if empty)
         if (configCenter) {
-            this.elements.l3CenterPrimary.textContent = configCenter.primaryText || '';
-            this.elements.l3CenterSecondary.textContent = configCenter.secondaryText || '';
+            this.elements.l3CenterPrimary.textContent = (configCenter.primaryText && configCenter.primaryText.trim()) ? configCenter.primaryText.trim() : 'Name';
+            this.elements.l3CenterSecondary.textContent = (configCenter.secondaryText && configCenter.secondaryText.trim()) ? configCenter.secondaryText.trim() : 'Title';
             this.applyL3Styling(this.elements.l3CenterPrimary, this.elements.l3CenterSecondary, configCenter);
         }
         
-        // Update right side
+        // Update right side (default "Name" / "Title" if empty)
         if (configRight) {
-            this.elements.l3RightPrimary.textContent = configRight.primaryText || '';
-            this.elements.l3RightSecondary.textContent = configRight.secondaryText || '';
+            this.elements.l3RightPrimary.textContent = (configRight.primaryText && configRight.primaryText.trim()) ? configRight.primaryText.trim() : 'Name';
+            this.elements.l3RightSecondary.textContent = (configRight.secondaryText && configRight.secondaryText.trim()) ? configRight.secondaryText.trim() : 'Title';
             this.applyL3Styling(this.elements.l3RightPrimary, this.elements.l3RightSecondary, configRight);
             
             // Handle right logo

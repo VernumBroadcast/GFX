@@ -103,6 +103,34 @@
         </div>
     </div>
 
+    <!-- Full-width Question Bar (podcast style) -->
+    <div id="questionBar" class="question-bar">
+        <div id="questionBarText" class="question-bar-text"></div>
+    </div>
+
+    <!-- Live Pie Chart (fake poll results) -->
+    <div id="pieChartContainer" class="pie-chart-container">
+        <div id="pieChartTitle" class="pie-chart-title"></div>
+        <div class="pie-chart-content">
+            <div id="pieChartSvgWrap" class="pie-chart-svg-wrap">
+                <svg id="pieChartSvg" class="pie-chart-svg" viewBox="0 0 100 100">
+                    <circle id="pieChartBg" class="pie-chart-bg" cx="50" cy="50" r="45"/>
+                    <circle id="pieChartSegment" class="pie-chart-segment" cx="50" cy="50" r="45"/>
+                </svg>
+            </div>
+            <div id="pieChartLegend" class="pie-chart-legend">
+                <div class="pie-legend-item">
+                    <span id="pieLabelA" class="pie-legend-label"></span>
+                    <span id="piePctA" class="pie-legend-pct">0%</span>
+                </div>
+                <div class="pie-legend-item">
+                    <span id="pieLabelB" class="pie-legend-label"></span>
+                    <span id="piePctB" class="pie-legend-pct">0%</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <!-- Corner Bugs (Four independent text badges) -->
     <div id="bugTopLeft" class="bug bug-top-left"></div>
     <div id="bugTopRight" class="bug bug-top-right"></div>

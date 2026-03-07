@@ -76,6 +76,7 @@ class ControlPanel {
         this.setupBugControls();
         this.setupTimerControls();
         this.setupTickerControls();
+        this.setupQuestionPollControls();
         this.setupDataSourceControls();
         this.setupAutoUpdate();  // Google Sheets auto-update
         this.setupGlobalColorControls();
@@ -329,6 +330,8 @@ class ControlPanel {
             this.sendToFrame('both', 'hideL3Dual');
             this.sendToFrame('both', 'hideL3Triple');
             this.sendToFrame('both', 'hideTicker');
+            this.sendToFrame('both', 'hideQuestionBar');
+            this.sendToFrame('both', 'hidePieChart');
             this.sendToFrame('both', 'hideBug', { position: 'top-left' });
             this.sendToFrame('both', 'hideBug', { position: 'top-right' });
             this.sendToFrame('both', 'hideBug', { position: 'bottom-left' });
@@ -1283,6 +1286,35 @@ class ControlPanel {
     }
     
     // Data Source Controls
+    setupQuestionPollControls() {
+        const getQuestionBarConfig = () => ({
+            text: document.getElementById('questionBarText').value || '',
+            bg: document.getElementById('questionBarBg').value || '#1a1a1a',
+            color: document.getElementById('questionBarColor').value || '#ffffff'
+        });
+        const getPieChartConfig = () => ({
+            title: document.getElementById('pieChartTitle').value || 'Live poll',
+            labelA: document.getElementById('pieLabelA').value || 'Yes',
+            labelB: document.getElementById('pieLabelB').value || 'No',
+            targetPct: parseInt(document.getElementById('pieTargetPct').value, 10) || 65,
+            colorA: document.getElementById('pieColorA').value || '#28a745',
+            colorB: document.getElementById('pieColorB').value || '#dc3545'
+        });
+        
+        document.getElementById('btnShowQuestionBar').addEventListener('click', () => {
+            this.sendToFrame('both', 'showQuestionBar', { config: getQuestionBarConfig() });
+        });
+        document.getElementById('btnHideQuestionBar').addEventListener('click', () => {
+            this.sendToFrame('both', 'hideQuestionBar', {});
+        });
+        document.getElementById('btnShowPieChart').addEventListener('click', () => {
+            this.sendToFrame('both', 'showPieChart', { config: getPieChartConfig() });
+        });
+        document.getElementById('btnHidePieChart').addEventListener('click', () => {
+            this.sendToFrame('both', 'hidePieChart', {});
+        });
+    }
+    
     setupDataSourceControls() {
         // Google Sheets
         document.getElementById('btnTestGsheet').addEventListener('click', () => {
