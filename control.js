@@ -77,6 +77,8 @@ class ControlPanel {
         this.setupTimerControls();
         this.setupTickerControls();
         this.setupQuestionPollControls();
+        this.setupGameShowControls();
+        this.setupEmojiControls();
         this.setupDataSourceControls();
         this.setupAutoUpdate();  // Google Sheets auto-update
         this.setupGlobalColorControls();
@@ -374,6 +376,8 @@ class ControlPanel {
             this.sendToFrame('both', 'hidePieChart');
             this.sendToFrame('both', 'hideBug', { position: 'top-left' });
             this.sendToFrame('both', 'hideTimer');
+            this.sendToFrame('both', 'hideGameShow');
+            this.sendToFrame('both', 'hideEmojis');
             this.previewState.l3 = null;
             this.previewState.ticker = false;
             this.previewState.questionBar = false;
@@ -1310,6 +1314,47 @@ class ControlPanel {
         });
         document.getElementById('btnHidePieChart').addEventListener('click', () => {
             this.sendToFrame('both', 'hidePieChart', {});
+        });
+    }
+    
+    getGameShowConfig() {
+        return {
+            teamAName: document.getElementById('gameShowTeamAName')?.value || 'Team A',
+            teamBName: document.getElementById('gameShowTeamBName')?.value || 'Team B',
+            teamAColor: document.getElementById('gameShowTeamAColor')?.value || '#dc3545',
+            teamBColor: document.getElementById('gameShowTeamBColor')?.value || '#0056b3',
+            scoreA: parseInt(document.getElementById('gameShowScoreA')?.value, 10) || 0,
+            scoreB: parseInt(document.getElementById('gameShowScoreB')?.value, 10) || 0
+        };
+    }
+    
+    setupGameShowControls() {
+        document.getElementById('btnShowGameShow').addEventListener('click', () => {
+            this.sendToFrame('both', 'showGameShow', { config: this.getGameShowConfig() });
+        });
+        document.getElementById('btnUpdateGameShowScores').addEventListener('click', () => {
+            this.sendToFrame('both', 'updateGameShow', { config: this.getGameShowConfig() });
+        });
+        document.getElementById('btnHideGameShow').addEventListener('click', () => {
+            this.sendToFrame('both', 'hideGameShow', {});
+        });
+    }
+    
+    getEmojiConfig() {
+        return {
+            emojiList: document.getElementById('emojiList')?.value || '🎉',
+            count: parseInt(document.getElementById('emojiCount')?.value, 10) || 28,
+            sizeMin: parseInt(document.getElementById('emojiSizeMin')?.value, 10) || 28,
+            sizeMax: parseInt(document.getElementById('emojiSizeMax')?.value, 10) || 56
+        };
+    }
+    
+    setupEmojiControls() {
+        document.getElementById('btnShowEmojis').addEventListener('click', () => {
+            this.sendToFrame('both', 'showEmojis', { config: this.getEmojiConfig() });
+        });
+        document.getElementById('btnHideEmojis').addEventListener('click', () => {
+            this.sendToFrame('both', 'hideEmojis', {});
         });
     }
     

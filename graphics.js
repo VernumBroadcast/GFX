@@ -47,7 +47,15 @@ class GraphicsEngine {
             piePctA: document.getElementById('piePctA'),
             piePctB: document.getElementById('piePctB'),
             customGraphics: document.getElementById('customGraphics'),
-            statusIndicator: document.getElementById('statusIndicator')
+            statusIndicator: document.getElementById('statusIndicator'),
+            gameShowBar: document.getElementById('gameShowBar'),
+            gameShowPanelA: document.getElementById('gameShowPanelA'),
+            gameShowPanelB: document.getElementById('gameShowPanelB'),
+            gameShowTeamAName: document.getElementById('gameShowTeamAName'),
+            gameShowTeamBName: document.getElementById('gameShowTeamBName'),
+            gameShowScoreA: document.getElementById('gameShowScoreA'),
+            gameShowScoreB: document.getElementById('gameShowScoreB'),
+            emojiOverlay: document.getElementById('emojiOverlay')
         };
         
         this.state = {
@@ -77,7 +85,9 @@ class GraphicsEngine {
             timerInterval: null,
             timerPaused: false,
             timerElapsed: 0,
-            timerStartTime: null
+            timerStartTime: null,
+            gameShowVisible: false,
+            emojiOverlayActive: false
         };
         
         // Track if this is preview window (for dragging)
@@ -96,7 +106,7 @@ class GraphicsEngine {
     updateStatusIndicator() {
         // Hide status indicator if any graphics are visible
         const anyBugVisible = Object.values(this.state.bugs).some(bug => bug.visible);
-        if (this.state.l3Visible || this.state.l3DualVisible || this.state.l3TripleVisible || this.state.tickerVisible || anyBugVisible || this.state.questionBarVisible || this.state.pieChartVisible || this.state.timerVisible) {
+        if (this.state.l3Visible || this.state.l3DualVisible || this.state.l3TripleVisible || this.state.tickerVisible || anyBugVisible || this.state.questionBarVisible || this.state.pieChartVisible || this.state.timerVisible || this.state.gameShowVisible || this.state.emojiOverlayActive) {
             this.elements.statusIndicator.classList.add('hidden');
         } else {
             this.elements.statusIndicator.classList.remove('hidden');
@@ -342,6 +352,21 @@ class GraphicsEngine {
                     break;
                 case 'setOutputBackground':
                     this.setOutputBackground(data.transparent !== false ? true : false, data.color);
+                    break;
+                case 'showGameShow':
+                    this.showGameShow(data.config);
+                    break;
+                case 'hideGameShow':
+                    this.hideGameShow();
+                    break;
+                case 'updateGameShow':
+                    this.updateGameShow(data.config);
+                    break;
+                case 'showEmojis':
+                    this.showEmojis(data.config);
+                    break;
+                case 'hideEmojis':
+                    this.hideEmojis();
                     break;
                 default:
                     this.addDebugLog('WARN: Unknown action - ' + data.action);
@@ -850,6 +875,92 @@ class GraphicsEngine {
             container.style.display = 'none';
             this.state.pieChartHideTimeout = null;
         }, 400);
+    }
+    
+    applyGameShowConfig(config) {
+        const bar = this.elements.gameShowBar;
+        if (!bar || !config) return;
+        const nameA = this.elements.gameShowTeamAName;
+        const nameB = this.elements.gameShowTeamBName;
+        const scoreA = this.elements.gameShowScoreA;
+        const scoreB = this.elements.gameShowScoreB;
+        const panelA = this.elements.gameShowPanelA;
+        const panelB = this.elements.gameShowPanelB;
+        if (nameA) nameA.textContent = (config.teamAName && String(config.teamAName).trim()) ? config.teamAName.trim() : 'Team A';
+        if (nameB) nameB.textContent = (config.teamBName && String(config.teamBName).trim()) ? config.teamBName.trim() : 'Team B';
+        if (scoreA) scoreA.textContent = config.scoreA != null ? String(config.scoreA) : '0';
+        if (scoreB) scoreB.textContent = config.scoreB != null ? String(config.scoreB) : '0';
+        if (panelA) panelA.style.backgroundColor = config.teamAColor || '#dc3545';
+        if (panelB) panelB.style.backgroundColor = config.teamBColor || '#0056b3';
+    }
+    
+    showGameShow(config) {
+        const bar = this.elements.gameShowBar;
+        if (!bar) return;
+        this.applyGameShowConfig(config);
+        bar.classList.remove('animating-out');
+        bar.classList.add('visible');
+        this.state.gameShowVisible = true;
+        this.updateStatusIndicator();
+    }
+    
+    hideGameShow() {
+        const bar = this.elements.gameShowBar;
+        if (!bar) return;
+        bar.classList.add('animating-out');
+        this.state.gameShowVisible = false;
+        this.updateStatusIndicator();
+        setTimeout(() => {
+            bar.classList.remove('visible', 'animating-out');
+        }, 500);
+    }
+    
+    updateGameShow(config) {
+        if (!this.state.gameShowVisible) return;
+        this.applyGameShowConfig(config);
+    }
+    
+    parseEmojiTokens(str) {
+        if (!str || !str.trim()) return ['🎉'];
+        const raw = str.trim().split(/[\s,]+/).filter(Boolean);
+        if (raw.length === 0) return ['🎉'];
+        return raw;
+    }
+    
+    showEmojis(config) {
+        const overlay = this.elements.emojiOverlay;
+        if (!overlay) return;
+        this.hideEmojis();
+        const tokens = this.parseEmojiTokens(config && config.emojiList ? config.emojiList : '');
+        const count = Math.min(120, Math.max(1, parseInt(config && config.count, 10) || 28));
+        const sizeMin = Math.max(12, parseInt(config && config.sizeMin, 10) || 28);
+        const sizeMax = Math.max(sizeMin, parseInt(config && config.sizeMax, 10) || 56);
+        for (let i = 0; i < count; i++) {
+            const el = document.createElement('span');
+            el.className = 'emoji-sprite';
+            el.textContent = tokens[i % tokens.length];
+            const left = 4 + Math.random() * 90;
+            const top = 4 + Math.random() * 88;
+            const size = sizeMin + Math.random() * (sizeMax - sizeMin);
+            const rot = Math.random() * 50 - 25;
+            el.style.left = left + '%';
+            el.style.top = top + '%';
+            el.style.fontSize = Math.round(size) + 'px';
+            el.style.transform = `rotate(${rot}deg)`;
+            overlay.appendChild(el);
+        }
+        overlay.classList.add('visible');
+        this.state.emojiOverlayActive = true;
+        this.updateStatusIndicator();
+    }
+    
+    hideEmojis() {
+        const overlay = this.elements.emojiOverlay;
+        if (!overlay) return;
+        overlay.innerHTML = '';
+        overlay.classList.remove('visible');
+        this.state.emojiOverlayActive = false;
+        this.updateStatusIndicator();
     }
     
     // Dual Lower Thirds Methods

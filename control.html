@@ -210,6 +210,8 @@
                 <button class="tab-button" data-tab="timer">Timer</button>
                 <button class="tab-button" data-tab="ticker">Ticker</button>
                 <button class="tab-button" data-tab="question-poll">Question & Poll</button>
+                <button class="tab-button" data-tab="game-show">Game Show</button>
+                <button class="tab-button" data-tab="emojis">Emojis</button>
                 <button class="tab-button" data-tab="data-sources" style="display: none;">Data Sources</button>
                 <button class="tab-button" data-tab="styling">Styling</button>
                 <button class="tab-button" data-tab="output">Output</button>
@@ -581,6 +583,71 @@
                     <div class="button-group">
                         <button class="btn-success" id="btnShowPieChart">Show Pie Chart</button>
                         <button class="btn-danger" id="btnHidePieChart">Hide Pie Chart</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Game Show Tab -->
+            <div id="game-show" class="tab-content">
+                <div class="control-group">
+                    <h3>Dual-team scoreboard</h3>
+                    <p class="info-text">A lower-style bar with both team names, colours, and scores. Update scores while on air without hiding the graphic.</p>
+                    <div class="form-row">
+                        <label for="gameShowTeamAName">Team A name:</label>
+                        <input type="text" id="gameShowTeamAName" value="Team A" placeholder="e.g., Red Team">
+                    </div>
+                    <div class="form-row">
+                        <label for="gameShowTeamAColor">Team A colour:</label>
+                        <input type="color" id="gameShowTeamAColor" value="#dc3545">
+                    </div>
+                    <div class="form-row">
+                        <label for="gameShowTeamBName">Team B name:</label>
+                        <input type="text" id="gameShowTeamBName" value="Team B" placeholder="e.g., Blue Team">
+                    </div>
+                    <div class="form-row">
+                        <label for="gameShowTeamBColor">Team B colour:</label>
+                        <input type="color" id="gameShowTeamBColor" value="#0056b3">
+                    </div>
+                    <div class="form-row">
+                        <label for="gameShowScoreA">Team A score:</label>
+                        <input type="number" id="gameShowScoreA" value="0" min="-999" max="9999" step="1">
+                    </div>
+                    <div class="form-row">
+                        <label for="gameShowScoreB">Team B score:</label>
+                        <input type="number" id="gameShowScoreB" value="0" min="-999" max="9999" step="1">
+                    </div>
+                    <div class="button-group">
+                        <button class="btn-success" id="btnShowGameShow">Show scoreboard</button>
+                        <button class="btn-info" id="btnUpdateGameShowScores">Update scores only</button>
+                        <button class="btn-danger" id="btnHideGameShow">Hide scoreboard</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Emojis Tab -->
+            <div id="emojis" class="tab-content">
+                <div class="control-group">
+                    <h3>Emoji scatter</h3>
+                    <p class="info-text">Paste or type emojis (separate with spaces or commas). They appear dotted around the screen for celebrations or reactions.</p>
+                    <div class="form-row">
+                        <label for="emojiList">Emojis to use:</label>
+                        <input type="text" id="emojiList" value="🎉 ⭐ 🎊 ✨ 💫" placeholder="🎉 ⭐ 🎊">
+                    </div>
+                    <div class="form-row">
+                        <label for="emojiCount">How many on screen:</label>
+                        <input type="number" id="emojiCount" value="28" min="1" max="120" step="1">
+                    </div>
+                    <div class="form-row">
+                        <label for="emojiSizeMin">Min size (px):</label>
+                        <input type="number" id="emojiSizeMin" value="28" min="12" max="120">
+                    </div>
+                    <div class="form-row">
+                        <label for="emojiSizeMax">Max size (px):</label>
+                        <input type="number" id="emojiSizeMax" value="56" min="16" max="200">
+                    </div>
+                    <div class="button-group">
+                        <button class="btn-success" id="btnShowEmojis">Show emojis</button>
+                        <button class="btn-danger" id="btnHideEmojis">Hide emojis</button>
                     </div>
                 </div>
             </div>

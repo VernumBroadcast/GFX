@@ -244,6 +244,93 @@ body.output-page {
     display: block;
 }
 
+/* Game Show dual-team scoreboard */
+.game-show-bar {
+    position: fixed;
+    left: 50%;
+    transform: translateX(-50%);
+    bottom: 120px;
+    display: none;
+    align-items: stretch;
+    gap: 0;
+    z-index: 105;
+    border-radius: 20px;
+    overflow: hidden;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.45);
+    animation: slideIn 0.5s cubic-bezier(0.4, 0.0, 0.2, 1);
+}
+
+.game-show-bar.visible {
+    display: flex;
+}
+
+.game-show-bar.animating-out {
+    animation: slideOut 0.5s cubic-bezier(0.4, 0.0, 0.2, 1) forwards;
+}
+
+.game-show-panel {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-width: 220px;
+    padding: 20px 28px;
+    color: #ffffff;
+    text-shadow: 0 1px 3px rgba(0, 0, 0, 0.35);
+}
+
+.game-show-name {
+    font-size: 28px;
+    font-weight: 800;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+    margin-bottom: 8px;
+    text-align: center;
+    max-width: 280px;
+    line-height: 1.15;
+}
+
+.game-show-score {
+    font-size: 56px;
+    font-weight: 900;
+    line-height: 1;
+    font-variant-numeric: tabular-nums;
+}
+
+.game-show-vs {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0 18px;
+    background: rgba(0, 0, 0, 0.88);
+    color: rgba(255, 255, 255, 0.85);
+    font-size: 22px;
+    font-weight: 800;
+    letter-spacing: 2px;
+}
+
+/* Emoji scatter overlay */
+.emoji-overlay {
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    z-index: 140;
+    overflow: hidden;
+    display: none;
+}
+
+.emoji-overlay.visible {
+    display: block;
+}
+
+.emoji-overlay .emoji-sprite {
+    position: absolute;
+    line-height: 1;
+    user-select: none;
+    opacity: 0.92;
+    filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.25));
+}
+
 /* Corner Bugs */
 .bug {
     position: fixed;
