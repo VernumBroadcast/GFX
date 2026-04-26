@@ -211,7 +211,6 @@
                 <button class="tab-button" data-tab="ticker">Ticker</button>
                 <button class="tab-button" data-tab="question-poll">Question & Poll</button>
                 <button class="tab-button" data-tab="game-show">Game Show</button>
-                <button class="tab-button" data-tab="emojis">Emojis</button>
                 <button class="tab-button" data-tab="data-sources" style="display: none;">Data Sources</button>
                 <button class="tab-button" data-tab="styling">Styling</button>
                 <button class="tab-button" data-tab="output">Output</button>
@@ -591,7 +590,7 @@
             <div id="game-show" class="tab-content">
                 <div class="control-group">
                     <h3>Dual-team scoreboard</h3>
-                    <p class="info-text">A lower-style bar with both team names, colours, and scores. Update scores while on air without hiding the graphic.</p>
+                    <p class="info-text">A bar at the bottom with both team names, colours, and scores. +1/−1 updates the graphic live when the scoreboard is on air.</p>
                     <div class="form-row">
                         <label for="gameShowTeamAName">Team A name:</label>
                         <input type="text" id="gameShowTeamAName" value="Team A" placeholder="e.g., Red Team">
@@ -599,6 +598,14 @@
                     <div class="form-row">
                         <label for="gameShowTeamAColor">Team A colour:</label>
                         <input type="color" id="gameShowTeamAColor" value="#dc3545">
+                    </div>
+                    <div class="form-row game-show-score-row">
+                        <label for="gameShowScoreA">Team A score:</label>
+                        <div class="game-show-score-inputs">
+                            <input type="number" id="gameShowScoreA" value="0" min="-999" max="9999" step="1">
+                            <button type="button" class="btn-score btn-plus" id="gameShowPlusA" title="Add 1">+1</button>
+                            <button type="button" class="btn-score btn-minus" id="gameShowMinusA" title="Subtract 1">−1</button>
+                        </div>
                     </div>
                     <div class="form-row">
                         <label for="gameShowTeamBName">Team B name:</label>
@@ -608,13 +615,13 @@
                         <label for="gameShowTeamBColor">Team B colour:</label>
                         <input type="color" id="gameShowTeamBColor" value="#0056b3">
                     </div>
-                    <div class="form-row">
-                        <label for="gameShowScoreA">Team A score:</label>
-                        <input type="number" id="gameShowScoreA" value="0" min="-999" max="9999" step="1">
-                    </div>
-                    <div class="form-row">
+                    <div class="form-row game-show-score-row">
                         <label for="gameShowScoreB">Team B score:</label>
-                        <input type="number" id="gameShowScoreB" value="0" min="-999" max="9999" step="1">
+                        <div class="game-show-score-inputs">
+                            <input type="number" id="gameShowScoreB" value="0" min="-999" max="9999" step="1">
+                            <button type="button" class="btn-score btn-plus" id="gameShowPlusB" title="Add 1">+1</button>
+                            <button type="button" class="btn-score btn-minus" id="gameShowMinusB" title="Subtract 1">−1</button>
+                        </div>
                     </div>
                     <div class="button-group">
                         <button class="btn-success" id="btnShowGameShow">Show scoreboard</button>
@@ -622,16 +629,39 @@
                         <button class="btn-danger" id="btnHideGameShow">Hide scoreboard</button>
                     </div>
                 </div>
-            </div>
-
-            <!-- Emojis Tab -->
-            <div id="emojis" class="tab-content">
                 <div class="control-group">
                     <h3>Emoji scatter</h3>
-                    <p class="info-text">Paste or type emojis (separate with spaces or commas). They appear dotted around the screen for celebrations or reactions.</p>
-                    <div class="form-row">
-                        <label for="emojiList">Emojis to use:</label>
-                        <input type="text" id="emojiList" value="🎉 ⭐ 🎊 ✨ 💫" placeholder="🎉 ⭐ 🎊">
+                    <p class="info-text">Tap emojis to include in the effect (highlighted = on). They appear scattered on screen for celebrations. Choose how many and size below.</p>
+                    <div class="emoji-pick-toolbar">
+                        <button type="button" class="btn-secondary" id="btnEmojiSelectAll" style="font-size: 12px;">Select all</button>
+                        <button type="button" class="btn-secondary" id="btnEmojiSelectNone" style="font-size: 12px;">Clear</button>
+                    </div>
+                    <div class="emoji-pick-grid" id="emojiPickGrid" aria-label="Choose emojis">
+                        <button type="button" class="emoji-pick-btn selected" data-emoji="🎉" title="Party">🎉</button>
+                        <button type="button" class="emoji-pick-btn selected" data-emoji="🎊" title="Confetti">🎊</button>
+                        <button type="button" class="emoji-pick-btn selected" data-emoji="⭐" title="Star">⭐</button>
+                        <button type="button" class="emoji-pick-btn selected" data-emoji="✨" title="Sparkles">✨</button>
+                        <button type="button" class="emoji-pick-btn selected" data-emoji="💫" title="Dizzy">💫</button>
+                        <button type="button" class="emoji-pick-btn selected" data-emoji="🏆" title="Trophy">🏆</button>
+                        <button type="button" class="emoji-pick-btn" data-emoji="🥳" title="Party face">🥳</button>
+                        <button type="button" class="emoji-pick-btn" data-emoji="👏" title="Clap">👏</button>
+                        <button type="button" class="emoji-pick-btn" data-emoji="🔥" title="Fire">🔥</button>
+                        <button type="button" class="emoji-pick-btn" data-emoji="💯" title="Hundred">💯</button>
+                        <button type="button" class="emoji-pick-btn" data-emoji="❤️" title="Heart">❤️</button>
+                        <button type="button" class="emoji-pick-btn" data-emoji="👍" title="Thumbs up">👍</button>
+                        <button type="button" class="emoji-pick-btn" data-emoji="🎯" title="Bullseye">🎯</button>
+                        <button type="button" class="emoji-pick-btn" data-emoji="🎮" title="Gaming">🎮</button>
+                        <button type="button" class="emoji-pick-btn" data-emoji="🎪" title="Tent">🎪</button>
+                        <button type="button" class="emoji-pick-btn" data-emoji="🎸" title="Guitar">🎸</button>
+                        <button type="button" class="emoji-pick-btn" data-emoji="🥁" title="Drum">🥁</button>
+                        <button type="button" class="emoji-pick-btn" data-emoji="🎤" title="Mic">🎤</button>
+                        <button type="button" class="emoji-pick-btn" data-emoji="🍿" title="Popcorn">🍿</button>
+                        <button type="button" class="emoji-pick-btn" data-emoji="😂" title="Joy">😂</button>
+                        <button type="button" class="emoji-pick-btn" data-emoji="😮" title="Wow">😮</button>
+                        <button type="button" class="emoji-pick-btn" data-emoji="🤩" title="Star eyes">🤩</button>
+                        <button type="button" class="emoji-pick-btn" data-emoji="🙌" title="Hands">🙌</button>
+                        <button type="button" class="emoji-pick-btn" data-emoji="💪" title="Flex">💪</button>
+                        <button type="button" class="emoji-pick-btn" data-emoji="⚡" title="Lightning">⚡</button>
                     </div>
                     <div class="form-row">
                         <label for="emojiCount">How many on screen:</label>

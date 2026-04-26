@@ -244,28 +244,52 @@ body.output-page {
     display: block;
 }
 
-/* Game Show dual-team scoreboard */
+/* Game Show dual-team scoreboard (keyframes keep translateX(-50%) so bar stays centred) */
+@keyframes gameShowIn {
+    from {
+        opacity: 0;
+        transform: translate(-50%, 28px);
+    }
+    to {
+        opacity: 1;
+        transform: translate(-50%, 0);
+    }
+}
+
+@keyframes gameShowOut {
+    from {
+        opacity: 1;
+        transform: translate(-50%, 0);
+    }
+    to {
+        opacity: 0;
+        transform: translate(-50%, 28px);
+    }
+}
+
 .game-show-bar {
     position: fixed;
     left: 50%;
-    transform: translateX(-50%);
     bottom: 120px;
+    transform: translate(-50%, 0);
     display: none;
+    flex-direction: row;
     align-items: stretch;
     gap: 0;
-    z-index: 105;
+    z-index: 200;
     border-radius: 20px;
     overflow: hidden;
     box-shadow: 0 8px 32px rgba(0, 0, 0, 0.45);
-    animation: slideIn 0.5s cubic-bezier(0.4, 0.0, 0.2, 1);
+    opacity: 1;
 }
 
 .game-show-bar.visible {
     display: flex;
+    animation: gameShowIn 0.45s cubic-bezier(0.4, 0.0, 0.2, 1) forwards;
 }
 
 .game-show-bar.animating-out {
-    animation: slideOut 0.5s cubic-bezier(0.4, 0.0, 0.2, 1) forwards;
+    animation: gameShowOut 0.45s cubic-bezier(0.4, 0.0, 0.2, 1) forwards;
 }
 
 .game-show-panel {
@@ -313,14 +337,22 @@ body.output-page {
 .emoji-overlay {
     position: fixed;
     inset: 0;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    width: 100%;
+    height: 100%;
     pointer-events: none;
-    z-index: 140;
-    overflow: hidden;
+    z-index: 220;
+    overflow: visible;
     display: none;
+    visibility: hidden;
 }
 
 .emoji-overlay.visible {
     display: block;
+    visibility: visible;
 }
 
 .emoji-overlay .emoji-sprite {
@@ -1106,6 +1138,78 @@ body.control-page {
     background: var(--vernum-gray);
     border-radius: 8px;
     border-left: 4px solid var(--vernum-blue);
+}
+
+/* Game show: score + quick buttons + emoji picker (control page) */
+.game-show-score-row .game-show-score-inputs {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 8px;
+}
+
+.game-show-score-inputs input[type="number"] {
+    width: 80px;
+}
+
+.btn-score {
+    min-width: 48px;
+    padding: 8px 12px;
+    font-size: 15px;
+    font-weight: 800;
+    border-radius: 8px;
+    border: 2px solid rgba(255, 255, 255, 0.3);
+    cursor: pointer;
+    color: #fff;
+}
+
+.btn-score.btn-plus {
+    background: #28a745;
+}
+
+.btn-score.btn-minus {
+    background: #6c757d;
+}
+
+.btn-score:hover {
+    filter: brightness(1.1);
+}
+
+.emoji-pick-toolbar {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 8px;
+}
+
+.emoji-pick-grid {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin: 8px 0 14px 0;
+    max-width: 100%;
+}
+
+.emoji-pick-btn {
+    font-size: 26px;
+    padding: 6px 8px;
+    min-width: 44px;
+    min-height: 44px;
+    border: 2px solid rgba(255, 255, 255, 0.15);
+    border-radius: 8px;
+    background: rgba(255, 255, 255, 0.06);
+    cursor: pointer;
+    line-height: 1.2;
+    transition: background 0.15s, border-color 0.15s;
+}
+
+.emoji-pick-btn:hover {
+    background: rgba(255, 255, 255, 0.12);
+}
+
+.emoji-pick-btn.selected {
+    border-color: var(--vernum-blue, #2E7CFF);
+    background: rgba(46, 124, 255, 0.2);
+    box-shadow: 0 0 0 1px rgba(46, 124, 255, 0.4);
 }
 
 .control-group h3 {

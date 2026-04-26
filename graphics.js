@@ -879,19 +879,20 @@ class GraphicsEngine {
     
     applyGameShowConfig(config) {
         const bar = this.elements.gameShowBar;
-        if (!bar || !config) return;
+        if (!bar) return;
+        const c = config || {};
         const nameA = this.elements.gameShowTeamAName;
         const nameB = this.elements.gameShowTeamBName;
         const scoreA = this.elements.gameShowScoreA;
         const scoreB = this.elements.gameShowScoreB;
         const panelA = this.elements.gameShowPanelA;
         const panelB = this.elements.gameShowPanelB;
-        if (nameA) nameA.textContent = (config.teamAName && String(config.teamAName).trim()) ? config.teamAName.trim() : 'Team A';
-        if (nameB) nameB.textContent = (config.teamBName && String(config.teamBName).trim()) ? config.teamBName.trim() : 'Team B';
-        if (scoreA) scoreA.textContent = config.scoreA != null ? String(config.scoreA) : '0';
-        if (scoreB) scoreB.textContent = config.scoreB != null ? String(config.scoreB) : '0';
-        if (panelA) panelA.style.backgroundColor = config.teamAColor || '#dc3545';
-        if (panelB) panelB.style.backgroundColor = config.teamBColor || '#0056b3';
+        if (nameA) nameA.textContent = (c.teamAName && String(c.teamAName).trim()) ? c.teamAName.trim() : 'Team A';
+        if (nameB) nameB.textContent = (c.teamBName && String(c.teamBName).trim()) ? c.teamBName.trim() : 'Team B';
+        if (scoreA) scoreA.textContent = c.scoreA != null ? String(c.scoreA) : '0';
+        if (scoreB) scoreB.textContent = c.scoreB != null ? String(c.scoreB) : '0';
+        if (panelA) panelA.style.backgroundColor = c.teamAColor || '#dc3545';
+        if (panelB) panelB.style.backgroundColor = c.teamBColor || '#0056b3';
     }
     
     showGameShow(config) {
@@ -900,6 +901,10 @@ class GraphicsEngine {
         this.applyGameShowConfig(config);
         bar.classList.remove('animating-out');
         bar.classList.add('visible');
+        bar.style.display = 'flex';
+        bar.style.left = '50%';
+        bar.style.bottom = '120px';
+        bar.style.transform = 'translate(-50%, 0)';
         this.state.gameShowVisible = true;
         this.updateStatusIndicator();
     }
@@ -912,7 +917,11 @@ class GraphicsEngine {
         this.updateStatusIndicator();
         setTimeout(() => {
             bar.classList.remove('visible', 'animating-out');
-        }, 500);
+            bar.style.display = '';
+            bar.style.left = '';
+            bar.style.bottom = '';
+            bar.style.transform = '';
+        }, 480);
     }
     
     updateGameShow(config) {
@@ -930,11 +939,15 @@ class GraphicsEngine {
     showEmojis(config) {
         const overlay = this.elements.emojiOverlay;
         if (!overlay) return;
+        const cfg = config || {};
         this.hideEmojis();
-        const tokens = this.parseEmojiTokens(config && config.emojiList ? config.emojiList : '');
-        const count = Math.min(120, Math.max(1, parseInt(config && config.count, 10) || 28));
-        const sizeMin = Math.max(12, parseInt(config && config.sizeMin, 10) || 28);
-        const sizeMax = Math.max(sizeMin, parseInt(config && config.sizeMax, 10) || 56);
+        const tokens = this.parseEmojiTokens(cfg.emojiList != null ? String(cfg.emojiList) : '');
+        const countRaw = cfg.count != null ? Number(cfg.count) : 28;
+        const count = Math.min(120, Math.max(1, Number.isFinite(countRaw) ? countRaw : 28));
+        const sizeMinRaw = cfg.sizeMin != null ? Number(cfg.sizeMin) : 28;
+        const sizeMaxRaw = cfg.sizeMax != null ? Number(cfg.sizeMax) : 56;
+        const sizeMin = Math.max(12, Number.isFinite(sizeMinRaw) ? sizeMinRaw : 28);
+        const sizeMax = Math.max(sizeMin, Number.isFinite(sizeMaxRaw) ? sizeMaxRaw : 56);
         for (let i = 0; i < count; i++) {
             const el = document.createElement('span');
             el.className = 'emoji-sprite';
@@ -950,6 +963,8 @@ class GraphicsEngine {
             overlay.appendChild(el);
         }
         overlay.classList.add('visible');
+        overlay.style.display = 'block';
+        overlay.style.visibility = 'visible';
         this.state.emojiOverlayActive = true;
         this.updateStatusIndicator();
     }
@@ -959,6 +974,8 @@ class GraphicsEngine {
         if (!overlay) return;
         overlay.innerHTML = '';
         overlay.classList.remove('visible');
+        overlay.style.display = '';
+        overlay.style.visibility = '';
         this.state.emojiOverlayActive = false;
         this.updateStatusIndicator();
     }

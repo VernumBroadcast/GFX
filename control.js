@@ -1328,6 +1328,17 @@ class ControlPanel {
         };
     }
     
+    adjustGameShowScore(team, delta) {
+        const id = team === 'A' ? 'gameShowScoreA' : 'gameShowScoreB';
+        const el = document.getElementById(id);
+        if (!el) return;
+        let v = parseInt(el.value, 10);
+        if (Number.isNaN(v)) v = 0;
+        v = Math.min(9999, Math.max(-999, v + delta));
+        el.value = String(v);
+        this.sendToFrame('both', 'updateGameShow', { config: this.getGameShowConfig() });
+    }
+    
     setupGameShowControls() {
         document.getElementById('btnShowGameShow').addEventListener('click', () => {
             this.sendToFrame('both', 'showGameShow', { config: this.getGameShowConfig() });
@@ -1338,11 +1349,23 @@ class ControlPanel {
         document.getElementById('btnHideGameShow').addEventListener('click', () => {
             this.sendToFrame('both', 'hideGameShow', {});
         });
+        document.getElementById('gameShowPlusA')?.addEventListener('click', () => this.adjustGameShowScore('A', 1));
+        document.getElementById('gameShowMinusA')?.addEventListener('click', () => this.adjustGameShowScore('A', -1));
+        document.getElementById('gameShowPlusB')?.addEventListener('click', () => this.adjustGameShowScore('B', 1));
+        document.getElementById('gameShowMinusB')?.addEventListener('click', () => this.adjustGameShowScore('B', -1));
+    }
+    
+    getSelectedEmojiString() {
+        const selected = Array.from(document.querySelectorAll('.emoji-pick-btn.selected'));
+        if (selected.length > 0) {
+            return selected.map((b) => b.getAttribute('data-emoji') || b.textContent.trim()).filter(Boolean).join(' ');
+        }
+        return '';
     }
     
     getEmojiConfig() {
         return {
-            emojiList: document.getElementById('emojiList')?.value || '🎉',
+            emojiList: this.getSelectedEmojiString(),
             count: parseInt(document.getElementById('emojiCount')?.value, 10) || 28,
             sizeMin: parseInt(document.getElementById('emojiSizeMin')?.value, 10) || 28,
             sizeMax: parseInt(document.getElementById('emojiSizeMax')?.value, 10) || 56
@@ -1350,11 +1373,27 @@ class ControlPanel {
     }
     
     setupEmojiControls() {
-        document.getElementById('btnShowEmojis').addEventListener('click', () => {
+        document.getElementById('btnShowEmojis')?.addEventListener('click', () => {
+            const picked = this.getSelectedEmojiString();
+            if (!picked.trim()) {
+                alert('Select at least one emoji in the grid (tap to highlight).');
+                return;
+            }
             this.sendToFrame('both', 'showEmojis', { config: this.getEmojiConfig() });
         });
-        document.getElementById('btnHideEmojis').addEventListener('click', () => {
+        document.getElementById('btnHideEmojis')?.addEventListener('click', () => {
             this.sendToFrame('both', 'hideEmojis', {});
+        });
+        document.getElementById('emojiPickGrid')?.addEventListener('click', (e) => {
+            const btn = e.target.closest('.emoji-pick-btn');
+            if (!btn) return;
+            btn.classList.toggle('selected');
+        });
+        document.getElementById('btnEmojiSelectAll')?.addEventListener('click', () => {
+            document.querySelectorAll('.emoji-pick-btn').forEach((b) => b.classList.add('selected'));
+        });
+        document.getElementById('btnEmojiSelectNone')?.addEventListener('click', () => {
+            document.querySelectorAll('.emoji-pick-btn').forEach((b) => b.classList.remove('selected'));
         });
     }
     
@@ -2104,12 +2143,20 @@ class ControlPanel {
         
         if (target === 'preview' || target === 'both') {
             console.log('  → Sending to PREVIEW frame');
-            this.previewFrame.contentWindow.postMessage(message, '*');
+            if (this.previewFrame?.contentWindow) {
+                this.previewFrame.contentWindow.postMessage(message, '*');
+            } else {
+                console.warn('Preview iframe not ready (contentWindow missing)');
+            }
         }
         
         if (target === 'transmit' || target === 'both') {
             console.log('  → Sending to TRANSMIT frame + localStorage + Firebase');
-            this.transmitFrame.contentWindow.postMessage(message, '*');
+            if (this.transmitFrame?.contentWindow) {
+                this.transmitFrame.contentWindow.postMessage(message, '*');
+            } else {
+                console.warn('Transmit iframe not ready (contentWindow missing)');
+            }
             
             // ALSO broadcast to localStorage for VMix and other standalone windows
             localStorage.setItem('vmix_graphics_command', JSON.stringify({
