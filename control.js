@@ -2133,43 +2133,71 @@ class ControlPanel {
         });
     }
     
+    _postToIframe(iframe, message) {
+        if (iframe && iframe.contentWindow) {
+            try {
+                iframe.contentWindow.postMessage(message, '*');
+                return true;
+            } catch (e) {
+                console.error('postMessage failed:', e);
+            }
+        }
+        return false;
+    }
+    
+    /**
+     * Retries only postMessage when iframes are not ready yet. localStorage / Firebase run once
+     * (so VMix/standalone can still read the last command from storage).
+     */
     sendToFrame(target, action, data = {}) {
-        // For dual L3s, data has configLeft and configRight
-        // For single actions, data is the config
-        // Need to spread data into the message properly
         const message = { action, ...data };
+        console.log('📤 sendToFrame:', target, action, message);
         
-        console.log('📤 sendToFrame called - target:', target, 'action:', action);
+        const toPreview = (target === 'preview' || target === 'both');
+        const toTransmit = (target === 'transmit' || target === 'both');
         
-        if (target === 'preview' || target === 'both') {
-            console.log('  → Sending to PREVIEW frame');
-            if (this.previewFrame?.contentWindow) {
-                this.previewFrame.contentWindow.postMessage(message, '*');
-            } else {
-                console.warn('Preview iframe not ready (contentWindow missing)');
-            }
+        if (toPreview) {
+            this._postToIframe(this.previewFrame, message);
         }
-        
-        if (target === 'transmit' || target === 'both') {
-            console.log('  → Sending to TRANSMIT frame + localStorage + Firebase');
-            if (this.transmitFrame?.contentWindow) {
-                this.transmitFrame.contentWindow.postMessage(message, '*');
-            } else {
-                console.warn('Transmit iframe not ready (contentWindow missing)');
+        if (toTransmit) {
+            this._postToIframe(this.transmitFrame, message);
+            try {
+                localStorage.setItem('vmix_graphics_command', JSON.stringify({
+                    timestamp: Date.now(),
+                    message: message
+                }));
+            } catch (e) {
+                /* private mode, etc. */
             }
-            
-            // ALSO broadcast to localStorage for VMix and other standalone windows
-            localStorage.setItem('vmix_graphics_command', JSON.stringify({
-                timestamp: Date.now(),
-                message: message
-            }));
-            
-            // ALSO send via Firebase for GitHub Pages + VMix real-time control
             if (window.firebaseBridge && window.firebaseBridge.enabled) {
-                window.firebaseBridge.sendCommand(action, data);
-                console.log('🔥 Sent via Firebase:', action);
+                const { action: a, ...rest } = message;
+                window.firebaseBridge.sendCommand(a, rest);
             }
         }
+        
+        const needRetry = (toPreview && !this.previewFrame?.contentWindow) ||
+            (toTransmit && !this.transmitFrame?.contentWindow);
+        if (!needRetry) {
+            return;
+        }
+        let tries = 0;
+        const id = setInterval(() => {
+            tries += 1;
+            if (toPreview) {
+                this._postToIframe(this.previewFrame, message);
+            }
+            if (toTransmit) {
+                this._postToIframe(this.transmitFrame, message);
+            }
+            const pOk = !toPreview || !!this.previewFrame?.contentWindow;
+            const tOk = !toTransmit || !!this.transmitFrame?.contentWindow;
+            if (pOk && tOk) {
+                clearInterval(id);
+            } else if (tries >= 50) {
+                clearInterval(id);
+                console.error('Iframes not ready after 5s. Hard-refresh control.html, wait for both preview and transmit to finish loading, then try Show again.');
+            }
+        }, 100);
     }
 }
 

@@ -87,7 +87,9 @@ class GraphicsEngine {
             timerElapsed: 0,
             timerStartTime: null,
             gameShowVisible: false,
-            emojiOverlayActive: false
+            emojiOverlayActive: false,
+            gameShowLastScoreA: null,
+            gameShowLastScoreB: null
         };
         
         // Track if this is preview window (for dragging)
@@ -104,12 +106,13 @@ class GraphicsEngine {
     }
     
     updateStatusIndicator() {
-        // Hide status indicator if any graphics are visible
+        const si = this.elements.statusIndicator;
+        if (!si) return;
         const anyBugVisible = Object.values(this.state.bugs).some(bug => bug.visible);
         if (this.state.l3Visible || this.state.l3DualVisible || this.state.l3TripleVisible || this.state.tickerVisible || anyBugVisible || this.state.questionBarVisible || this.state.pieChartVisible || this.state.timerVisible || this.state.gameShowVisible || this.state.emojiOverlayActive) {
-            this.elements.statusIndicator.classList.add('hidden');
+            si.classList.add('hidden');
         } else {
-            this.elements.statusIndicator.classList.remove('hidden');
+            si.classList.remove('hidden');
         }
     }
     
@@ -124,14 +127,21 @@ class GraphicsEngine {
         
         // Listen for postMessage commands from control panel (when in iframe)
         window.addEventListener('message', (event) => {
+            let payload = event.data;
+            if (typeof payload === 'string') {
+                try {
+                    payload = JSON.parse(payload);
+                } catch (e) {
+                    return;
+                }
+            }
             if (this.debugMode) {
                 console.log('===== MESSAGE RECEIVED (postMessage) =====');
                 console.log('Event origin:', event.origin);
-                console.log('Event data:', event.data);
-                console.log('===========================');
-                this.addDebugLog('MSG: ' + event.data.action);
+                console.log('Event data:', payload);
+                this.addDebugLog('MSG: ' + (payload && payload.action));
             }
-            this.handleMessage(event.data);
+            this.handleMessage(payload);
         });
         
         // Listen for localStorage commands (when opened standalone for VMix)
@@ -249,12 +259,14 @@ class GraphicsEngine {
     }
     
     handleMessage(data) {
-        if (!data || !data.action) {
-            this.addDebugLog('ERROR: Invalid message data');
+        if (data && data.message && data.message.action) {
+            data = data.message;
+        }
+        if (!data || typeof data !== 'object' || !data.action) {
             return;
         }
         
-        console.log('Received message:', data.action);
+        console.log('Graphics received action:', data.action, data);
         
         try {
             switch(data.action) {
@@ -877,7 +889,27 @@ class GraphicsEngine {
         }, 400);
     }
     
+    _animateGameShowScoreIfChanged(scoreEl, newStr, prevStr) {
+        if (!scoreEl || prevStr === null) return;
+        if (prevStr === newStr) return;
+        const newN = parseInt(newStr, 10);
+        const oldN = parseInt(prevStr, 10);
+        const aUp = (Number.isFinite(newN) && Number.isFinite(oldN) && newN > oldN);
+        const aDown = (Number.isFinite(newN) && Number.isFinite(oldN) && newN < oldN);
+        scoreEl.classList.remove('game-show-score--up', 'game-show-score--down', 'game-show-score--tie');
+        const fin = () => {
+            scoreEl.classList.remove('game-show-score--up', 'game-show-score--down', 'game-show-score--tie');
+        };
+        scoreEl.removeEventListener('animationend', fin);
+        void scoreEl.offsetWidth;
+        if (aUp) scoreEl.classList.add('game-show-score--up');
+        else if (aDown) scoreEl.classList.add('game-show-score--down');
+        else scoreEl.classList.add('game-show-score--tie');
+        scoreEl.addEventListener('animationend', fin, { once: true });
+    }
+    
     applyGameShowConfig(config) {
+        this._refreshGameShowElements();
         const bar = this.elements.gameShowBar;
         if (!bar) return;
         const c = config || {};
@@ -889,38 +921,75 @@ class GraphicsEngine {
         const panelB = this.elements.gameShowPanelB;
         if (nameA) nameA.textContent = (c.teamAName && String(c.teamAName).trim()) ? c.teamAName.trim() : 'Team A';
         if (nameB) nameB.textContent = (c.teamBName && String(c.teamBName).trim()) ? c.teamBName.trim() : 'Team B';
-        if (scoreA) scoreA.textContent = c.scoreA != null ? String(c.scoreA) : '0';
-        if (scoreB) scoreB.textContent = c.scoreB != null ? String(c.scoreB) : '0';
+        const newStrA = c.scoreA != null ? String(c.scoreA) : '0';
+        const newStrB = c.scoreB != null ? String(c.scoreB) : '0';
+        const prevA = this.state.gameShowLastScoreA;
+        const prevB = this.state.gameShowLastScoreB;
+        if (scoreA) {
+            scoreA.textContent = newStrA;
+            this._animateGameShowScoreIfChanged(scoreA, newStrA, prevA);
+        }
+        if (scoreB) {
+            scoreB.textContent = newStrB;
+            this._animateGameShowScoreIfChanged(scoreB, newStrB, prevB);
+        }
+        this.state.gameShowLastScoreA = newStrA;
+        this.state.gameShowLastScoreB = newStrB;
         if (panelA) panelA.style.backgroundColor = c.teamAColor || '#dc3545';
         if (panelB) panelB.style.backgroundColor = c.teamBColor || '#0056b3';
     }
     
+    _refreshGameShowElements() {
+        this.elements.gameShowBar = document.getElementById('gameShowBar');
+        this.elements.gameShowPanelA = document.getElementById('gameShowPanelA');
+        this.elements.gameShowPanelB = document.getElementById('gameShowPanelB');
+        this.elements.gameShowTeamAName = document.getElementById('gameShowTeamAName');
+        this.elements.gameShowTeamBName = document.getElementById('gameShowTeamBName');
+        this.elements.gameShowScoreA = document.getElementById('gameShowScoreA');
+        this.elements.gameShowScoreB = document.getElementById('gameShowScoreB');
+    }
+    
     showGameShow(config) {
+        this._refreshGameShowElements();
         const bar = this.elements.gameShowBar;
-        if (!bar) return;
+        if (!bar) {
+            console.error('GFX: #gameShowBar missing. Use the latest output.html and hard-refresh the iframe (Cmd/Ctrl+Shift+R).');
+            return;
+        }
+        this.state.gameShowLastScoreA = null;
+        this.state.gameShowLastScoreB = null;
         this.applyGameShowConfig(config);
         bar.classList.remove('animating-out');
         bar.classList.add('visible');
-        bar.style.display = 'flex';
-        bar.style.left = '50%';
-        bar.style.bottom = '120px';
-        bar.style.transform = 'translate(-50%, 0)';
+        bar.style.setProperty('display', 'flex', 'important');
+        bar.style.setProperty('left', '50%', 'important');
+        bar.style.setProperty('bottom', '120px', 'important');
+        bar.style.setProperty('transform', 'translate(-50%, 0)', 'important');
+        bar.style.setProperty('z-index', '2147483000', 'important');
+        bar.style.setProperty('opacity', '1', 'important');
+        bar.style.setProperty('visibility', 'visible', 'important');
         this.state.gameShowVisible = true;
         this.updateStatusIndicator();
     }
     
     hideGameShow() {
+        this._refreshGameShowElements();
         const bar = this.elements.gameShowBar;
         if (!bar) return;
         bar.classList.add('animating-out');
         this.state.gameShowVisible = false;
         this.updateStatusIndicator();
         setTimeout(() => {
+            this.state.gameShowLastScoreA = null;
+            this.state.gameShowLastScoreB = null;
             bar.classList.remove('visible', 'animating-out');
-            bar.style.display = '';
-            bar.style.left = '';
-            bar.style.bottom = '';
-            bar.style.transform = '';
+            bar.style.removeProperty('display');
+            bar.style.removeProperty('left');
+            bar.style.removeProperty('bottom');
+            bar.style.removeProperty('transform');
+            bar.style.removeProperty('z-index');
+            bar.style.removeProperty('opacity');
+            bar.style.removeProperty('visibility');
         }, 480);
     }
     
@@ -936,9 +1005,17 @@ class GraphicsEngine {
         return raw;
     }
     
+    _refreshEmojiOverlay() {
+        this.elements.emojiOverlay = document.getElementById('emojiOverlay');
+    }
+    
     showEmojis(config) {
+        this._refreshEmojiOverlay();
         const overlay = this.elements.emojiOverlay;
-        if (!overlay) return;
+        if (!overlay) {
+            console.error('GFX: #emojiOverlay missing. Use the latest output.html and hard-refresh (Cmd/Ctrl+Shift+R).');
+            return;
+        }
         const cfg = config || {};
         this.hideEmojis();
         const tokens = this.parseEmojiTokens(cfg.emojiList != null ? String(cfg.emojiList) : '');
@@ -950,32 +1027,41 @@ class GraphicsEngine {
         const sizeMax = Math.max(sizeMin, Number.isFinite(sizeMaxRaw) ? sizeMaxRaw : 56);
         for (let i = 0; i < count; i++) {
             const el = document.createElement('span');
-            el.className = 'emoji-sprite';
+            el.className = 'emoji-sprite emoji-rain';
             el.textContent = tokens[i % tokens.length];
-            const left = 4 + Math.random() * 90;
-            const top = 4 + Math.random() * 88;
+            const col = (i * 0.618033988749895) % 1;
+            const wave = Math.sin(i * 0.55) * 2.5;
+            const leftPct = Math.min(90, Math.max(3, 4 + col * 84 + wave + (Math.random() * 1.2 - 0.6)));
             const size = sizeMin + Math.random() * (sizeMax - sizeMin);
-            const rot = Math.random() * 50 - 25;
-            el.style.left = left + '%';
-            el.style.top = top + '%';
+            const dur = 2.1 + (i % 7) * 0.1 + Math.random() * 1.8;
+            const delay = (i * 0.1) + Math.random() * 4.5;
+            const drift = -24 + (i * 1.4) % 50 + (Math.random() * 2 - 1);
+            el.style.left = leftPct + '%';
             el.style.fontSize = Math.round(size) + 'px';
-            el.style.transform = `rotate(${rot}deg)`;
+            el.style.setProperty('--emoji-dur', dur + 's');
+            el.style.setProperty('--emoji-delay', delay + 's');
+            el.style.setProperty('--emoji-drift', drift + 'px');
             overlay.appendChild(el);
         }
         overlay.classList.add('visible');
-        overlay.style.display = 'block';
-        overlay.style.visibility = 'visible';
+        overlay.style.setProperty('display', 'block', 'important');
+        overlay.style.setProperty('visibility', 'visible', 'important');
+        overlay.style.setProperty('z-index', '2147483200', 'important');
+        overlay.style.setProperty('pointer-events', 'none', 'important');
         this.state.emojiOverlayActive = true;
         this.updateStatusIndicator();
     }
     
     hideEmojis() {
+        this._refreshEmojiOverlay();
         const overlay = this.elements.emojiOverlay;
         if (!overlay) return;
         overlay.innerHTML = '';
         overlay.classList.remove('visible');
-        overlay.style.display = '';
-        overlay.style.visibility = '';
+        overlay.style.removeProperty('display');
+        overlay.style.removeProperty('visibility');
+        overlay.style.removeProperty('z-index');
+        overlay.style.removeProperty('pointer-events');
         this.state.emojiOverlayActive = false;
         this.updateStatusIndicator();
     }
